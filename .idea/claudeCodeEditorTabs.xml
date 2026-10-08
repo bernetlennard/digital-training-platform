@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ClaudeCodeEditorTabs">
+    <option name="activeSessionId" value="a4855b2a-0a91-43e1-a78d-57551303b9c6" />
+    <option name="openSessionIds">
+      <list>
+        <option value="3901154a-ec16-41ee-8c86-3f5b6593418e" />
+        <option value="a4855b2a-0a91-43e1-a78d-57551303b9c6" />
+      </list>
+    </option>
+    <option name="sessionPaths">
+      <map>
+        <entry key="3901154a-ec16-41ee-8c86-3f5b6593418e" value="/sessions/new" />
+        <entry key="a4855b2a-0a91-43e1-a78d-57551303b9c6" value="/sessions/a58e1cba-26f3-4159-90e4-37e758b1078e" />
+      </map>
+    </option>
+    <option name="sessionTitles">
+      <map>
+        <entry key="3901154a-ec16-41ee-8c86-3f5b6593418e" value="Claude Code" />
+        <entry key="a4855b2a-0a91-43e1-a78d-57551303b9c6" value="geht mvn command für dich?" />
+      </map>
+    </option>
+  </component>
+</project>

@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>ch.bernet</groupId>
-	<artifactId>traininplatform</artifactId>
+	<artifactId>trainingplatform</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name/>
 	<description/>
