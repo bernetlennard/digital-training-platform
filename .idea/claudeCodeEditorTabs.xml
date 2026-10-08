@@ -1,19 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ClaudeCodeEditorTabs">
-    <option name="activeSessionId" value="3901154a-ec16-41ee-8c86-3f5b6593418e" />
+    <option name="activeSessionId" value="1b6ef310-b3f4-46b3-913e-ddd006b095a4" />
     <option name="openSessionIds">
       <list>
         <option value="3901154a-ec16-41ee-8c86-3f5b6593418e" />
+        <option value="1b6ef310-b3f4-46b3-913e-ddd006b095a4" />
       </list>
     </option>
     <option name="sessionPaths">
       <map>
+        <entry key="1b6ef310-b3f4-46b3-913e-ddd006b095a4" value="/sessions/1c18ea35-8a39-4234-98d5-39db3162c612" />
         <entry key="3901154a-ec16-41ee-8c86-3f5b6593418e" value="/sessions/new" />
       </map>
     </option>
     <option name="sessionTitles">
       <map>
+        <entry key="1b6ef310-b3f4-46b3-913e-ddd006b095a4" value="C:\Users\berne\OneDrive - TEKO Schweizerische Fach" />
         <entry key="3901154a-ec16-41ee-8c86-3f5b6593418e" value="Claude Code" />
       </map>
     </option>

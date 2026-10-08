@@ -1,4 +1,6 @@
 package ch.bernet.trainingplatform.service.training.dto;
 
-public record SetResponse() {
+import java.math.BigDecimal;
+
+public record SetResponse(Long id, int setNumber, BigDecimal weightKg, int repetitions, Integer restSeconds) {
 }

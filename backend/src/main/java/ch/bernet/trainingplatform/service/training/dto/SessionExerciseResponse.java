@@ -1,4 +1,13 @@
 package ch.bernet.trainingplatform.service.training.dto;
 
-public record SessionExerciseResponse() {
+import java.util.List;
+
+public record SessionExerciseResponse(
+        Long id,
+        Long exerciseId,
+        String exerciseName,
+        int position,
+        List<SetResponse> sets,
+        SetSuggestion nextSet
+) {
 }

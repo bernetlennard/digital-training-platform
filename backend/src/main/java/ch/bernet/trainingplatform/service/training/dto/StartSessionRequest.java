@@ -1,4 +1,4 @@
 package ch.bernet.trainingplatform.service.training.dto;
 
-public record StartSessionRequest() {
+public record StartSessionRequest(Long routineId) {
 }

@@ -1,4 +1,6 @@
 package ch.bernet.trainingplatform.common;
 
-public record ErrorResponse() {
+import java.util.List;
+
+public record ErrorResponse(int status, String message, List<String> details) {
 }

@@ -1,4 +1,4 @@
 package ch.bernet.trainingplatform.service.user.dto;
 
-public record ChangeEmailRequest() {
+public record ChangeEmailRequest(String newEmail, String password) {
 }

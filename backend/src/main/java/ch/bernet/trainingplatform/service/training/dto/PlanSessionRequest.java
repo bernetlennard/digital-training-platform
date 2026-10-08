@@ -1,4 +1,6 @@
 package ch.bernet.trainingplatform.service.training.dto;
 
-public record PlanSessionRequest() {
+import java.time.LocalDate;
+
+public record PlanSessionRequest(Long routineId, LocalDate plannedDate) {
 }

@@ -1,4 +1,6 @@
 package ch.bernet.trainingplatform.service.training.dto;
 
-public record SessionSummaryResponse() {
+import java.time.Instant;
+
+public record SessionSummaryResponse(Long id, Instant startedAt, Instant finishedAt) {
 }

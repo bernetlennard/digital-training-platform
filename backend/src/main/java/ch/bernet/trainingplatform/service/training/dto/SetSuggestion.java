@@ -1,4 +1,6 @@
 package ch.bernet.trainingplatform.service.training.dto;
 
-public record SetSuggestion() {
+import java.math.BigDecimal;
+
+public record SetSuggestion(BigDecimal weightKg, int repetitions, Integer restSeconds) {
 }

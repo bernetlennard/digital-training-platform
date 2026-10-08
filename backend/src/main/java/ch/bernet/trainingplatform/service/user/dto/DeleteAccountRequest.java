@@ -1,4 +1,4 @@
 package ch.bernet.trainingplatform.service.user.dto;
 
-public record DeleteAccountRequest() {
+public record DeleteAccountRequest(String password) {
 }

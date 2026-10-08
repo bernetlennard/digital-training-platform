@@ -1,4 +1,4 @@
 package ch.bernet.trainingplatform.service.user.dto;
 
-public record LoginRequest() {
+public record LoginRequest(String email, String password) {
 }
