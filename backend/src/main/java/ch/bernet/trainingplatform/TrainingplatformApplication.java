@@ -5,6 +5,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 import java.time.Clock;
+import java.time.ZoneId;
 
 @SpringBootApplication
 public class TrainingplatformApplication {
@@ -15,8 +16,7 @@ public class TrainingplatformApplication {
 
 	@Bean
 	public Clock clock() {
-		// TODO: Clock mit Zeitzone Europe/Zurich zurückgeben (wird in Services injiziert)
-		return null;
+		return Clock.system(ZoneId.of( "Europe/Zurich"));
 	}
 
 }

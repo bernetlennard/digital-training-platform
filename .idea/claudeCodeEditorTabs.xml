@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ClaudeCodeEditorTabs">
-    <option name="activeSessionId" value="1baba821-3b7f-490a-94c7-6e59bab119a9" />
+    <option name="activeSessionId" value="c69cf2d9-5943-4b2a-8d33-a950ab6f5623" />
     <option name="openSessionIds">
       <list>
         <option value="3901154a-ec16-41ee-8c86-3f5b6593418e" />
-        <option value="1baba821-3b7f-490a-94c7-6e59bab119a9" />
+        <option value="c69cf2d9-5943-4b2a-8d33-a950ab6f5623" />
       </list>
     </option>
     <option name="sessionPaths">
       <map>
-        <entry key="1baba821-3b7f-490a-94c7-6e59bab119a9" value="/sessions/0339db59-8ce7-4078-a685-607af87ad51a" />
         <entry key="3901154a-ec16-41ee-8c86-3f5b6593418e" value="/sessions/new" />
+        <entry key="c69cf2d9-5943-4b2a-8d33-a950ab6f5623" value="/sessions/79277e60-61ba-4000-adae-2accc017312f" />
       </map>
     </option>
     <option name="sessionTitles">
       <map>
-        <entry key="1baba821-3b7f-490a-94c7-6e59bab119a9" value="als nächstes möchte ich das du alle methoden, attr" />
         <entry key="3901154a-ec16-41ee-8c86-3f5b6593418e" value="Claude Code" />
+        <entry key="c69cf2d9-5943-4b2a-8d33-a950ab6f5623" value="zu welchen zeitpunkt wird die logik in jwtuseridco" />
       </map>
     </option>
   </component>

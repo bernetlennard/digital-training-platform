@@ -1,14 +1,24 @@
 package ch.bernet.trainingplatform.security;
 
+import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+
+import javax.crypto.spec.SecretKeySpec;
 
 @Configuration
 @EnableWebSecurity
@@ -32,30 +42,34 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // TODO: Deny by default, offen nur Registrierung, Login und Health-Check; kein CORS
-        // TODO: oauth2ResourceServer mit cookieBearerTokenResolver und jwtUserIdConverter konfigurieren
-        // TODO: securityErrorHandler als AuthenticationEntryPoint und AccessDeniedHandler setzen
-        return null;
+        http.csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(a -> a
+                        .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login").permitAll()
+                        .requestMatchers("/error").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .oauth2ResourceServer(o -> o
+                        .bearerTokenResolver(cookieBearerTokenResolver)
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtUserIdConverter)));
+        return http.build();
     }
 
-    // static, weil UserService den PasswordEncoder braucht und sonst ein Zyklus entsteht
-    // (SecurityConfig -> JwtUserIdConverter -> UserService -> SecurityConfig)
     @Bean
     public static PasswordEncoder passwordEncoder() {
-        // TODO: PasswordEncoder zurückgeben (z. B. BCrypt)
-        return null;
+        return new BCryptPasswordEncoder();
     }
 
     @Bean
     public JwtEncoder jwtEncoder() {
-        // TODO: NimbusJwtEncoder mit HS256 und jwtProperties.secret()
-        return null;
+        SecretKeySpec sha256 = new SecretKeySpec(jwtProperties.secret().getBytes(), "HmacSHA256");
+        return new NimbusJwtEncoder(new ImmutableSecret<>(sha256));
     }
 
     @Bean
     public JwtDecoder jwtDecoder() {
-        // TODO: NimbusJwtDecoder mit HS256 und jwtProperties.secret()
-        return null;
+        SecretKeySpec sha256 = new SecretKeySpec(jwtProperties.secret().getBytes(), "HmacSHA256");
+        return NimbusJwtDecoder.withSecretKey(sha256).macAlgorithm(MacAlgorithm.HS256).build();
     }
 
 }

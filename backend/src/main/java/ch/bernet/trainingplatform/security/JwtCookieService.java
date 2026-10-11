@@ -1,10 +1,15 @@
 package ch.bernet.trainingplatform.security;
 
 import org.springframework.http.ResponseCookie;
+import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.oauth2.jwt.JwsHeader;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
+import java.time.Instant;
 
 @Service
 public class JwtCookieService {
@@ -22,18 +27,36 @@ public class JwtCookieService {
     }
 
     public ResponseCookie createAuthCookie(Long userId) {
-        // TODO: Cookie mit Token aus createToken, HttpOnly, Secure, SameSite=Strict, Max-Age = validity (#NFA-1.2)
-        return null;
+        return ResponseCookie.from(COOKIE_NAME, createToken(userId))
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Strict")
+                .path("/")
+                .maxAge(jwtProperties.validity())
+                .build();
     }
 
     public ResponseCookie createLogoutCookie() {
-        // TODO: leeres Cookie mit gleichen Attributen und Max-Age 0
-        return null;
+        return ResponseCookie.from(COOKIE_NAME, "")
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("Strict")
+                .path("/")
+                .maxAge(0)
+                .build();
     }
 
     private String createToken(Long userId) {
-        // TODO: JWT (HS256) nur mit Benutzer-ID, Ausstellungs- und Ablaufzeit (L15)
-        return null;
+        Instant now = clock.instant();
+        JwtClaimsSet claims = JwtClaimsSet.builder()
+                .subject(userId.toString())
+                .issuedAt(now)
+                .expiresAt(now.plus(jwtProperties.validity()))
+                .build();
+
+        JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
+        return jwtEncoder.encode(JwtEncoderParameters.from(header, claims))
+                .getTokenValue();
     }
 
 }

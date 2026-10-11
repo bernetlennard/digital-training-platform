@@ -1,5 +1,6 @@
 package ch.bernet.trainingplatform.service.user;
 
+import ch.bernet.trainingplatform.common.AuthenticationFailedException;
 import ch.bernet.trainingplatform.persistence.user.AppUser;
 import ch.bernet.trainingplatform.persistence.user.AppUserRepository;
 import ch.bernet.trainingplatform.service.user.dto.ChangeEmailRequest;
@@ -30,15 +31,27 @@ public class UserService {
 
     @Transactional
     public UserResponse register(RegisterRequest request) {
-        // TODO: E-Mail normalisieren, Duplikat -> ConflictException, Passwort hashen, speichern
-        return null;
+        String email = normalizeEmail(request.email());
+        String passwordHash = passwordEncoder.encode(request.password());
+        AppUser appUser = AppUser.builder()
+                .email(email)
+                .passwordHash(passwordHash)
+                .build();
+
+        AppUser savedUser = appUserRepository.save(appUser);
+        return new UserResponse(savedUser.getId(), savedUser.getEmail(), savedUser.getFirstName(), savedUser.getLastName());
     }
 
     @Transactional
     public UserResponse authenticate(LoginRequest request) {
         // TODO: Sperre prüfen -> AccountLockedException (#NFA-1.3), Passwort prüfen -> AuthenticationFailedException (#NFA-1.4)
         // TODO: bei Fehler loginLockService.registerFailure, bei Erfolg loginLockService.clear
-        return null;
+
+        String password = request.password();
+        AppUser appUser = appUserRepository.findByEmail(normalizeEmail(request.email())).orElseThrow();
+        verifyPassword(appUser, password);
+
+        return new UserResponse(appUser.getId(), appUser.getEmail(), appUser.getFirstName(), appUser.getLastName());
     }
 
     // TODO: an Diagramm angleichen (findUser verwenden, NotFoundException statt null, UserMapper.toResponse)
@@ -75,8 +88,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public boolean exists(Long userId) {
-        // TODO: appUserRepository.existsById verwenden
-        return false;
+        return appUserRepository.existsById(userId);
     }
 
     private AppUser findUser(Long userId) {
@@ -85,12 +97,15 @@ public class UserService {
     }
 
     private void verifyPassword(AppUser user, String rawPassword) {
+        if(!passwordEncoder.matches(rawPassword, user.getPasswordHash())){
+            throw new AuthenticationFailedException("Invalid password.");
+        }
         // TODO: passwordEncoder.matches, sonst AuthenticationFailedException
     }
 
     private String normalizeEmail(String email) {
         // TODO: trimmen und in Kleinbuchstaben umwandeln (ck_app_user_email)
-        return null;
+        return email.trim().toLowerCase();
     }
 
 }

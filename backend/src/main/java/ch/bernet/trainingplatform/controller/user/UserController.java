@@ -38,6 +38,8 @@ public class UserController {
     public UserResponse updateProfile(@AuthenticationPrincipal Long userId,
                                       @Valid @RequestBody UpdateProfileRequest request) {
         // TODO: userService.updateProfile aufrufen
+
+
         return null;
     }
 

@@ -3,8 +3,12 @@ package ch.bernet.trainingplatform.security;
 import ch.bernet.trainingplatform.service.user.UserService;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class JwtUserIdConverter implements Converter<Jwt, AbstractAuthenticationToken> {
@@ -18,7 +22,12 @@ public class JwtUserIdConverter implements Converter<Jwt, AbstractAuthentication
     @Override
     public AbstractAuthenticationToken convert(Jwt jwt) {
         // TODO: Benutzer-ID aus dem subject lesen, mit userService.exists prüfen, als Principal setzen
-        return null;
+        Long id = Long.valueOf(jwt.getSubject());
+        if(!userService.exists(id)){
+            throw new BadCredentialsException("User not found");
+        }
+
+        return new UsernamePasswordAuthenticationToken(id, jwt, List.of());
     }
 
 }
