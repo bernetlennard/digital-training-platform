@@ -6,6 +6,7 @@ class TrainingplatformApplicationTests {
 
 	@Test
 	void placeholder() {
+		// test
 	}
 
 }
