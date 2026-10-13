@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ClaudeCodeEditorTabs">
-    <option name="activeSessionId" value="b2e2c530-d3f4-474a-85b2-5d21238a9cdb" />
+    <option name="activeSessionId" value="5d115069-95f9-4176-bdf3-7726a14919df" />
     <option name="openSessionIds">
       <list>
         <option value="3901154a-ec16-41ee-8c86-3f5b6593418e" />
         <option value="c69cf2d9-5943-4b2a-8d33-a950ab6f5623" />
-        <option value="b2e2c530-d3f4-474a-85b2-5d21238a9cdb" />
+        <option value="5d115069-95f9-4176-bdf3-7726a14919df" />
       </list>
     </option>
     <option name="sessionPaths">
       <map>
         <entry key="3901154a-ec16-41ee-8c86-3f5b6593418e" value="/sessions/new" />
-        <entry key="b2e2c530-d3f4-474a-85b2-5d21238a9cdb" value="/sessions/a0ae9553-f681-4caf-970b-3ce52db760aa" />
+        <entry key="5d115069-95f9-4176-bdf3-7726a14919df" value="/sessions/fd533af1-de43-4477-9ea7-960d615ee888" />
         <entry key="c69cf2d9-5943-4b2a-8d33-a950ab6f5623" value="/sessions/79277e60-61ba-4000-adae-2accc017312f" />
       </map>
     </option>
     <option name="sessionTitles">
       <map>
         <entry key="3901154a-ec16-41ee-8c86-3f5b6593418e" value="Claude Code" />
-        <entry key="b2e2c530-d3f4-474a-85b2-5d21238a9cdb" value="disable the dependencies that make maven test run" />
+        <entry key="5d115069-95f9-4176-bdf3-7726a14919df" value="kann ich den PasswordEncoder Autowired auf den Arg" />
         <entry key="c69cf2d9-5943-4b2a-8d33-a950ab6f5623" value="zu welchen zeitpunkt wird die logik in jwtuseridco" />
       </map>
     </option>
