@@ -32,7 +32,7 @@ public class GlobalExceptionHandler {
                 .stream().map(fe -> "Validation error: " + fe.getField() + ": " + fe.getDefaultMessage())
                 .toList();
         return ResponseEntity.status(status)
-                .body(new ErrorResponse(status.value(), ex.getMessage(), validationErrors));
+                .body(new ErrorResponse(status.value(), "Validation error", validationErrors));
     }
 
     @ExceptionHandler(Exception.class)

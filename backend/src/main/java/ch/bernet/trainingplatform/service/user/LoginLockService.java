@@ -50,10 +50,11 @@ public class LoginLockService {
         }
         LoginLock loginLock = optionalLoginLock.get();
         int failedAttempts = loginLock.getFailedAttempts() + 1;
+        loginLock.setFailedAttempts(failedAttempts);
         if (failedAttempts >= MAX_FAILED_ATTEMPTS) {
             loginLock.setLockedUntil(clock.instant().plus(LOCK_DURATION));
-            loginLockRepository.save(loginLock);
         }
+        loginLockRepository.save(loginLock);
     }
 
     @Transactional

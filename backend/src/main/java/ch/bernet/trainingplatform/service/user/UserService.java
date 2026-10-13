@@ -38,15 +38,15 @@ public class UserService {
     @Transactional
     public UserResponse register(RegisterRequest request) {
         String email = normalizeEmail(request.email());
+        if (appUserRepository.existsByEmail(email)) {
+            throw new ConflictException("Email address already in use.");
+        }
+
         String passwordHash = passwordEncoder.encode(request.password());
         AppUser appUser = AppUser.builder()
                 .email(email)
                 .passwordHash(passwordHash)
                 .build();
-
-        if (appUserRepository.existsByEmail(email)) {
-            throw new ConflictException("Email address already in use.");
-        }
 
         appUserRepository.save(appUser);
         return UserMapper.toResponse(appUser);
