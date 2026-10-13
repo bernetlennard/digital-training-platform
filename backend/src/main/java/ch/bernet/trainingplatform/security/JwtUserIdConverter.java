@@ -1,6 +1,7 @@
 package ch.bernet.trainingplatform.security;
 
 import ch.bernet.trainingplatform.common.AuthenticationFailedException;
+import ch.bernet.trainingplatform.common.ErrorMessages;
 import ch.bernet.trainingplatform.service.user.UserService;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
@@ -25,7 +26,7 @@ public class JwtUserIdConverter implements Converter<Jwt, AbstractAuthentication
         // TODO: Benutzer-ID aus dem subject lesen, mit userService.exists prüfen, als Principal setzen
         Long id = Long.valueOf(jwt.getSubject());
         if(!userService.exists(id)){
-            throw new BadCredentialsException("User not found");
+            throw new BadCredentialsException(ErrorMessages.USER_NOT_FOUND);
         }
 
         return new UsernamePasswordAuthenticationToken(id, jwt, List.of());
