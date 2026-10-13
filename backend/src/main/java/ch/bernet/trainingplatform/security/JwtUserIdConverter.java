@@ -1,5 +1,6 @@
 package ch.bernet.trainingplatform.security;
 
+import ch.bernet.trainingplatform.common.AuthenticationFailedException;
 import ch.bernet.trainingplatform.service.user.UserService;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;

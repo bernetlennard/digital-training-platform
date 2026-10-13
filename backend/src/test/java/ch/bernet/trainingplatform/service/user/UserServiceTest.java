@@ -187,6 +187,25 @@ class UserServiceTest {
     }
 
     @Test
+    @DisplayName("UT-05 E-Mail ändern mit korrektem Passwort speichert die neue E-Mail")
+    void changeEmail_correctPassword_savesNewEmail() {
+        // Arrange: jeder findById-Aufruf liefert eine frische Kopie, wie ein neuer DB-Zugriff
+        when(appUserRepository.findById(USER_A)).thenAnswer(invocation -> Optional.of(user()));
+        when(passwordEncoder.matches(PASSWORD, PASSWORD_HASH)).thenReturn(true);
+        when(appUserRepository.save(any(AppUser.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        // Act
+        UserResponse response = userService.changeEmail(USER_A, new ChangeEmailRequest("  Neu@Test.CH ", PASSWORD));
+
+        // Assert
+        ArgumentCaptor<AppUser> captor = ArgumentCaptor.forClass(AppUser.class);
+        verify(appUserRepository).save(captor.capture());
+        assertThat(captor.getValue().getEmail()).isEqualTo("neu@test.ch");
+        assertThat(response).isEqualTo(new UserResponse(USER_A, "neu@test.ch", "Anna", "Muster"));
+    }
+
+
+    @Test
     @DisplayName("UT-05 E-Mail ändern auf eine vergebene Adresse ergibt 409")
     void changeEmail_existingEmail_throwsConflict() {
         // Arrange
@@ -252,7 +271,7 @@ class UserServiceTest {
 
         verify(appUserRepository, never()).delete(any());
         verify(appUserRepository, never()).deleteById(any());
-        verifyNoInteractions(loginLockService);
+        verify(loginLockService).registerFailure(EMAIL);
     }
 
     private static AppUser user() {
@@ -264,5 +283,4 @@ class UserServiceTest {
                 .lastName("Muster")
                 .build();
     }
-
 }

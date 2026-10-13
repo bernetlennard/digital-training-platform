@@ -2,6 +2,7 @@ package ch.bernet.trainingplatform.service.user;
 
 import ch.bernet.trainingplatform.persistence.user.AppUser;
 import ch.bernet.trainingplatform.service.user.dto.UserResponse;
+import org.springframework.stereotype.Component;
 
 public final class UserMapper {
 
@@ -9,8 +10,7 @@ public final class UserMapper {
     }
 
     public static UserResponse toResponse(AppUser user) {
-        // TODO: AppUser auf UserResponse abbilden
-        return null;
+        return new UserResponse(user.getId(), user.getEmail(), user.getFirstName(), user.getLastName());
     }
 
 }
