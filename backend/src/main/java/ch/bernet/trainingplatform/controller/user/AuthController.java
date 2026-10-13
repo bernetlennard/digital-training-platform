@@ -44,7 +44,7 @@ public class AuthController {
         UserResponse userResponse = userService.authenticate(request);
         ResponseCookie cookie = jwtCookieService.createAuthCookie(userResponse.id());
 
-        return ResponseEntity.status(HttpStatus.CREATED)
+        return ResponseEntity.status(HttpStatus.OK)
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(userResponse);
     }

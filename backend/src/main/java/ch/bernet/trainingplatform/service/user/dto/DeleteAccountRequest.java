@@ -1,5 +1,7 @@
 package ch.bernet.trainingplatform.service.user.dto;
 
-public record DeleteAccountRequest(String password) {
-    // TODO: Validierung ergänzen (@NotBlank)
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+
+public record DeleteAccountRequest(@NotBlank @Size(min = 15, max = 64) String password) {
 }

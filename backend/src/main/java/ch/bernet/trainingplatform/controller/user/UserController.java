@@ -8,6 +8,9 @@ import ch.bernet.trainingplatform.service.user.dto.DeleteAccountRequest;
 import ch.bernet.trainingplatform.service.user.dto.UpdateProfileRequest;
 import ch.bernet.trainingplatform.service.user.dto.UserResponse;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -35,33 +38,46 @@ public class UserController {
     }
 
     @PutMapping
-    public UserResponse updateProfile(@AuthenticationPrincipal Long userId,
+    public ResponseEntity<UserResponse> updateProfile(@AuthenticationPrincipal Long userId,
                                       @Valid @RequestBody UpdateProfileRequest request) {
         // TODO: userService.updateProfile aufrufen
-
-
-        return null;
+        UserResponse userResponse = userService.updateProfile(userId, request);
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(userResponse);
     }
 
     @PutMapping("/email")
-    public UserResponse changeEmail(@AuthenticationPrincipal Long userId,
+    public ResponseEntity<UserResponse> changeEmail(@AuthenticationPrincipal Long userId,
                                     @Valid @RequestBody ChangeEmailRequest request) {
         // TODO: userService.changeEmail aufrufen
-        return null;
+        UserResponse userResponse = userService.changeEmail(userId, request);
+        ResponseCookie cookie = jwtCookieService.createAuthCookie(userResponse.id());
+        return ResponseEntity.status(HttpStatus.OK)
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(userResponse);
     }
 
     @PutMapping("/password")
     public ResponseEntity<Void> changePassword(@AuthenticationPrincipal Long userId,
                                                @Valid @RequestBody ChangePasswordRequest request) {
         // TODO: userService.changePassword, 204 (klären, ob ein neues Cookie gesetzt werden soll)
-        return null;
+        userService.changePassword(userId, request);
+        ResponseCookie cookie = jwtCookieService.createAuthCookie(userId);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT)
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(null);
     }
 
     @DeleteMapping
     public ResponseEntity<Void> deleteAccount(@AuthenticationPrincipal Long userId,
                                               @Valid @RequestBody DeleteAccountRequest request) {
         // TODO: userService.deleteAccount, 204 mit Logout-Cookie (Set-Cookie)
-        return null;
+        userService.deleteAccount(userId, request);
+        ResponseCookie cookie = jwtCookieService.createLogoutCookie();
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT)
+                .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                .body(null);
     }
 
 }

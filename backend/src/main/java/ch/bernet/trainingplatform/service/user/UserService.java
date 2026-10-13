@@ -1,6 +1,9 @@
 package ch.bernet.trainingplatform.service.user;
 
+import ch.bernet.trainingplatform.common.AccountLockedException;
 import ch.bernet.trainingplatform.common.AuthenticationFailedException;
+import ch.bernet.trainingplatform.common.ConflictException;
+import ch.bernet.trainingplatform.common.NotFoundException;
 import ch.bernet.trainingplatform.persistence.user.AppUser;
 import ch.bernet.trainingplatform.persistence.user.AppUserRepository;
 import ch.bernet.trainingplatform.service.user.dto.ChangeEmailRequest;
@@ -11,8 +14,11 @@ import ch.bernet.trainingplatform.service.user.dto.RegisterRequest;
 import ch.bernet.trainingplatform.service.user.dto.UpdateProfileRequest;
 import ch.bernet.trainingplatform.service.user.dto.UserResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -32,58 +38,90 @@ public class UserService {
     @Transactional
     public UserResponse register(RegisterRequest request) {
         String email = normalizeEmail(request.email());
+        if (appUserRepository.existsByEmail(email)) {
+            throw new ConflictException("Email address already in use.");
+        }
+
         String passwordHash = passwordEncoder.encode(request.password());
         AppUser appUser = AppUser.builder()
                 .email(email)
                 .passwordHash(passwordHash)
                 .build();
 
-        AppUser savedUser = appUserRepository.save(appUser);
-        return new UserResponse(savedUser.getId(), savedUser.getEmail(), savedUser.getFirstName(), savedUser.getLastName());
+        appUserRepository.save(appUser);
+        return UserMapper.toResponse(appUser);
     }
 
     @Transactional
     public UserResponse authenticate(LoginRequest request) {
-        // TODO: Sperre prüfen -> AccountLockedException (#NFA-1.3), Passwort prüfen -> AuthenticationFailedException (#NFA-1.4)
-        // TODO: bei Fehler loginLockService.registerFailure, bei Erfolg loginLockService.clear
+        String email = normalizeEmail(request.email());
 
+        if (loginLockService.isLocked(email)) {
+            throw new AccountLockedException("Account locked.");
+        }
+
+        Optional<AppUser> optionalAppUser = appUserRepository.findByEmail(email);
+        if (optionalAppUser.isEmpty()) {
+            loginLockService.registerFailure(email);
+            throw new AuthenticationFailedException("Invalid Authentication.");
+        }
+
+        AppUser appUser = optionalAppUser.get();
         String password = request.password();
-        AppUser appUser = appUserRepository.findByEmail(normalizeEmail(request.email())).orElseThrow();
         verifyPassword(appUser, password);
 
-        return new UserResponse(appUser.getId(), appUser.getEmail(), appUser.getFirstName(), appUser.getLastName());
+        loginLockService.clear(email);
+
+        return UserMapper.toResponse(appUser);
     }
 
-    // TODO: an Diagramm angleichen (findUser verwenden, NotFoundException statt null, UserMapper.toResponse)
     @Transactional(readOnly = true)
     public UserResponse getProfile(Long id) {
-        AppUser appUser = appUserRepository.findById(id).orElse(null);
-        if (appUser == null) {
-            return null;
-        }
-        return new UserResponse(appUser.getId(), appUser.getEmail(), appUser.getFirstName(), appUser.getLastName());
+        AppUser appUser = returnAppUserIfExists(id);
+        return UserMapper.toResponse(appUser);
     }
 
     @Transactional
     public UserResponse updateProfile(Long userId, UpdateProfileRequest request) {
-        // TODO: Vor- und Nachname setzen
-        return null;
+        AppUser appUser = returnAppUserIfExists(userId);
+        appUser.setFirstName(request.firstName());
+        appUser.setLastName(request.lastName());
+
+        appUserRepository.save(appUser);
+        return UserMapper.toResponse(appUser);
     }
 
     @Transactional
     public UserResponse changeEmail(Long userId, ChangeEmailRequest request) {
-        // TODO: Passwort bestätigen, neue E-Mail normalisieren, Duplikat -> ConflictException
-        return null;
+        AppUser appUser = returnAppUserIfExists(userId);
+        verifyPassword(appUser, request.password());
+
+        String normalizedMail = normalizeEmail(request.newEmail());
+
+        if (appUserRepository.existsByEmail(normalizedMail)) {
+            throw new ConflictException("Email address already in use.");
+        }
+
+        appUser.setEmail(normalizedMail);
+        AppUser savedUser = appUserRepository.save(appUser);
+        return UserMapper.toResponse(savedUser);
     }
 
     @Transactional
     public void changePassword(Long userId, ChangePasswordRequest request) {
-        // TODO: aktuelles Passwort bestätigen, neues Passwort hashen und speichern
+        AppUser appUser = returnAppUserIfExists(userId);
+        verifyPassword(appUser, request.currentPassword());
+        String newPasswordHash = passwordEncoder.encode(request.newPassword());
+        appUser.setPasswordHash(newPasswordHash);
+        appUserRepository.save(appUser);
     }
 
     @Transactional
     public void deleteAccount(Long userId, DeleteAccountRequest request) {
-        // TODO: Passwort bestätigen, Benutzer löschen (Daten werden per ON DELETE CASCADE entfernt)
+        AppUser appUser = returnAppUserIfExists(userId);
+        verifyPassword(appUser, request.password());
+        appUserRepository.delete(appUser);
+        loginLockService.clear(appUser.getEmail());
     }
 
     @Transactional(readOnly = true)
@@ -91,20 +129,22 @@ public class UserService {
         return appUserRepository.existsById(userId);
     }
 
-    private AppUser findUser(Long userId) {
-        // TODO: Benutzer laden, sonst NotFoundException
-        return null;
+    private AppUser returnAppUserIfExists(Long userId) {
+        Optional<AppUser> optionalAppUser = appUserRepository.findById(userId);
+        if (optionalAppUser.isEmpty()) {
+            throw new NotFoundException("User not found.");
+        }
+        return optionalAppUser.get();
     }
 
     private void verifyPassword(AppUser user, String rawPassword) {
-        if(!passwordEncoder.matches(rawPassword, user.getPasswordHash())){
-            throw new AuthenticationFailedException("Invalid password.");
+        if (!passwordEncoder.matches(rawPassword, user.getPasswordHash())) {
+            loginLockService.registerFailure(user.getEmail());
+            throw new AuthenticationFailedException("Invalid Authentication.");
         }
-        // TODO: passwordEncoder.matches, sonst AuthenticationFailedException
     }
 
     private String normalizeEmail(String email) {
-        // TODO: trimmen und in Kleinbuchstaben umwandeln (ck_app_user_email)
         return email.trim().toLowerCase();
     }
 

@@ -1,0 +1,43 @@
+### Registrieren (201 + Auth-Cookie)
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+> extract-token.js
+
+### Registrieren mit ungültigen Daten (400)
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "keine-email",
+  "password": "kurz"
+}
+
+### Login (200 + Auth-Cookie)
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+> extract-token.js
+
+### Login mit falschem Passwort (401)
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "FalschesPasswort999!"
+}
+
+### Logout (204 + Logout-Cookie)
+POST {{baseUrl}}/api/auth/logout
+Cookie: access_token={{token}}

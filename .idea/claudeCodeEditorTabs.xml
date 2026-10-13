@@ -1,23 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ClaudeCodeEditorTabs">
-    <option name="activeSessionId" value="c69cf2d9-5943-4b2a-8d33-a950ab6f5623" />
+    <option name="activeSessionId" value="d66851d8-3b2d-473b-8350-de7f173c7254" />
     <option name="openSessionIds">
       <list>
         <option value="3901154a-ec16-41ee-8c86-3f5b6593418e" />
         <option value="c69cf2d9-5943-4b2a-8d33-a950ab6f5623" />
+        <option value="b3c8b30c-b4d6-4861-b4c6-e53d22382a5a" />
+        <option value="983cf3e5-3a81-44ef-9041-065c78780442" />
+        <option value="d66851d8-3b2d-473b-8350-de7f173c7254" />
       </list>
     </option>
     <option name="sessionPaths">
       <map>
         <entry key="3901154a-ec16-41ee-8c86-3f5b6593418e" value="/sessions/new" />
+        <entry key="983cf3e5-3a81-44ef-9041-065c78780442" value="/sessions/13edb94a-6e65-4339-b460-a319513962b2" />
+        <entry key="b3c8b30c-b4d6-4861-b4c6-e53d22382a5a" value="/sessions/80e8ecd6-1886-46d7-acd1-fe4488c1140d" />
         <entry key="c69cf2d9-5943-4b2a-8d33-a950ab6f5623" value="/sessions/79277e60-61ba-4000-adae-2accc017312f" />
+        <entry key="d66851d8-3b2d-473b-8350-de7f173c7254" value="/sessions/875459df-caec-4efa-85d5-35b2a1a1bf39" />
       </map>
     </option>
     <option name="sessionTitles">
       <map>
         <entry key="3901154a-ec16-41ee-8c86-3f5b6593418e" value="Claude Code" />
+        <entry key="983cf3e5-3a81-44ef-9041-065c78780442" value="wo ist der fehler bei @DisplayName(&quot;UT-05 Prof" />
+        <entry key="b3c8b30c-b4d6-4861-b4c6-e53d22382a5a" value="wie darf der test @DisplayName(&quot;UT-05 E-Mail ä" />
         <entry key="c69cf2d9-5943-4b2a-8d33-a950ab6f5623" value="zu welchen zeitpunkt wird die logik in jwtuseridco" />
+        <entry key="d66851d8-3b2d-473b-8350-de7f173c7254" value="erstelle für alle endpunkte in user und auth jewei" />
       </map>
     </option>
   </component>

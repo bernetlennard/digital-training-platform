@@ -1,5 +1,7 @@
 package ch.bernet.trainingplatform.service.user.dto;
 
-public record UpdateProfileRequest(String firstName, String lastName) {
-    // TODO: Validierung ergänzen (@Size(max = 100))
+import jakarta.validation.constraints.Size;
+
+public record UpdateProfileRequest(@Size(max = 100) String firstName,
+                                   @Size(max = 100) String lastName) {
 }
