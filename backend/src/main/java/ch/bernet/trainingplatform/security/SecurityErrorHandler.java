@@ -1,5 +1,6 @@
 package ch.bernet.trainingplatform.security;
 
+import ch.bernet.trainingplatform.common.ErrorMessages;
 import ch.bernet.trainingplatform.common.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -33,7 +34,7 @@ public class SecurityErrorHandler implements AuthenticationEntryPoint, AccessDen
                          AuthenticationException ex) throws IOException {
         // TODO: Zugriff ohne Token-Inhalt loggen (#NFA-1.7), dann writeError mit 401
         log.warn("Unauthorized access attempt: {} {}", request.getMethod(), request.getRequestURI());
-        writeError(response, HttpStatus.UNAUTHORIZED, "Unautorisierter Zugriff");
+        writeError(response, HttpStatus.UNAUTHORIZED, ErrorMessages.UNAUTHORIZED);
     }
 
     @Override
@@ -41,7 +42,7 @@ public class SecurityErrorHandler implements AuthenticationEntryPoint, AccessDen
                        AccessDeniedException ex) throws IOException {
         // TODO: Zugriff ohne Token-Inhalt loggen (#NFA-1.7), dann writeError mit 403
         log.warn("Access denied: {} {}", request.getMethod(), request.getRequestURI());
-        writeError(response, HttpStatus.FORBIDDEN, "Zugriff verweigert");
+        writeError(response, HttpStatus.FORBIDDEN, ErrorMessages.ACCESS_DENIED);
     }
 
     private void writeError(HttpServletResponse response, HttpStatus status, String message) throws IOException {

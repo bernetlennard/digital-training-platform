@@ -3,6 +3,7 @@ package ch.bernet.trainingplatform.service.user;
 import ch.bernet.trainingplatform.persistence.user.LoginLock;
 import ch.bernet.trainingplatform.persistence.user.LoginLockRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Clock;
@@ -40,7 +41,7 @@ public class LoginLockService {
         return false;
     }
 
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void registerFailure(String email) {
         // TODO: Fehlversuche hochzählen, ab MAX_FAILED_ATTEMPTS für LOCK_DURATION sperren (#NFA-1.3)
         Optional<LoginLock> optionalLoginLock = loginLockRepository.findByEmail(email);

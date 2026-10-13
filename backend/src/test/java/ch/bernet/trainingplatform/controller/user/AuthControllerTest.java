@@ -84,8 +84,8 @@ class AuthControllerTest {
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.message").isNotEmpty())
                 .andExpect(jsonPath("$.details", hasSize(2)))
-                .andExpect(jsonPath("$.details", hasItem(startsWith("Validation error: email:"))))
-                .andExpect(jsonPath("$.details", hasItem(startsWith("Validation error: password:"))))
+                .andExpect(jsonPath("$.details", hasItem(startsWith("email:"))))
+                .andExpect(jsonPath("$.details", hasItem(startsWith("password:"))))
                 .andExpect(content().string(not(containsString("zu-kurz"))))
                 .andExpect(content().string(not(containsString("keine-email"))));
 

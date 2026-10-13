@@ -1,19 +1,22 @@
 package ch.bernet.trainingplatform.common;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springdoc.api.ErrorMessage;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.web.server.authorization.HttpStatusServerAccessDeniedHandler;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import java.util.List;
 
 @RestControllerAdvice
-public class GlobalExceptionHandler {
+public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
@@ -24,24 +27,39 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(status.value(), ex.getMessage(), List.of()));
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
-        // TODO: 400 mit Feldname + Meldung je Fehler in details, nie den abgelehnten Wert (#NFA-1.1)
-        HttpStatus status = HttpStatus.BAD_REQUEST;
+    @Override
+    protected @Nullable ResponseEntity<Object> handleMethodArgumentNotValid(MethodArgumentNotValidException ex,
+                                                                            HttpHeaders headers,
+                                                                            HttpStatusCode status,
+                                                                            WebRequest request) {
         List<String> validationErrors = ex.getBindingResult().getFieldErrors()
-                .stream().map(fe -> "Validation error: " + fe.getField() + ": " + fe.getDefaultMessage())
+                .stream().map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
                 .toList();
-        return ResponseEntity.status(status)
-                .body(new ErrorResponse(status.value(), "Validation error", validationErrors));
+        ErrorResponse body = new ErrorResponse(status.value(), ErrorMessages.VALIDATION_ERROR, validationErrors);
+        return super.handleExceptionInternal(ex, body, headers, status, request);
+    }
+
+    @Override
+    protected @Nullable ResponseEntity<Object> handleExceptionInternal(Exception ex,
+                                                                       @Nullable Object body,
+                                                                       HttpHeaders headers,
+                                                                       HttpStatusCode statusCode,
+                                                                       WebRequest request) {
+        if (!(body instanceof ErrorResponse)) {
+            HttpStatus status = HttpStatus.resolve(statusCode.value());
+            String message = status != null ? status.getReasonPhrase() : "Error";
+            body = new ErrorResponse(statusCode.value(), message, List.of());
+        }
+        return super.handleExceptionInternal(ex, body, headers, statusCode, request);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnexpected(Exception ex) {
-        // TODO: Fehler loggen (L11), 500 ohne Stacktrace/interne Details zurückgeben (L10)
-        String errorMessage = "Unexepcted Internal Server Error";
+        // Fehler loggen (L11), 500 ohne Stacktrace/interne Details zurückgeben (L10)
+        String errorMessage = ErrorMessages.UNEXPECTED_ERROR;
         log.error(errorMessage, ex);
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
-        return ResponseEntity.status(status.value())
+        return ResponseEntity.status(status)
                 .body(new ErrorResponse(status.value(), errorMessage, List.of()));
     }
 

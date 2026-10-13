@@ -3,6 +3,7 @@ package ch.bernet.trainingplatform.service.user;
 import ch.bernet.trainingplatform.common.AccountLockedException;
 import ch.bernet.trainingplatform.common.AuthenticationFailedException;
 import ch.bernet.trainingplatform.common.ConflictException;
+import ch.bernet.trainingplatform.common.ErrorMessages;
 import ch.bernet.trainingplatform.common.NotFoundException;
 import ch.bernet.trainingplatform.persistence.user.AppUser;
 import ch.bernet.trainingplatform.persistence.user.AppUserRepository;
@@ -18,6 +19,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Locale;
 import java.util.Optional;
 
 @Service
@@ -39,7 +41,7 @@ public class UserService {
     public UserResponse register(RegisterRequest request) {
         String email = normalizeEmail(request.email());
         if (appUserRepository.existsByEmail(email)) {
-            throw new ConflictException("Email address already in use.");
+            throw new ConflictException(ErrorMessages.EMAIL_ALREADY_IN_USE);
         }
 
         String passwordHash = passwordEncoder.encode(request.password());
@@ -57,13 +59,13 @@ public class UserService {
         String email = normalizeEmail(request.email());
 
         if (loginLockService.isLocked(email)) {
-            throw new AccountLockedException("Account locked.");
+            throw new AccountLockedException(ErrorMessages.ACCOUNT_LOCKED);
         }
 
         Optional<AppUser> optionalAppUser = appUserRepository.findByEmail(email);
         if (optionalAppUser.isEmpty()) {
             loginLockService.registerFailure(email);
-            throw new AuthenticationFailedException("Invalid Authentication.");
+            throw new AuthenticationFailedException(ErrorMessages.INVALID_AUTHENTICATION);
         }
 
         AppUser appUser = optionalAppUser.get();
@@ -99,7 +101,7 @@ public class UserService {
         String normalizedMail = normalizeEmail(request.newEmail());
 
         if (appUserRepository.existsByEmail(normalizedMail)) {
-            throw new ConflictException("Email address already in use.");
+            throw new ConflictException(ErrorMessages.EMAIL_ALREADY_IN_USE);
         }
 
         appUser.setEmail(normalizedMail);
@@ -132,7 +134,7 @@ public class UserService {
     private AppUser returnAppUserIfExists(Long userId) {
         Optional<AppUser> optionalAppUser = appUserRepository.findById(userId);
         if (optionalAppUser.isEmpty()) {
-            throw new NotFoundException("User not found.");
+            throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
         }
         return optionalAppUser.get();
     }
@@ -140,12 +142,12 @@ public class UserService {
     private void verifyPassword(AppUser user, String rawPassword) {
         if (!passwordEncoder.matches(rawPassword, user.getPasswordHash())) {
             loginLockService.registerFailure(user.getEmail());
-            throw new AuthenticationFailedException("Invalid Authentication.");
+            throw new AuthenticationFailedException(ErrorMessages.INVALID_AUTHENTICATION);
         }
     }
 
     private String normalizeEmail(String email) {
-        return email.trim().toLowerCase();
+        return email.trim().toLowerCase(Locale.ROOT);
     }
 
 }
