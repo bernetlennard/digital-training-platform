@@ -1,6 +1,6 @@
 # Produktiver Stack auf einem Host: Caddy, Frontend, Backend und PostgreSQL (#NFA-7.18).
-# Werte und Secrets kommen aus deploy/.env (Vorlage: .env.example), nie aus dem Repository (#NFA-7.20).
-# Die Images baut nur die Pipeline (#NFA-7.22), hier werden sie nur gezogen.
+# Werte und Secrets (DOMAIN, DB_PASSWORD, JWT_SECRET) kommen aus deploy/.env, nie aus dem Repository (#NFA-7.20).
+# Frontend und Backend kommen als fertige Images von Docker Hub, hier wird nichts gebaut.
 name: trainingplatform
 
 services:
@@ -22,12 +22,12 @@ services:
     depends_on: [frontend, backend]
 
   frontend:
-    image: ghcr.io/bernetlennard/trainingplatform-frontend:${IMAGE_TAG:?IMAGE_TAG fehlt in .env}
+    image: bernetlennard/dtp-frontend:latest
     restart: unless-stopped
     networks: [web]
 
   backend:
-    image: ghcr.io/bernetlennard/trainingplatform-backend:${IMAGE_TAG:?IMAGE_TAG fehlt in .env}
+    image: bernetlennard/dtp-backend:latest
     restart: unless-stopped
     environment:
       DB_URL: jdbc:postgresql://db:5432/digital_training_platform
