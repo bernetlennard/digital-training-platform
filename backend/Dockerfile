@@ -36,6 +36,11 @@ ENV JAVA_HOME=/opt/java
 ENV PATH="${JAVA_HOME}/bin:${PATH}"
 COPY --from=build /opt/jre $JAVA_HOME
 
+# Swagger UI und OpenAPI-Spezifikation sind im Container aus (#NFA-7.16), lokal bleiben sie an.
+# Secrets (DB_PASSWORD, JWT_SECRET) kommen erst beim Start als Umgebungsvariablen, nie ins Image.
+ENV SPRINGDOC_APIDOCS_ENABLED=false \
+    SPRINGDOC_SWAGGERUI_ENABLED=false
+
 # Ohne Root-Rechte ausführen
 RUN addgroup -S app \
  && adduser -S -D -H -G app -s /sbin/nologin app
