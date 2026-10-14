@@ -1,0 +1,28 @@
+# Build-Kontext klein halten: ins Image gehören nur package*.json, Konfiguration, public und src
+
+# Abhängigkeiten installiert npm ci im Image neu
+node_modules
+
+# Build
+dist
+coverage
+
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+
+# Umgebungsvariablen
+.env
+.env.*
+*.local
+
+# Dokumentation
+*.md
+
+# Docker
+Dockerfile*
+.dockerignore
