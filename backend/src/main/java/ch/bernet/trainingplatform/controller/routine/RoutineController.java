@@ -6,15 +6,7 @@ import ch.bernet.trainingplatform.service.routine.dto.RoutineResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -30,36 +22,37 @@ public class RoutineController {
 
     @GetMapping
     public List<RoutineResponse> getRoutines(@AuthenticationPrincipal Long userId) {
-        // TODO: routineService.getRoutines aufrufen
-        return null;
+        // routineService.getRoutines aufrufen
+        return routineService.getRoutines(userId);
     }
 
     @GetMapping("/{routineId}")
     public RoutineResponse getRoutine(@AuthenticationPrincipal Long userId, @PathVariable Long routineId) {
-        // TODO: routineService.getRoutine aufrufen
-        return null;
+        // routineService.getRoutine aufrufen
+        return routineService.getRoutine(userId, routineId);
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public RoutineResponse createRoutine(@AuthenticationPrincipal Long userId,
                                          @Valid @RequestBody RoutineRequest request) {
-        // TODO: routineService.createRoutine aufrufen
-        return null;
+        // routineService.createRoutine aufrufen
+        return routineService.createRoutine(userId, request);
     }
 
     @PutMapping("/{routineId}")
     public RoutineResponse updateRoutine(@AuthenticationPrincipal Long userId,
                                          @PathVariable Long routineId,
                                          @Valid @RequestBody RoutineRequest request) {
-        // TODO: routineService.updateRoutine aufrufen
-        return null;
+        // routineService.updateRoutine aufrufen
+        return routineService.updateRoutine(userId, routineId, request);
     }
 
     @DeleteMapping("/{routineId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteRoutine(@AuthenticationPrincipal Long userId, @PathVariable Long routineId) {
-        // TODO: routineService.deleteRoutine aufrufen
+        // routineService.deleteRoutine aufrufen
+        routineService.deleteRoutine(userId, routineId);
     }
 
 }

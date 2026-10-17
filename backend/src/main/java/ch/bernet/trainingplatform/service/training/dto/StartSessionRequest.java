@@ -1,5 +1,6 @@
 package ch.bernet.trainingplatform.service.training.dto;
 
-public record StartSessionRequest(Long routineId) {
-    // TODO: Validierung ergänzen (@NotNull)
+import jakarta.validation.constraints.NotNull;
+
+public record StartSessionRequest(@NotNull Long routineId) {
 }

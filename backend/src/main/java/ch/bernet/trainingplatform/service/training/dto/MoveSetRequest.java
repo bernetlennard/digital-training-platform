@@ -1,5 +1,6 @@
 package ch.bernet.trainingplatform.service.training.dto;
 
-public record MoveSetRequest(int newSetNumber) {
-    // TODO: Validierung ergänzen (@Min(1))
+import jakarta.validation.constraints.Min;
+
+public record MoveSetRequest(@Min(1) int newSetNumber) {
 }

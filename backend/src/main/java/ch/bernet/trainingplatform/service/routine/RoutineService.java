@@ -1,15 +1,20 @@
 package ch.bernet.trainingplatform.service.routine;
 
+import ch.bernet.trainingplatform.common.BusinessRuleException;
+import ch.bernet.trainingplatform.common.ConflictException;
+import ch.bernet.trainingplatform.common.NotFoundException;
 import ch.bernet.trainingplatform.persistence.routine.Routine;
+import ch.bernet.trainingplatform.persistence.routine.RoutineExercise;
 import ch.bernet.trainingplatform.persistence.routine.RoutineRepository;
 import ch.bernet.trainingplatform.service.exercise.ExerciseService;
+import ch.bernet.trainingplatform.service.exercise.dto.ExerciseResponse;
 import ch.bernet.trainingplatform.service.routine.dto.RoutineRequest;
 import ch.bernet.trainingplatform.service.routine.dto.RoutineResponse;
 import ch.bernet.trainingplatform.service.routine.dto.RoutineSummary;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.*;
 
 @Service
 public class RoutineService {
@@ -28,50 +33,91 @@ public class RoutineService {
 
     @Transactional(readOnly = true)
     public List<RoutineResponse> getRoutines(Long userId) {
-        // TODO: aktive Routinen laden, Übungen über exerciseService.findByIds auflösen, mappen
-        return null;
+        // aktive Routinen laden, Übungen über exerciseService.findByIds auflösen, mappen
+        List<Routine> routineList = routineRepository.findActiveByUserId(userId);
+        List<RoutineResponse> responseList = new ArrayList<>();
+        routineList.forEach(routine -> {
+            Map<Long, ExerciseResponse> exercisesByIds = getExercisesByIds(userId, routine);
+            responseList.add(RoutineMapper.toResponse(routine, exercisesByIds));
+        });
+        return responseList;
     }
 
     @Transactional(readOnly = true)
     public RoutineResponse getRoutine(Long userId, Long routineId) {
-        // TODO: findActiveRoutine, Übungen auflösen, mappen
-        return null;
+        // findActiveRoutine, Übungen auflösen, mappen
+        Routine routine = findActiveRoutine(userId, routineId);
+        return RoutineMapper.toResponse(routine, getExercisesByIds(userId, routine));
     }
 
     @Transactional
     public RoutineResponse createRoutine(Long userId, RoutineRequest request) {
-        // TODO: assertNameUnique, assertValidExercises, Routine anlegen, replaceExercises, speichern
-        return null;
+        // assertNameUnique, assertValidExercises, Routine anlegen, replaceExercises, speichern
+        assertNameUnique(userId, request.name(), null);
+        assertValidExercises(userId, request.exerciseIds());
+
+        Routine routine = new Routine(userId, request.name());
+        routine.replaceExercises(request.exerciseIds());
+        routineRepository.save(routine);
+        return RoutineMapper.toResponse(routine, getExercisesByIds(userId, routine));
     }
 
     @Transactional
     public RoutineResponse updateRoutine(Long userId, Long routineId, RoutineRequest request) {
-        // TODO: findActiveRoutine, assertNameUnique (eigene ID ausnehmen), assertValidExercises, Name und Übungen ersetzen
-        return null;
+        // findActiveRoutine, assertNameUnique (eigene ID ausnehmen), assertValidExercises, Name und Übungen ersetzen
+        Routine routine = findActiveRoutine(userId, routineId);
+        assertNameUnique(userId, request.name(), routineId);
+        assertValidExercises(userId, request.exerciseIds());
+        routine.setName(request.name());
+        routine.replaceExercises(request.exerciseIds());
+        routineRepository.save(routine);
+        return RoutineMapper.toResponse(routine, getExercisesByIds(userId, routine));
     }
 
     @Transactional
     public void deleteRoutine(Long userId, Long routineId) {
-        // TODO: Soft Delete, danach routineDeletionListener.onRoutineDeleted
+        // Soft Delete, danach routineDeletionListener.onRoutineDeleted
+        Routine routine = findActiveRoutine(userId, routineId);
+        routine.setDeleted(true);
+        routineRepository.save(routine);
+        routineDeletionListener.onRoutineDeleted(userId, routineId);
     }
 
     @Transactional(readOnly = true)
     public List<RoutineSummary> findAllSummaries(Long userId) {
-        // TODO: alle Routinen (auch gelöschte) als RoutineSummary
-        return null;
+        // alle Routinen (auch gelöschte) als RoutineSummary
+        List<Routine> allByUserId = routineRepository.findAllByUserId(userId);
+        return allByUserId.stream().map(RoutineMapper::toSummary).toList();
     }
 
     private Routine findActiveRoutine(Long userId, Long routineId) {
-        // TODO: aktive Routine laden, sonst NotFoundException
-        return null;
+        // aktive Routine laden, sonst NotFoundException
+        return routineRepository.findActiveByIdAndUserId(routineId, userId)
+                .orElseThrow(() -> new NotFoundException("Routine not found"));
+    }
+
+    private Map<Long, ExerciseResponse> getExercisesByIds(Long userId, Routine routine) {
+        return exerciseService.findByIds(userId, routine.getExercises().stream().map(RoutineExercise::getExerciseId).toList());
     }
 
     private void assertNameUnique(Long userId, String name, Long routineId) {
-        // TODO: gleicher Name bei anderer aktiver Routine -> ConflictException (routineId darf null sein)
+        // gleicher Name bei anderer aktiver Routine -> ConflictException (routineId darf null sein)
+        routineRepository.findActiveByUserIdAndName(userId, name).ifPresent(e -> {
+            if (e.getId().equals(routineId)) {
+                return;
+            }
+            throw new ConflictException("Name already in use");
+        });
+
     }
 
     private void assertValidExercises(Long userId, List<Long> exerciseIds) {
-        // TODO: keine Duplikate, exerciseService.assertActiveExercises
+        // keine Duplikate, exerciseService.assertActiveExercises
+        Set<Long> exerciseIdsSet = new HashSet<>(exerciseIds);
+        if (exerciseIds.size() != exerciseIdsSet.size()) {
+            throw new BusinessRuleException("Duplicate Exercise IDs");
+        }
+        exerciseService.assertActiveExercises(userId, exerciseIds);
     }
 
 }

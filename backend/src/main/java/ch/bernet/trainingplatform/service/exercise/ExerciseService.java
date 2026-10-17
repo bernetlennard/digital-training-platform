@@ -44,12 +44,7 @@ public class ExerciseService {
         assertNameUnique(userId, request.name(), null);
 
         MuscleGroup muscleGroup = MuscleGroup.fromId(request.muscleGroupId());
-        Exercise exercise = Exercise.builder()
-                .userId(userId)
-                .name(request.name())
-                .muscleGroup(muscleGroup)
-                .description(request.description())
-                .deleted(false).build();
+        Exercise exercise = new Exercise(userId, request.name(), muscleGroup, request.description());
 
         exerciseRepository.save(exercise);
         return ExerciseMapper.toResponse(exercise);
