@@ -1,6 +1,6 @@
 package ch.bernet.trainingplatform.security;
 
-import ch.bernet.trainingplatform.common.ErrorMessages;
+import ch.bernet.trainingplatform.common.exception.ErrorMessages;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import org.springframework.boot.context.properties.ConfigurationProperties;

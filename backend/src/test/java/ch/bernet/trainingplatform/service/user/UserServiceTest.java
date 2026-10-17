@@ -1,8 +1,8 @@
 package ch.bernet.trainingplatform.service.user;
 
-import ch.bernet.trainingplatform.common.AccountLockedException;
-import ch.bernet.trainingplatform.common.AuthenticationFailedException;
-import ch.bernet.trainingplatform.common.ConflictException;
+import ch.bernet.trainingplatform.common.exception.AccountLockedException;
+import ch.bernet.trainingplatform.common.exception.AuthenticationFailedException;
+import ch.bernet.trainingplatform.common.exception.ConflictException;
 import ch.bernet.trainingplatform.persistence.user.AppUser;
 import ch.bernet.trainingplatform.persistence.user.AppUserRepository;
 import ch.bernet.trainingplatform.service.user.dto.ChangeEmailRequest;

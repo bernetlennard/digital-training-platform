@@ -20,6 +20,7 @@ Diese API ermöglicht das Erstellen, Löschen und Bearbeiten von Übungen, Routi
    5. [Transaction Handling](#5-transaction-handling)
    6. [Exception Handling](#6-exception-handling)
    7. [Swagger](#7-swagger)
+   8. [API-Versionierung](#8-api-versionierung)
 
 ## 1. Voraussetzungen
 
@@ -211,4 +212,17 @@ Swagger ist nur lokal aktiv, im Docker-Container ist es ausgeschaltet (siehe Doc
 Die Swagger-Pfade sind in Spring Security freigegeben. Im Container liefern sie trotzdem 404, da Swagger dort ausgeschaltet ist.
 
 Da das JWT nur aus dem Cookie gelesen wird, nützt der «Authorize»-Button von Swagger nichts.
-Stattdessen in Swagger zuerst `POST /api/auth/login` ausführen. Danach schickt der Browser das Cookie bei jedem Request automatisch mit.
+Stattdessen in Swagger zuerst `POST /api/v1/auth/login` ausführen. Danach schickt der Browser das Cookie bei jedem Request automatisch mit.
+
+### 8. API-Versionierung
+Alle Endpunkte haben die Version im Pfad, z.B. `/api/v1/users/me`.
+
+Es wird die eingebaute API-Versionierung von Spring Framework 7 verwendet. Die Klasse `ApiVersionConfig` schaltet sie ein.
+Die Versionierung gilt nur für Pfade unter `/api/`. Swagger und `/error` haben keine Version.
+Jeder Controller hat im `@RequestMapping` den Pfad `/api/v{version}/...` und die Version `1`, z.B. `@RequestMapping(path = "/api/v{version}/users/me", version = "1")`.
+
+Somit erkennt man direkt am Pfad, welche Version die Schnittstelle verwendet.
+Wenn man einen Endpunkt ändert bricht man den Schnittstellenvertrag und das bestehende Frontend funktioniert nicht mehr.
+Daher bekommt die neue Änderung in eine neue Version `v2`. Die Version `v1` bleibt daneben bestehen. So kann man schrittweise umsteigen.
+Eine Version, die es nicht gibt (z.B. `/api/v2/...`), wird mit 400 abgelehnt. 
+Ein Pfad ohne Version (z.B. `/api/users/me`) ergibt 404.

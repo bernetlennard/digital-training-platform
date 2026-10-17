@@ -1,7 +1,7 @@
 package ch.bernet.trainingplatform.security;
 
-import ch.bernet.trainingplatform.common.ErrorMessages;
-import ch.bernet.trainingplatform.common.ErrorResponse;
+import ch.bernet.trainingplatform.common.exception.ErrorMessages;
+import ch.bernet.trainingplatform.common.exception.ErrorResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;

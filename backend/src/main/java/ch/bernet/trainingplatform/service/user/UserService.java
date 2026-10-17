@@ -1,10 +1,10 @@
 package ch.bernet.trainingplatform.service.user;
 
-import ch.bernet.trainingplatform.common.AccountLockedException;
-import ch.bernet.trainingplatform.common.AuthenticationFailedException;
-import ch.bernet.trainingplatform.common.ConflictException;
-import ch.bernet.trainingplatform.common.ErrorMessages;
-import ch.bernet.trainingplatform.common.NotFoundException;
+import ch.bernet.trainingplatform.common.exception.AccountLockedException;
+import ch.bernet.trainingplatform.common.exception.AuthenticationFailedException;
+import ch.bernet.trainingplatform.common.exception.ConflictException;
+import ch.bernet.trainingplatform.common.exception.ErrorMessages;
+import ch.bernet.trainingplatform.common.exception.NotFoundException;
 import ch.bernet.trainingplatform.persistence.user.AppUser;
 import ch.bernet.trainingplatform.persistence.user.AppUserRepository;
 import ch.bernet.trainingplatform.service.user.dto.ChangeEmailRequest;
@@ -15,7 +15,6 @@ import ch.bernet.trainingplatform.service.user.dto.RegisterRequest;
 import ch.bernet.trainingplatform.service.user.dto.UpdateProfileRequest;
 import ch.bernet.trainingplatform.service.user.dto.UserResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

@@ -1,6 +1,6 @@
 package ch.bernet.trainingplatform.service.training;
 
-import ch.bernet.trainingplatform.common.NotFoundException;
+import ch.bernet.trainingplatform.common.exception.NotFoundException;
 import ch.bernet.trainingplatform.persistence.training.ExerciseSet;
 import ch.bernet.trainingplatform.persistence.training.SessionExercise;
 import ch.bernet.trainingplatform.persistence.training.TrainingSession;

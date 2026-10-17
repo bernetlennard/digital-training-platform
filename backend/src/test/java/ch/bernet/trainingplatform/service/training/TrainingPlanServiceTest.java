@@ -1,8 +1,8 @@
 package ch.bernet.trainingplatform.service.training;
 
-import ch.bernet.trainingplatform.common.BusinessRuleException;
-import ch.bernet.trainingplatform.common.ErrorMessages;
-import ch.bernet.trainingplatform.common.NotFoundException;
+import ch.bernet.trainingplatform.common.exception.BusinessRuleException;
+import ch.bernet.trainingplatform.common.exception.ErrorMessages;
+import ch.bernet.trainingplatform.common.exception.NotFoundException;
 import ch.bernet.trainingplatform.persistence.training.SessionStatus;
 import ch.bernet.trainingplatform.persistence.training.TrainingSession;
 import ch.bernet.trainingplatform.persistence.training.TrainingSessionRepository;

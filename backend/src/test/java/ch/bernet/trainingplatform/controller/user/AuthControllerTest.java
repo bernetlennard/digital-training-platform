@@ -1,9 +1,9 @@
 package ch.bernet.trainingplatform.controller.user;
 
-import ch.bernet.trainingplatform.common.AccountLockedException;
-import ch.bernet.trainingplatform.common.AuthenticationFailedException;
-import ch.bernet.trainingplatform.common.ConflictException;
-import ch.bernet.trainingplatform.common.ErrorMessages;
+import ch.bernet.trainingplatform.common.exception.AccountLockedException;
+import ch.bernet.trainingplatform.common.exception.AuthenticationFailedException;
+import ch.bernet.trainingplatform.common.exception.ConflictException;
+import ch.bernet.trainingplatform.common.exception.ErrorMessages;
 import ch.bernet.trainingplatform.security.CookieBearerTokenResolver;
 import ch.bernet.trainingplatform.security.JwtCookieService;
 import ch.bernet.trainingplatform.security.SecurityConfig;

@@ -1,9 +1,9 @@
 package ch.bernet.trainingplatform.service.routine;
 
-import ch.bernet.trainingplatform.common.BusinessRuleException;
-import ch.bernet.trainingplatform.common.ConflictException;
-import ch.bernet.trainingplatform.common.ErrorMessages;
-import ch.bernet.trainingplatform.common.NotFoundException;
+import ch.bernet.trainingplatform.common.exception.BusinessRuleException;
+import ch.bernet.trainingplatform.common.exception.ConflictException;
+import ch.bernet.trainingplatform.common.exception.ErrorMessages;
+import ch.bernet.trainingplatform.common.exception.NotFoundException;
 import ch.bernet.trainingplatform.persistence.routine.Routine;
 import ch.bernet.trainingplatform.persistence.routine.RoutineExercise;
 import ch.bernet.trainingplatform.persistence.routine.RoutineRepository;

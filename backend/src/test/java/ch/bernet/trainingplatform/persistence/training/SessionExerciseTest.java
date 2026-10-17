@@ -1,7 +1,7 @@
 package ch.bernet.trainingplatform.persistence.training;
 
-import ch.bernet.trainingplatform.common.BusinessRuleException;
-import ch.bernet.trainingplatform.common.NotFoundException;
+import ch.bernet.trainingplatform.common.exception.BusinessRuleException;
+import ch.bernet.trainingplatform.common.exception.NotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

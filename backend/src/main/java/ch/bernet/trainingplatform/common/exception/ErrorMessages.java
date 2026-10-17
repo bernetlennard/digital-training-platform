@@ -1,4 +1,4 @@
-package ch.bernet.trainingplatform.common;
+package ch.bernet.trainingplatform.common.exception;
 
 public final class ErrorMessages {
 

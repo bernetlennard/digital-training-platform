@@ -1,8 +1,8 @@
 package ch.bernet.trainingplatform.service.exercise;
 
-import ch.bernet.trainingplatform.common.ConflictException;
-import ch.bernet.trainingplatform.common.ErrorMessages;
-import ch.bernet.trainingplatform.common.NotFoundException;
+import ch.bernet.trainingplatform.common.exception.ConflictException;
+import ch.bernet.trainingplatform.common.exception.ErrorMessages;
+import ch.bernet.trainingplatform.common.exception.NotFoundException;
 import ch.bernet.trainingplatform.persistence.exercise.Exercise;
 import ch.bernet.trainingplatform.persistence.exercise.ExerciseRepository;
 import ch.bernet.trainingplatform.persistence.exercise.MuscleGroup;

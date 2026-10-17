@@ -1,7 +1,7 @@
 package ch.bernet.trainingplatform.service.training;
 
-import ch.bernet.trainingplatform.common.ConflictException;
-import ch.bernet.trainingplatform.common.NotFoundException;
+import ch.bernet.trainingplatform.common.exception.ConflictException;
+import ch.bernet.trainingplatform.common.exception.NotFoundException;
 import ch.bernet.trainingplatform.persistence.training.ExerciseSet;
 import ch.bernet.trainingplatform.persistence.training.ExerciseSetRepository;
 import ch.bernet.trainingplatform.persistence.training.SessionExercise;
@@ -44,7 +44,6 @@ import static org.assertj.core.api.Assertions.tuple;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;

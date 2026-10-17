@@ -1,7 +1,7 @@
 package ch.bernet.trainingplatform.controller.training;
 
-import ch.bernet.trainingplatform.common.ConflictException;
-import ch.bernet.trainingplatform.common.ErrorMessages;
+import ch.bernet.trainingplatform.common.exception.ConflictException;
+import ch.bernet.trainingplatform.common.exception.ErrorMessages;
 import ch.bernet.trainingplatform.security.CookieBearerTokenResolver;
 import ch.bernet.trainingplatform.security.JwtCookieService;
 import ch.bernet.trainingplatform.security.SecurityConfig;

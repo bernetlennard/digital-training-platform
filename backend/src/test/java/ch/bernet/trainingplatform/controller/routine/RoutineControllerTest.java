@@ -1,8 +1,8 @@
 package ch.bernet.trainingplatform.controller.routine;
 
-import ch.bernet.trainingplatform.common.BusinessRuleException;
-import ch.bernet.trainingplatform.common.ErrorMessages;
-import ch.bernet.trainingplatform.common.NotFoundException;
+import ch.bernet.trainingplatform.common.exception.BusinessRuleException;
+import ch.bernet.trainingplatform.common.exception.ErrorMessages;
+import ch.bernet.trainingplatform.common.exception.NotFoundException;
 import ch.bernet.trainingplatform.security.CookieBearerTokenResolver;
 import ch.bernet.trainingplatform.security.JwtCookieService;
 import ch.bernet.trainingplatform.security.SecurityConfig;

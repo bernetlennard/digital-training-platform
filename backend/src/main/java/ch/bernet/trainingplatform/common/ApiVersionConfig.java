@@ -9,7 +9,6 @@ public class ApiVersionConfig implements WebMvcConfigurer {
 
     @Override
     public void configureApiVersioning(ApiVersionConfigurer configurer) {
-        // Version steht im Pfad /api/v1/... (#NFA-7.16). Swagger und /error bleiben ohne Version.
         configurer.usePathSegment(1, path -> path.pathWithinApplication().value().startsWith("/api/"))
                 .setVersionRequired(false);
     }
