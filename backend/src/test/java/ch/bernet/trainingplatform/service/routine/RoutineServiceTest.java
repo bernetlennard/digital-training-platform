@@ -2,6 +2,7 @@ package ch.bernet.trainingplatform.service.routine;
 
 import ch.bernet.trainingplatform.common.BusinessRuleException;
 import ch.bernet.trainingplatform.common.ConflictException;
+import ch.bernet.trainingplatform.common.ErrorMessages;
 import ch.bernet.trainingplatform.common.NotFoundException;
 import ch.bernet.trainingplatform.persistence.routine.Routine;
 import ch.bernet.trainingplatform.persistence.routine.RoutineExercise;
@@ -148,7 +149,7 @@ class RoutineServiceTest {
     @DisplayName("UT-02 Fremde oder gelöschte Übung ergibt 404")
     void createRoutine_foreignExercise_throwsNotFound() {
         // Arrange: eine der Übungen gehört nicht Sportler A oder ist soft-gelöscht
-        doThrow(new NotFoundException("Die Übung wurde nicht gefunden."))
+        doThrow(new NotFoundException(ErrorMessages.EXERCISE_NOT_FOUND))
                 .when(exerciseService).assertActiveExercises(eq(USER_A), anyCollection());
 
         // Act & Assert

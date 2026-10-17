@@ -1,5 +1,6 @@
 package ch.bernet.trainingplatform.controller.training;
 
+import ch.bernet.trainingplatform.common.ErrorMessages;
 import ch.bernet.trainingplatform.common.NotFoundException;
 import ch.bernet.trainingplatform.security.CookieBearerTokenResolver;
 import ch.bernet.trainingplatform.security.JwtCookieService;
@@ -111,7 +112,7 @@ class HistoryControllerTest {
     @DisplayName("UT-15 Nicht abgeschlossene oder fremde Einheit ergibt 404")
     void getSessionDetail_notCompleted_returns404() throws Exception {
         // Arrange
-        when(historyService.getSessionDetail(USER_A, SESSION_ID)).thenThrow(new NotFoundException("Die Einheit wurde nicht gefunden."));
+        when(historyService.getSessionDetail(USER_A, SESSION_ID)).thenThrow(new NotFoundException(ErrorMessages.SESSION_NOT_FOUND));
 
         // Act & Assert
         mockMvc.perform(get("/api/history/sessions/{sessionId}", SESSION_ID).cookie(tokenCookie(USER_A)))
@@ -133,7 +134,7 @@ class HistoryControllerTest {
     @DisplayName("UT-15 Nicht abgeschlossene Einheit löschen ergibt 404")
     void deleteSession_notCompleted_returns404() throws Exception {
         // Arrange
-        doThrow(new NotFoundException("Die Einheit wurde nicht gefunden.")).when(historyService).deleteSession(USER_A, SESSION_ID);
+        doThrow(new NotFoundException(ErrorMessages.SESSION_NOT_FOUND)).when(historyService).deleteSession(USER_A, SESSION_ID);
 
         // Act & Assert
         mockMvc.perform(delete("/api/history/sessions/{sessionId}", SESSION_ID).cookie(tokenCookie(USER_A)))

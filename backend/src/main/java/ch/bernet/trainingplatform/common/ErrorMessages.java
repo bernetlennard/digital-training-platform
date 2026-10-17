@@ -7,6 +7,19 @@ public final class ErrorMessages {
     public static final String INVALID_AUTHENTICATION = "Invalid Authentication";
     public static final String USER_NOT_FOUND = "User not found";
 
+    public static final String NAME_ALREADY_IN_USE = "Name already in use";
+    public static final String EXERCISE_NOT_FOUND = "Exercise not found";
+    public static final String EXERCISE_IN_USE = "Exercise is used in an active routine";
+    public static final String ROUTINE_NOT_FOUND = "Routine not found";
+    public static final String DUPLICATE_EXERCISE_IDS = "Duplicate exercise IDs";
+
+    public static final String SESSION_NOT_FOUND = "Session not found";
+    public static final String SESSION_ALREADY_ACTIVE = "A session is already active";
+    public static final String SESSION_WITHOUT_SETS = "Session contains no sets";
+    public static final String PLANNED_DATE_IN_PAST = "Planned date must not be in the past";
+
+    public static final String JWT_SECRET_TOO_SHORT = "must be at least 32 characters (256 bits) long";
+
     public static final String VALIDATION_ERROR = "Validation error";
     public static final String UNEXPECTED_ERROR = "Unexpected internal server error";
     public static final String UNAUTHORIZED = "Unauthorized access";

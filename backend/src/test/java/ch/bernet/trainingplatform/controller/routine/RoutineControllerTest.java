@@ -1,6 +1,7 @@
 package ch.bernet.trainingplatform.controller.routine;
 
 import ch.bernet.trainingplatform.common.BusinessRuleException;
+import ch.bernet.trainingplatform.common.ErrorMessages;
 import ch.bernet.trainingplatform.common.NotFoundException;
 import ch.bernet.trainingplatform.security.CookieBearerTokenResolver;
 import ch.bernet.trainingplatform.security.JwtCookieService;
@@ -102,7 +103,7 @@ class RoutineControllerTest {
     @DisplayName("UT-02 Fremde Routine lesen ergibt 404")
     void getRoutine_foreign_returns404() throws Exception {
         // Arrange: die Routine gehört Sportler B
-        when(routineService.getRoutine(USER_A, 21L)).thenThrow(new NotFoundException("Die Routine wurde nicht gefunden."));
+        when(routineService.getRoutine(USER_A, 21L)).thenThrow(new NotFoundException(ErrorMessages.ROUTINE_NOT_FOUND));
 
         // Act & Assert
         mockMvc.perform(get("/api/routines/{routineId}", 21L).cookie(tokenCookie(USER_A)))
@@ -151,7 +152,7 @@ class RoutineControllerTest {
     void createRoutine_duplicateExercise_returns422() throws Exception {
         // Arrange
         when(routineService.createRoutine(eq(USER_A), any(RoutineRequest.class)))
-                .thenThrow(new BusinessRuleException("Jede Übung darf nur einmal vorkommen."));
+                .thenThrow(new BusinessRuleException(ErrorMessages.DUPLICATE_EXERCISE_IDS));
 
         // Act & Assert
         mockMvc.perform(post("/api/routines")

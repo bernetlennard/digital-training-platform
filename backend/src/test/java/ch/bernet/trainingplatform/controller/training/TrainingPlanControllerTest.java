@@ -1,6 +1,7 @@
 package ch.bernet.trainingplatform.controller.training;
 
 import ch.bernet.trainingplatform.common.BusinessRuleException;
+import ch.bernet.trainingplatform.common.ErrorMessages;
 import ch.bernet.trainingplatform.security.CookieBearerTokenResolver;
 import ch.bernet.trainingplatform.security.JwtCookieService;
 import ch.bernet.trainingplatform.security.SecurityConfig;
@@ -120,7 +121,7 @@ class TrainingPlanControllerTest {
     void planSession_inPast_returns422() throws Exception {
         // Arrange
         when(trainingPlanService.planSession(eq(USER_A), any(PlanSessionRequest.class)))
-                .thenThrow(new BusinessRuleException("Das Datum darf nicht in der Vergangenheit liegen."));
+                .thenThrow(new BusinessRuleException(ErrorMessages.PLANNED_DATE_IN_PAST));
 
         // Act & Assert
         mockMvc.perform(post("/api/sessions/planned")

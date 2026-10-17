@@ -1,6 +1,7 @@
 package ch.bernet.trainingplatform.controller.exercise;
 
 import ch.bernet.trainingplatform.common.ConflictException;
+import ch.bernet.trainingplatform.common.ErrorMessages;
 import ch.bernet.trainingplatform.common.NotFoundException;
 import ch.bernet.trainingplatform.security.CookieBearerTokenResolver;
 import ch.bernet.trainingplatform.security.JwtCookieService;
@@ -141,7 +142,7 @@ class ExerciseControllerTest {
     void createExercise_duplicateName_returns409() throws Exception {
         // Arrange
         when(exerciseService.createExercise(eq(USER_A), any(ExerciseRequest.class)))
-                .thenThrow(new ConflictException("Eine Übung mit diesem Namen existiert bereits."));
+                .thenThrow(new ConflictException(ErrorMessages.NAME_ALREADY_IN_USE));
 
         // Act & Assert
         mockMvc.perform(post("/api/exercises")
@@ -179,7 +180,7 @@ class ExerciseControllerTest {
     void updateExercise_foreign_returns404() throws Exception {
         // Arrange: die Übung gehört Sportler B
         when(exerciseService.updateExercise(eq(USER_A), eq(PULL_UP), any(ExerciseRequest.class)))
-                .thenThrow(new NotFoundException("Die Übung wurde nicht gefunden."));
+                .thenThrow(new NotFoundException(ErrorMessages.EXERCISE_NOT_FOUND));
 
         // Act & Assert
         mockMvc.perform(put("/api/exercises/{exerciseId}", PULL_UP)
@@ -206,7 +207,7 @@ class ExerciseControllerTest {
     @DisplayName("UT-07 Übung in einer Routine löschen ergibt 409")
     void deleteExercise_usedInRoutine_returns409() throws Exception {
         // Arrange
-        doThrow(new ConflictException("Die Übung wird in einer Routine verwendet."))
+        doThrow(new ConflictException(ErrorMessages.EXERCISE_IN_USE))
                 .when(exerciseService).deleteExercise(USER_A, SQUAT);
 
         // Act & Assert

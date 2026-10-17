@@ -3,6 +3,7 @@ package ch.bernet.trainingplatform.controller.user;
 import ch.bernet.trainingplatform.common.AccountLockedException;
 import ch.bernet.trainingplatform.common.AuthenticationFailedException;
 import ch.bernet.trainingplatform.common.ConflictException;
+import ch.bernet.trainingplatform.common.ErrorMessages;
 import ch.bernet.trainingplatform.security.CookieBearerTokenResolver;
 import ch.bernet.trainingplatform.security.JwtCookieService;
 import ch.bernet.trainingplatform.security.SecurityConfig;
@@ -97,13 +98,13 @@ class AuthControllerTest {
     void register_existingEmail_returns409() throws Exception {
         // Arrange
         when(userService.register(any(RegisterRequest.class)))
-                .thenThrow(new ConflictException("Die E-Mail-Adresse ist bereits registriert."));
+                .thenThrow(new ConflictException(ErrorMessages.EMAIL_ALREADY_IN_USE));
 
         // Act & Assert
         mockMvc.perform(postJson("/api/auth/register", credentials(EMAIL, PASSWORD)))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.status").value(409))
-                .andExpect(jsonPath("$.message").value("Die E-Mail-Adresse ist bereits registriert."))
+                .andExpect(jsonPath("$.message").value(ErrorMessages.EMAIL_ALREADY_IN_USE))
                 .andExpect(jsonPath("$.details").isEmpty())
                 .andExpect(cookie().doesNotExist(COOKIE_NAME));
     }
@@ -129,13 +130,13 @@ class AuthControllerTest {
     void login_wrongPasswordOrUnknownEmail_returnsIdentical401() throws Exception {
         // Arrange
         when(userService.authenticate(any(LoginRequest.class)))
-                .thenThrow(new AuthenticationFailedException("E-Mail-Adresse oder Passwort ist falsch."));
+                .thenThrow(new AuthenticationFailedException(ErrorMessages.INVALID_AUTHENTICATION));
 
         // Act
         MvcResult wrongPassword = mockMvc.perform(postJson("/api/auth/login", credentials(EMAIL, "ein-falsches-passwort")))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.status").value(401))
-                .andExpect(jsonPath("$.message").value("E-Mail-Adresse oder Passwort ist falsch."))
+                .andExpect(jsonPath("$.message").value(ErrorMessages.INVALID_AUTHENTICATION))
                 .andExpect(jsonPath("$.details").isEmpty())
                 .andExpect(cookie().doesNotExist(COOKIE_NAME))
                 .andReturn();
@@ -155,13 +156,13 @@ class AuthControllerTest {
     void login_locked_returns429() throws Exception {
         // Arrange
         when(userService.authenticate(any(LoginRequest.class)))
-                .thenThrow(new AccountLockedException("Zu viele Fehlversuche. Bitte in 15 Minuten erneut versuchen."));
+                .thenThrow(new AccountLockedException(ErrorMessages.ACCOUNT_LOCKED));
 
         // Act & Assert
         mockMvc.perform(postJson("/api/auth/login", credentials(EMAIL, PASSWORD)))
                 .andExpect(status().isTooManyRequests())
                 .andExpect(jsonPath("$.status").value(429))
-                .andExpect(jsonPath("$.message").value("Zu viele Fehlversuche. Bitte in 15 Minuten erneut versuchen."))
+                .andExpect(jsonPath("$.message").value(ErrorMessages.ACCOUNT_LOCKED))
                 .andExpect(jsonPath("$.details").isEmpty())
                 .andExpect(cookie().doesNotExist(COOKIE_NAME));
     }

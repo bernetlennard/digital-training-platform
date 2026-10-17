@@ -1,6 +1,7 @@
 package ch.bernet.trainingplatform.service.exercise;
 
 import ch.bernet.trainingplatform.common.ConflictException;
+import ch.bernet.trainingplatform.common.ErrorMessages;
 import ch.bernet.trainingplatform.common.NotFoundException;
 import ch.bernet.trainingplatform.persistence.exercise.Exercise;
 import ch.bernet.trainingplatform.persistence.exercise.ExerciseRepository;
@@ -68,7 +69,7 @@ public class ExerciseService {
         // in aktiver Routine verwendet -> ConflictException (#FA-2.6), sonst Soft Delete
         Exercise exercise = findActiveExercise(userId, exerciseId);
         if (exerciseUsageChecker.isUsedInActiveRoutine(userId, exerciseId)) {
-            throw new ConflictException("Exercise is used in an active routine");
+            throw new ConflictException(ErrorMessages.EXERCISE_IN_USE);
         }
         exercise.setDeleted(true);
         exerciseRepository.save(exercise);
@@ -84,7 +85,7 @@ public class ExerciseService {
                 .collect(Collectors.toSet());
 
         if (!activeIds.equals(requestedIds)) {
-            throw new NotFoundException("Exercise not found");
+            throw new NotFoundException(ErrorMessages.EXERCISE_NOT_FOUND);
         }
     }
 
@@ -99,7 +100,7 @@ public class ExerciseService {
         // aktive Übung laden, sonst NotFoundException
         Optional<Exercise> optionalExercise = exerciseRepository.findActiveByIdAndUserId(exerciseId, userId);
         if (optionalExercise.isEmpty()) {
-            throw new NotFoundException("Exercise not found");
+            throw new NotFoundException(ErrorMessages.EXERCISE_NOT_FOUND);
         }
         return optionalExercise.get();
     }
@@ -110,7 +111,7 @@ public class ExerciseService {
             if (e.getId().equals(exerciseId)) {
                 return;
             }
-            throw new ConflictException("Name already in use");
+            throw new ConflictException(ErrorMessages.NAME_ALREADY_IN_USE);
         });
     }
 

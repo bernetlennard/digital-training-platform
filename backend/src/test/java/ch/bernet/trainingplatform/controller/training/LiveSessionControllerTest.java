@@ -1,6 +1,7 @@
 package ch.bernet.trainingplatform.controller.training;
 
 import ch.bernet.trainingplatform.common.ConflictException;
+import ch.bernet.trainingplatform.common.ErrorMessages;
 import ch.bernet.trainingplatform.security.CookieBearerTokenResolver;
 import ch.bernet.trainingplatform.security.JwtCookieService;
 import ch.bernet.trainingplatform.security.SecurityConfig;
@@ -130,7 +131,7 @@ class LiveSessionControllerTest {
     void startSpontaneousSession_otherSessionActive_returns409() throws Exception {
         // Arrange
         when(liveSessionService.startSpontaneousSession(eq(USER_A), any(StartSessionRequest.class)))
-                .thenThrow(new ConflictException("Es läuft bereits eine Trainingseinheit."));
+                .thenThrow(new ConflictException(ErrorMessages.SESSION_ALREADY_ACTIVE));
 
         // Act & Assert
         mockMvc.perform(post("/api/sessions")
@@ -313,7 +314,7 @@ class LiveSessionControllerTest {
     @DisplayName("UT-14 Abschliessen ohne Satz ergibt 409")
     void finishSession_withoutSets_returns409() throws Exception {
         // Arrange
-        doThrow(new ConflictException("Die Einheit enthält noch keinen Satz.")).when(liveSessionService).finishSession(USER_A);
+        doThrow(new ConflictException(ErrorMessages.SESSION_WITHOUT_SETS)).when(liveSessionService).finishSession(USER_A);
 
         // Act & Assert
         mockMvc.perform(post("/api/sessions/active/finish").cookie(tokenCookie(USER_A)))

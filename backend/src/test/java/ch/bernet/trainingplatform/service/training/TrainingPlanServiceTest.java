@@ -1,6 +1,7 @@
 package ch.bernet.trainingplatform.service.training;
 
 import ch.bernet.trainingplatform.common.BusinessRuleException;
+import ch.bernet.trainingplatform.common.ErrorMessages;
 import ch.bernet.trainingplatform.common.NotFoundException;
 import ch.bernet.trainingplatform.persistence.training.SessionStatus;
 import ch.bernet.trainingplatform.persistence.training.TrainingSession;
@@ -132,7 +133,7 @@ class TrainingPlanServiceTest {
     @DisplayName("UT-02 Fremde oder gelöschte Routine einplanen ergibt 404")
     void planSession_foreignRoutine_throwsNotFound() {
         // Arrange
-        when(sessionAccess.getActiveRoutine(USER_A, ROUTINE_ID)).thenThrow(new NotFoundException("Die Routine wurde nicht gefunden."));
+        when(sessionAccess.getActiveRoutine(USER_A, ROUTINE_ID)).thenThrow(new NotFoundException(ErrorMessages.ROUTINE_NOT_FOUND));
 
         // Act & Assert
         assertThatThrownBy(() -> trainingPlanService.planSession(USER_A, new PlanSessionRequest(ROUTINE_ID, TODAY)))

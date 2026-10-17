@@ -2,6 +2,7 @@ package ch.bernet.trainingplatform.service.routine;
 
 import ch.bernet.trainingplatform.common.BusinessRuleException;
 import ch.bernet.trainingplatform.common.ConflictException;
+import ch.bernet.trainingplatform.common.ErrorMessages;
 import ch.bernet.trainingplatform.common.NotFoundException;
 import ch.bernet.trainingplatform.persistence.routine.Routine;
 import ch.bernet.trainingplatform.persistence.routine.RoutineExercise;
@@ -93,7 +94,7 @@ public class RoutineService {
     private Routine findActiveRoutine(Long userId, Long routineId) {
         // aktive Routine laden, sonst NotFoundException
         return routineRepository.findActiveByIdAndUserId(routineId, userId)
-                .orElseThrow(() -> new NotFoundException("Routine not found"));
+                .orElseThrow(() -> new NotFoundException(ErrorMessages.ROUTINE_NOT_FOUND));
     }
 
     private Map<Long, ExerciseResponse> getExercisesByIds(Long userId, Routine routine) {
@@ -106,7 +107,7 @@ public class RoutineService {
             if (e.getId().equals(routineId)) {
                 return;
             }
-            throw new ConflictException("Name already in use");
+            throw new ConflictException(ErrorMessages.NAME_ALREADY_IN_USE);
         });
 
     }
@@ -115,7 +116,7 @@ public class RoutineService {
         // keine Duplikate, exerciseService.assertActiveExercises
         Set<Long> exerciseIdsSet = new HashSet<>(exerciseIds);
         if (exerciseIds.size() != exerciseIdsSet.size()) {
-            throw new BusinessRuleException("Duplicate Exercise IDs");
+            throw new BusinessRuleException(ErrorMessages.DUPLICATE_EXERCISE_IDS);
         }
         exerciseService.assertActiveExercises(userId, exerciseIds);
     }
