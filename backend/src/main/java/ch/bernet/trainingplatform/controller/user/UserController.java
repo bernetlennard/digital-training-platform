@@ -40,7 +40,7 @@ public class UserController {
     @PutMapping
     public ResponseEntity<UserResponse> updateProfile(@AuthenticationPrincipal Long userId,
                                       @Valid @RequestBody UpdateProfileRequest request) {
-        // TODO: userService.updateProfile aufrufen
+        // userService.updateProfile aufrufen
         UserResponse userResponse = userService.updateProfile(userId, request);
         return ResponseEntity.status(HttpStatus.OK)
                 .body(userResponse);
@@ -49,7 +49,7 @@ public class UserController {
     @PutMapping("/email")
     public ResponseEntity<UserResponse> changeEmail(@AuthenticationPrincipal Long userId,
                                     @Valid @RequestBody ChangeEmailRequest request) {
-        // TODO: userService.changeEmail aufrufen
+        // userService.changeEmail aufrufen, 200 mit Auth-Cookie (Set-Cookie)
         UserResponse userResponse = userService.changeEmail(userId, request);
         ResponseCookie cookie = jwtCookieService.createAuthCookie(userResponse.id());
         return ResponseEntity.status(HttpStatus.OK)
@@ -60,7 +60,7 @@ public class UserController {
     @PutMapping("/password")
     public ResponseEntity<Void> changePassword(@AuthenticationPrincipal Long userId,
                                                @Valid @RequestBody ChangePasswordRequest request) {
-        // TODO: userService.changePassword, 204 (klären, ob ein neues Cookie gesetzt werden soll)
+        // userService.changePassword, 204 mit Auth-Cookie (Set-Cookie)
         userService.changePassword(userId, request);
         ResponseCookie cookie = jwtCookieService.createAuthCookie(userId);
         return ResponseEntity.status(HttpStatus.NO_CONTENT)
@@ -71,7 +71,7 @@ public class UserController {
     @DeleteMapping
     public ResponseEntity<Void> deleteAccount(@AuthenticationPrincipal Long userId,
                                               @Valid @RequestBody DeleteAccountRequest request) {
-        // TODO: userService.deleteAccount, 204 mit Logout-Cookie (Set-Cookie)
+        // userService.deleteAccount, 204 mit Logout-Cookie (Set-Cookie)
         userService.deleteAccount(userId, request);
         ResponseCookie cookie = jwtCookieService.createLogoutCookie();
 

@@ -31,36 +31,37 @@ public class ExerciseController {
 
     @GetMapping
     public List<ExerciseResponse> getExercises(@AuthenticationPrincipal Long userId) {
-        // TODO: exerciseService.getExercises aufrufen
-        return null;
+        // exerciseService.getExercises aufrufen
+        return exerciseService.getExercises(userId);
     }
 
     @GetMapping("/muscle-groups")
     public List<MuscleGroupResponse> getMuscleGroups() {
-        // TODO: exerciseService.getMuscleGroups aufrufen
-        return null;
+        // exerciseService.getMuscleGroups aufrufen
+        return exerciseService.getMuscleGroups();
     }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ExerciseResponse createExercise(@AuthenticationPrincipal Long userId,
                                            @Valid @RequestBody ExerciseRequest request) {
-        // TODO: exerciseService.createExercise aufrufen
-        return null;
+        // exerciseService.createExercise aufrufen
+        return exerciseService.createExercise(userId, request);
     }
 
     @PutMapping("/{exerciseId}")
     public ExerciseResponse updateExercise(@AuthenticationPrincipal Long userId,
                                            @PathVariable Long exerciseId,
                                            @Valid @RequestBody ExerciseRequest request) {
-        // TODO: exerciseService.updateExercise aufrufen
-        return null;
+        // exerciseService.updateExercise aufrufen
+        return exerciseService.updateExercise(userId, exerciseId, request);
     }
 
     @DeleteMapping("/{exerciseId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteExercise(@AuthenticationPrincipal Long userId, @PathVariable Long exerciseId) {
-        // TODO: exerciseService.deleteExercise aufrufen
+        // exerciseService.deleteExercise aufrufen
+        exerciseService.deleteExercise(userId, exerciseId);
     }
 
 }

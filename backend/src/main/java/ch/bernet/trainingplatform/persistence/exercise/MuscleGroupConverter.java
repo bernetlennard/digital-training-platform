@@ -8,14 +8,20 @@ public class MuscleGroupConverter implements AttributeConverter<MuscleGroup, Int
 
     @Override
     public Integer convertToDatabaseColumn(MuscleGroup group) {
-        // TODO: group.getId() zurückgeben (null-sicher)
-        return null;
+        // group.getId() zurückgeben (null-sicher)
+        if (group == null) {
+            return null;
+        }
+        return group.getId();
     }
 
     @Override
     public MuscleGroup convertToEntityAttribute(Integer id) {
-        // TODO: MuscleGroup.fromId(id) zurückgeben (null-sicher)
-        return null;
+        // MuscleGroup.fromId(id) zurückgeben (null-sicher)
+        if (id == null) {
+            return null;
+        }
+        return MuscleGroup.fromId(id);
     }
 
 }

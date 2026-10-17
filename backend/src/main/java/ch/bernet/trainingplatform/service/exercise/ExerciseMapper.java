@@ -11,13 +11,13 @@ public final class ExerciseMapper {
     }
 
     public static ExerciseResponse toResponse(Exercise exercise) {
-        // TODO: Exercise auf ExerciseResponse abbilden
-        return null;
+        // Exercise auf ExerciseResponse abbilden
+        return new ExerciseResponse(exercise.getId(), exercise.getName(), exercise.getMuscleGroup().getId(), exercise.getMuscleGroup().getLabel(), exercise.getDescription());
     }
 
     public static MuscleGroupResponse toResponse(MuscleGroup group) {
-        // TODO: MuscleGroup auf MuscleGroupResponse abbilden
-        return null;
+        // MuscleGroup auf MuscleGroupResponse abbilden
+        return new MuscleGroupResponse(group.getId(), group.getLabel());
     }
 
 }
