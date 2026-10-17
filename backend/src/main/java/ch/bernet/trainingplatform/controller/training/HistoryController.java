@@ -21,7 +21,7 @@ import java.util.List;
 
 @Tag(name = "Verlauf")
 @RestController
-@RequestMapping("/api/history")
+@RequestMapping(path = "/api/v{version}/history", version = "1")
 public class HistoryController {
 
     private final HistoryService historyService;

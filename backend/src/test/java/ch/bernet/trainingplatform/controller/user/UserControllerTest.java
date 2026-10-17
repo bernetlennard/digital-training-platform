@@ -58,7 +58,7 @@ class UserControllerTest {
                 .thenReturn(new UserResponse(USER_A, "a@test.ch", "Anna", "Muster"));
 
         // Act & Assert: Der Request versucht, die ID von Sportler B unterzuschieben
-        mockMvc.perform(put("/api/users/me")
+        mockMvc.perform(put("/api/v1/users/me")
                         .param("userId", USER_B.toString())
                         .cookie(tokenCookie(USER_A))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -77,7 +77,7 @@ class UserControllerTest {
     @Test
     @DisplayName("UT-05 Passwort ändern ergibt 204 mit neuem Token-Cookie")
     void changePassword_valid_returns204WithNewCookie() throws Exception {
-        mockMvc.perform(put("/api/users/me/password")
+        mockMvc.perform(put("/api/v1/users/me/password")
                         .cookie(tokenCookie(USER_A))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -97,7 +97,7 @@ class UserControllerTest {
     @Test
     @DisplayName("UT-05 Konto löschen ergibt 204 und löscht das Cookie")
     void deleteAccount_valid_returns204AndDeletesCookie() throws Exception {
-        mockMvc.perform(delete("/api/users/me")
+        mockMvc.perform(delete("/api/v1/users/me")
                         .cookie(tokenCookie(USER_A))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""

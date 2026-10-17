@@ -74,7 +74,7 @@ class LiveSessionControllerTest {
     @Test
     @DisplayName("UT-02 Aktive Einheit ohne Token ergibt 401")
     void getActiveSession_withoutToken_returns401() throws Exception {
-        mockMvc.perform(get("/api/sessions/active"))
+        mockMvc.perform(get("/api/v1/sessions/active"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.status").value(401));
 
@@ -88,7 +88,7 @@ class LiveSessionControllerTest {
         when(liveSessionService.startPlannedSession(USER_A, SESSION_ID)).thenReturn(ACTIVE);
 
         // Act & Assert
-        mockMvc.perform(post("/api/sessions/planned/{sessionId}/start", SESSION_ID).cookie(tokenCookie(USER_A)))
+        mockMvc.perform(post("/api/v1/sessions/planned/{sessionId}/start", SESSION_ID).cookie(tokenCookie(USER_A)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(SESSION_ID))
                 .andExpect(jsonPath("$.status").value("aktiv"));
@@ -101,7 +101,7 @@ class LiveSessionControllerTest {
         when(liveSessionService.startSpontaneousSession(eq(USER_A), any(StartSessionRequest.class))).thenReturn(ACTIVE);
 
         // Act & Assert
-        mockMvc.perform(post("/api/sessions")
+        mockMvc.perform(post("/api/v1/sessions")
                         .cookie(tokenCookie(USER_A))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -116,7 +116,7 @@ class LiveSessionControllerTest {
     @Test
     @DisplayName("UT-11 Spontaner Start ohne Routine ergibt 400")
     void startSpontaneousSession_withoutRoutine_returns400() throws Exception {
-        mockMvc.perform(post("/api/sessions")
+        mockMvc.perform(post("/api/v1/sessions")
                         .cookie(tokenCookie(USER_A))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
@@ -134,7 +134,7 @@ class LiveSessionControllerTest {
                 .thenThrow(new ConflictException(ErrorMessages.SESSION_ALREADY_ACTIVE));
 
         // Act & Assert
-        mockMvc.perform(post("/api/sessions")
+        mockMvc.perform(post("/api/v1/sessions")
                         .cookie(tokenCookie(USER_A))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -151,7 +151,7 @@ class LiveSessionControllerTest {
         when(liveSessionService.getActiveSession(USER_A)).thenReturn(ACTIVE);
 
         // Act & Assert
-        mockMvc.perform(get("/api/sessions/active").cookie(tokenCookie(USER_A)))
+        mockMvc.perform(get("/api/v1/sessions/active").cookie(tokenCookie(USER_A)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(SESSION_ID))
                 .andExpect(jsonPath("$.routineName").value("Push"))
@@ -171,7 +171,7 @@ class LiveSessionControllerTest {
         when(liveSessionService.getActiveSession(USER_A)).thenReturn(null);
 
         // Act & Assert
-        mockMvc.perform(get("/api/sessions/active").cookie(tokenCookie(USER_A)))
+        mockMvc.perform(get("/api/v1/sessions/active").cookie(tokenCookie(USER_A)))
                 .andExpect(status().isNoContent())
                 .andExpect(content().string(""));
     }
@@ -183,7 +183,7 @@ class LiveSessionControllerTest {
         when(liveSessionService.addSet(eq(USER_A), eq(101L), any(SetRequest.class))).thenReturn(SQUAT_EXERCISE);
 
         // Act & Assert
-        mockMvc.perform(post("/api/sessions/active/exercises/{sessionExerciseId}/sets", 101L)
+        mockMvc.perform(post("/api/v1/sessions/active/exercises/{sessionExerciseId}/sets", 101L)
                         .cookie(tokenCookie(USER_A))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -200,7 +200,7 @@ class LiveSessionControllerTest {
     @Test
     @DisplayName("UT-12 Ungültige Satzwerte ergeben 400")
     void addSet_invalidValues_returns400() throws Exception {
-        mockMvc.perform(post("/api/sessions/active/exercises/{sessionExerciseId}/sets", 101L)
+        mockMvc.perform(post("/api/v1/sessions/active/exercises/{sessionExerciseId}/sets", 101L)
                         .cookie(tokenCookie(USER_A))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -222,7 +222,7 @@ class LiveSessionControllerTest {
         when(liveSessionService.updateSet(eq(USER_A), eq(501L), any(SetRequest.class))).thenReturn(SQUAT_EXERCISE);
 
         // Act & Assert
-        mockMvc.perform(put("/api/sessions/active/sets/{setId}", 501L)
+        mockMvc.perform(put("/api/v1/sessions/active/sets/{setId}", 501L)
                         .cookie(tokenCookie(USER_A))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -241,7 +241,7 @@ class LiveSessionControllerTest {
         when(liveSessionService.moveSet(eq(USER_A), eq(501L), any(MoveSetRequest.class))).thenReturn(SQUAT_EXERCISE);
 
         // Act & Assert
-        mockMvc.perform(put("/api/sessions/active/sets/{setId}/position", 501L)
+        mockMvc.perform(put("/api/v1/sessions/active/sets/{setId}/position", 501L)
                         .cookie(tokenCookie(USER_A))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -256,7 +256,7 @@ class LiveSessionControllerTest {
     @Test
     @DisplayName("UT-12 Verschieben auf Satznummer 0 ergibt 400")
     void moveSet_zero_returns400() throws Exception {
-        mockMvc.perform(put("/api/sessions/active/sets/{setId}/position", 501L)
+        mockMvc.perform(put("/api/v1/sessions/active/sets/{setId}/position", 501L)
                         .cookie(tokenCookie(USER_A))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -275,7 +275,7 @@ class LiveSessionControllerTest {
         when(liveSessionService.deleteSet(USER_A, 501L)).thenReturn(SQUAT_EXERCISE);
 
         // Act & Assert
-        mockMvc.perform(delete("/api/sessions/active/sets/{setId}", 501L).cookie(tokenCookie(USER_A)))
+        mockMvc.perform(delete("/api/v1/sessions/active/sets/{setId}", 501L).cookie(tokenCookie(USER_A)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(101));
 
@@ -285,7 +285,7 @@ class LiveSessionControllerTest {
     @Test
     @DisplayName("UT-14 Notiz setzen ergibt 204")
     void updateNote_valid_returns204() throws Exception {
-        mockMvc.perform(put("/api/sessions/active/note")
+        mockMvc.perform(put("/api/v1/sessions/active/note")
                         .cookie(tokenCookie(USER_A))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -299,10 +299,10 @@ class LiveSessionControllerTest {
     @Test
     @DisplayName("UT-14 Abschliessen und Abbrechen ergeben 204")
     void finishAndCancelSession_return204() throws Exception {
-        mockMvc.perform(post("/api/sessions/active/finish").cookie(tokenCookie(USER_A)))
+        mockMvc.perform(post("/api/v1/sessions/active/finish").cookie(tokenCookie(USER_A)))
                 .andExpect(status().isNoContent())
                 .andExpect(content().string(""));
-        mockMvc.perform(post("/api/sessions/active/cancel").cookie(tokenCookie(USER_A)))
+        mockMvc.perform(post("/api/v1/sessions/active/cancel").cookie(tokenCookie(USER_A)))
                 .andExpect(status().isNoContent())
                 .andExpect(content().string(""));
 
@@ -317,7 +317,7 @@ class LiveSessionControllerTest {
         doThrow(new ConflictException(ErrorMessages.SESSION_WITHOUT_SETS)).when(liveSessionService).finishSession(USER_A);
 
         // Act & Assert
-        mockMvc.perform(post("/api/sessions/active/finish").cookie(tokenCookie(USER_A)))
+        mockMvc.perform(post("/api/v1/sessions/active/finish").cookie(tokenCookie(USER_A)))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.status").value(409));
     }

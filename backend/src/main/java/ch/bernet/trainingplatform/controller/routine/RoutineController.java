@@ -16,7 +16,7 @@ import java.util.List;
 
 @Tag(name = "Routinen")
 @RestController
-@RequestMapping("/api/routines")
+@RequestMapping(path = "/api/v{version}/routines", version = "1")
 public class RoutineController {
 
     private final RoutineService routineService;

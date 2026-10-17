@@ -28,7 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 // TODO: Pfade der einzelnen Endpunkte mit der API-Spezifikation abgleichen
 @Tag(name = "Live-Training")
 @RestController
-@RequestMapping("/api/sessions")
+@RequestMapping(path = "/api/v{version}/sessions", version = "1")
 public class LiveSessionController {
 
     private final LiveSessionService liveSessionService;

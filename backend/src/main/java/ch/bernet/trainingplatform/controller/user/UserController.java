@@ -26,7 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Benutzerkonto")
 @RestController
-@RequestMapping("/api/users/me")
+@RequestMapping(path = "/api/v{version}/users/me", version = "1")
 public class UserController {
 
     private final UserService userService;

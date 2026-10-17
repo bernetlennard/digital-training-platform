@@ -24,7 +24,7 @@ import java.util.List;
 
 @Tag(name = "Trainingsplanung")
 @RestController
-@RequestMapping("/api/sessions/planned")
+@RequestMapping(path = "/api/v{version}/sessions/planned", version = "1")
 public class TrainingPlanController {
 
     private final TrainingPlanService trainingPlanService;

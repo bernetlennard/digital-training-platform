@@ -64,7 +64,7 @@ class RoutineControllerTest {
     @Test
     @DisplayName("UT-02 Routinen ohne Token ergeben 401")
     void getRoutines_withoutToken_returns401() throws Exception {
-        mockMvc.perform(get("/api/routines"))
+        mockMvc.perform(get("/api/v1/routines"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.status").value(401));
 
@@ -78,7 +78,7 @@ class RoutineControllerTest {
         when(routineService.getRoutines(USER_A)).thenReturn(List.of(PUSH));
 
         // Act & Assert
-        mockMvc.perform(get("/api/routines").cookie(tokenCookie(USER_A)))
+        mockMvc.perform(get("/api/v1/routines").cookie(tokenCookie(USER_A)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(ROUTINE_ID))
                 .andExpect(jsonPath("$[0].exercises[0].position").value(1))
@@ -94,7 +94,7 @@ class RoutineControllerTest {
         when(routineService.getRoutine(USER_A, ROUTINE_ID)).thenReturn(PUSH);
 
         // Act & Assert
-        mockMvc.perform(get("/api/routines/{routineId}", ROUTINE_ID).cookie(tokenCookie(USER_A)))
+        mockMvc.perform(get("/api/v1/routines/{routineId}", ROUTINE_ID).cookie(tokenCookie(USER_A)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("Push"));
     }
@@ -106,7 +106,7 @@ class RoutineControllerTest {
         when(routineService.getRoutine(USER_A, 21L)).thenThrow(new NotFoundException(ErrorMessages.ROUTINE_NOT_FOUND));
 
         // Act & Assert
-        mockMvc.perform(get("/api/routines/{routineId}", 21L).cookie(tokenCookie(USER_A)))
+        mockMvc.perform(get("/api/v1/routines/{routineId}", 21L).cookie(tokenCookie(USER_A)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404));
     }
@@ -118,7 +118,7 @@ class RoutineControllerTest {
         when(routineService.createRoutine(eq(USER_A), any(RoutineRequest.class))).thenReturn(PUSH);
 
         // Act & Assert
-        mockMvc.perform(post("/api/routines")
+        mockMvc.perform(post("/api/v1/routines")
                         .cookie(tokenCookie(USER_A))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -134,7 +134,7 @@ class RoutineControllerTest {
     @Test
     @DisplayName("UT-08 Routine ohne Übung ergibt 400")
     void createRoutine_withoutExercises_returns400() throws Exception {
-        mockMvc.perform(post("/api/routines")
+        mockMvc.perform(post("/api/v1/routines")
                         .cookie(tokenCookie(USER_A))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -155,7 +155,7 @@ class RoutineControllerTest {
                 .thenThrow(new BusinessRuleException(ErrorMessages.DUPLICATE_EXERCISE_IDS));
 
         // Act & Assert
-        mockMvc.perform(post("/api/routines")
+        mockMvc.perform(post("/api/v1/routines")
                         .cookie(tokenCookie(USER_A))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -172,7 +172,7 @@ class RoutineControllerTest {
         when(routineService.updateRoutine(eq(USER_A), eq(ROUTINE_ID), any(RoutineRequest.class))).thenReturn(PUSH);
 
         // Act & Assert
-        mockMvc.perform(put("/api/routines/{routineId}", ROUTINE_ID)
+        mockMvc.perform(put("/api/v1/routines/{routineId}", ROUTINE_ID)
                         .cookie(tokenCookie(USER_A))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -186,7 +186,7 @@ class RoutineControllerTest {
     @Test
     @DisplayName("UT-09 Routine löschen ergibt 204")
     void deleteRoutine_returns204() throws Exception {
-        mockMvc.perform(delete("/api/routines/{routineId}", ROUTINE_ID).cookie(tokenCookie(USER_A)))
+        mockMvc.perform(delete("/api/v1/routines/{routineId}", ROUTINE_ID).cookie(tokenCookie(USER_A)))
                 .andExpect(status().isNoContent())
                 .andExpect(content().string(""));
 

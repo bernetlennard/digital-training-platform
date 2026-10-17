@@ -54,7 +54,7 @@ class HistoryControllerTest {
     @Test
     @DisplayName("UT-02 Verlauf ohne Token ergibt 401")
     void getHistoryRoutines_withoutToken_returns401() throws Exception {
-        mockMvc.perform(get("/api/history/routines"))
+        mockMvc.perform(get("/api/v1/history/routines"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.status").value(401));
 
@@ -70,7 +70,7 @@ class HistoryControllerTest {
                 new HistoryRoutineResponse(21L, "Beine", true)));
 
         // Act & Assert
-        mockMvc.perform(get("/api/history/routines").cookie(tokenCookie(USER_A)))
+        mockMvc.perform(get("/api/v1/history/routines").cookie(tokenCookie(USER_A)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].routineId").value(ROUTINE_ID))
                 .andExpect(jsonPath("$[0].deleted").value(false))
@@ -86,7 +86,7 @@ class HistoryControllerTest {
                 new SessionSummaryResponse(SESSION_ID, NOW, NOW.plus(Duration.ofHours(1)))));
 
         // Act & Assert
-        mockMvc.perform(get("/api/history/routines/{routineId}/sessions", ROUTINE_ID).cookie(tokenCookie(USER_A)))
+        mockMvc.perform(get("/api/v1/history/routines/{routineId}/sessions", ROUTINE_ID).cookie(tokenCookie(USER_A)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(SESSION_ID))
                 .andExpect(jsonPath("$[0].startedAt").value("2026-10-15T08:00:00Z"))
@@ -101,7 +101,7 @@ class HistoryControllerTest {
                 "Push", true, "abgeschlossen", NOW, NOW.plus(Duration.ofHours(1)), "Neuer Rekord", List.of()));
 
         // Act & Assert
-        mockMvc.perform(get("/api/history/sessions/{sessionId}", SESSION_ID).cookie(tokenCookie(USER_A)))
+        mockMvc.perform(get("/api/v1/history/sessions/{sessionId}", SESSION_ID).cookie(tokenCookie(USER_A)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("abgeschlossen"))
                 .andExpect(jsonPath("$.routineDeleted").value(true))
@@ -115,7 +115,7 @@ class HistoryControllerTest {
         when(historyService.getSessionDetail(USER_A, SESSION_ID)).thenThrow(new NotFoundException(ErrorMessages.SESSION_NOT_FOUND));
 
         // Act & Assert
-        mockMvc.perform(get("/api/history/sessions/{sessionId}", SESSION_ID).cookie(tokenCookie(USER_A)))
+        mockMvc.perform(get("/api/v1/history/sessions/{sessionId}", SESSION_ID).cookie(tokenCookie(USER_A)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404));
     }
@@ -123,7 +123,7 @@ class HistoryControllerTest {
     @Test
     @DisplayName("UT-15 Einheit aus dem Verlauf löschen ergibt 204")
     void deleteSession_returns204() throws Exception {
-        mockMvc.perform(delete("/api/history/sessions/{sessionId}", SESSION_ID).cookie(tokenCookie(USER_A)))
+        mockMvc.perform(delete("/api/v1/history/sessions/{sessionId}", SESSION_ID).cookie(tokenCookie(USER_A)))
                 .andExpect(status().isNoContent())
                 .andExpect(content().string(""));
 
@@ -137,7 +137,7 @@ class HistoryControllerTest {
         doThrow(new NotFoundException(ErrorMessages.SESSION_NOT_FOUND)).when(historyService).deleteSession(USER_A, SESSION_ID);
 
         // Act & Assert
-        mockMvc.perform(delete("/api/history/sessions/{sessionId}", SESSION_ID).cookie(tokenCookie(USER_A)))
+        mockMvc.perform(delete("/api/v1/history/sessions/{sessionId}", SESSION_ID).cookie(tokenCookie(USER_A)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404));
     }

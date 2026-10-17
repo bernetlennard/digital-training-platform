@@ -25,7 +25,7 @@ import java.util.List;
 
 @Tag(name = "Übungen")
 @RestController
-@RequestMapping("/api/exercises")
+@RequestMapping(path = "/api/v{version}/exercises", version = "1")
 public class ExerciseController {
 
     private final ExerciseService exerciseService;

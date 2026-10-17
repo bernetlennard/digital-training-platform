@@ -60,7 +60,7 @@ class TrainingPlanControllerTest {
     @Test
     @DisplayName("UT-02 Geplante Einheiten ohne Token ergeben 401")
     void getPlannedSessions_withoutToken_returns401() throws Exception {
-        mockMvc.perform(get("/api/sessions/planned"))
+        mockMvc.perform(get("/api/v1/sessions/planned"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.status").value(401));
 
@@ -74,7 +74,7 @@ class TrainingPlanControllerTest {
         when(trainingPlanService.getPlannedSessions(USER_A)).thenReturn(List.of(PLANNED));
 
         // Act & Assert
-        mockMvc.perform(get("/api/sessions/planned").cookie(tokenCookie(USER_A)))
+        mockMvc.perform(get("/api/v1/sessions/planned").cookie(tokenCookie(USER_A)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(SESSION_ID))
                 .andExpect(jsonPath("$[0].routineId").value(ROUTINE_ID))
@@ -89,7 +89,7 @@ class TrainingPlanControllerTest {
         when(trainingPlanService.planSession(eq(USER_A), any(PlanSessionRequest.class))).thenReturn(PLANNED);
 
         // Act & Assert
-        mockMvc.perform(post("/api/sessions/planned")
+        mockMvc.perform(post("/api/v1/sessions/planned")
                         .cookie(tokenCookie(USER_A))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -104,7 +104,7 @@ class TrainingPlanControllerTest {
     @Test
     @DisplayName("UT-10 Planung ohne Routine und Datum ergibt 400")
     void planSession_missingFields_returns400() throws Exception {
-        mockMvc.perform(post("/api/sessions/planned")
+        mockMvc.perform(post("/api/v1/sessions/planned")
                         .cookie(tokenCookie(USER_A))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
@@ -124,7 +124,7 @@ class TrainingPlanControllerTest {
                 .thenThrow(new BusinessRuleException(ErrorMessages.PLANNED_DATE_IN_PAST));
 
         // Act & Assert
-        mockMvc.perform(post("/api/sessions/planned")
+        mockMvc.perform(post("/api/v1/sessions/planned")
                         .cookie(tokenCookie(USER_A))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -142,7 +142,7 @@ class TrainingPlanControllerTest {
                 .thenReturn(new PlannedSessionResponse(SESSION_ID, ROUTINE_ID, "Push", TODAY.plusDays(2)));
 
         // Act & Assert
-        mockMvc.perform(put("/api/sessions/planned/{sessionId}", SESSION_ID)
+        mockMvc.perform(put("/api/v1/sessions/planned/{sessionId}", SESSION_ID)
                         .cookie(tokenCookie(USER_A))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -157,7 +157,7 @@ class TrainingPlanControllerTest {
     @Test
     @DisplayName("UT-10 Geplante Einheit löschen ergibt 204")
     void deletePlannedSession_returns204() throws Exception {
-        mockMvc.perform(delete("/api/sessions/planned/{sessionId}", SESSION_ID).cookie(tokenCookie(USER_A)))
+        mockMvc.perform(delete("/api/v1/sessions/planned/{sessionId}", SESSION_ID).cookie(tokenCookie(USER_A)))
                 .andExpect(status().isNoContent())
                 .andExpect(content().string(""));
 

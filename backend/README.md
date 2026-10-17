@@ -142,9 +142,9 @@ Folgende Endpunkte sind ohne Token erreichbar:
 
 | Methode | Pfad                                                    |
 |---------|---------------------------------------------------------|
-| POST    | `/api/auth/register`                                    |
-| POST    | `/api/auth/login`                                       |
-| POST    | `/api/auth/logout`                                      |
+| POST    | `/api/v1/auth/register`                                    |
+| POST    | `/api/v1/auth/login`                                       |
+| POST    | `/api/v1/auth/logout`                                      |
 | *       | `/error`                                                |
 | *       | `/swagger-ui.html`, `/swagger-ui/**`, `/v3/api-docs/**` |
 
@@ -152,39 +152,39 @@ Alle anderen Endpunkte brauchen ein gültiges JWT, ansonsten wird der Request mi
 
 | Bereich          | Methode | Pfad                                                      |
 |------------------|---------|-----------------------------------------------------------|
-| Benutzer         | GET     | `/api/users/me`                                           |
-|                  | PUT     | `/api/users/me`                                           |
-|                  | PUT     | `/api/users/me/email`                                     |
-|                  | PUT     | `/api/users/me/password`                                  |
-|                  | DELETE  | `/api/users/me`                                           |
-| Übungen          | GET     | `/api/exercises`                                          |
-|                  | GET     | `/api/exercises/muscle-groups`                            |
-|                  | POST    | `/api/exercises`                                          |
-|                  | PUT     | `/api/exercises/{exerciseId}`                             |
-|                  | DELETE  | `/api/exercises/{exerciseId}`                             |
-| Routinen         | GET     | `/api/routines`                                           |
-|                  | GET     | `/api/routines/{routineId}`                               |
-|                  | POST    | `/api/routines`                                           |
-|                  | PUT     | `/api/routines/{routineId}`                               |
-|                  | DELETE  | `/api/routines/{routineId}`                               |
-| Trainingsplanung | GET     | `/api/sessions/planned`                                   |
-|                  | POST    | `/api/sessions/planned`                                   |
-|                  | PUT     | `/api/sessions/planned/{sessionId}`                       |
-|                  | DELETE  | `/api/sessions/planned/{sessionId}`                       |
-| Live-Training    | POST    | `/api/sessions/planned/{sessionId}/start`                 |
-|                  | POST    | `/api/sessions`                                           |
-|                  | GET     | `/api/sessions/active`                                    |
-|                  | PUT     | `/api/sessions/active/note`                               |
-|                  | POST    | `/api/sessions/active/exercises/{sessionExerciseId}/sets` |
-|                  | PUT     | `/api/sessions/active/sets/{setId}`                       |
-|                  | PUT     | `/api/sessions/active/sets/{setId}/position`              |
-|                  | DELETE  | `/api/sessions/active/sets/{setId}`                       |
-|                  | POST    | `/api/sessions/active/finish`                             |
-|                  | POST    | `/api/sessions/active/cancel`                             |
-| Historie         | GET     | `/api/history/routines`                                   |
-|                  | GET     | `/api/history/routines/{routineId}/sessions`              |
-|                  | GET     | `/api/history/sessions/{sessionId}`                       |
-|                  | DELETE  | `/api/history/sessions/{sessionId}`                       |
+| Benutzer         | GET     | `/api/v1/users/me`                                           |
+|                  | PUT     | `/api/v1/users/me`                                           |
+|                  | PUT     | `/api/v1/users/me/email`                                     |
+|                  | PUT     | `/api/v1/users/me/password`                                  |
+|                  | DELETE  | `/api/v1/users/me`                                           |
+| Übungen          | GET     | `/api/v1/exercises`                                          |
+|                  | GET     | `/api/v1/exercises/muscle-groups`                            |
+|                  | POST    | `/api/v1/exercises`                                          |
+|                  | PUT     | `/api/v1/exercises/{exerciseId}`                             |
+|                  | DELETE  | `/api/v1/exercises/{exerciseId}`                             |
+| Routinen         | GET     | `/api/v1/routines`                                           |
+|                  | GET     | `/api/v1/routines/{routineId}`                               |
+|                  | POST    | `/api/v1/routines`                                           |
+|                  | PUT     | `/api/v1/routines/{routineId}`                               |
+|                  | DELETE  | `/api/v1/routines/{routineId}`                               |
+| Trainingsplanung | GET     | `/api/v1/sessions/planned`                                   |
+|                  | POST    | `/api/v1/sessions/planned`                                   |
+|                  | PUT     | `/api/v1/sessions/planned/{sessionId}`                       |
+|                  | DELETE  | `/api/v1/sessions/planned/{sessionId}`                       |
+| Live-Training    | POST    | `/api/v1/sessions/planned/{sessionId}/start`                 |
+|                  | POST    | `/api/v1/sessions`                                           |
+|                  | GET     | `/api/v1/sessions/active`                                    |
+|                  | PUT     | `/api/v1/sessions/active/note`                               |
+|                  | POST    | `/api/v1/sessions/active/exercises/{sessionExerciseId}/sets` |
+|                  | PUT     | `/api/v1/sessions/active/sets/{setId}`                       |
+|                  | PUT     | `/api/v1/sessions/active/sets/{setId}/position`              |
+|                  | DELETE  | `/api/v1/sessions/active/sets/{setId}`                       |
+|                  | POST    | `/api/v1/sessions/active/finish`                             |
+|                  | POST    | `/api/v1/sessions/active/cancel`                             |
+| Historie         | GET     | `/api/v1/history/routines`                                   |
+|                  | GET     | `/api/v1/history/routines/{routineId}/sessions`              |
+|                  | GET     | `/api/v1/history/sessions/{sessionId}`                       |
+|                  | DELETE  | `/api/v1/history/sessions/{sessionId}`                       |
 
 ### 5. Transaction Handling
 Jegliche Service-Methoden enthalten jeweils die Annotation @Transactional, sobald eine Transaktion auf der Datenbank ausgeführt werden muss.

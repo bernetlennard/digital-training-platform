@@ -64,7 +64,7 @@ class ExerciseControllerTest {
     @Test
     @DisplayName("UT-02 Übungen ohne Token ergeben 401")
     void getExercises_withoutToken_returns401() throws Exception {
-        mockMvc.perform(get("/api/exercises"))
+        mockMvc.perform(get("/api/v1/exercises"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.status").value(401));
 
@@ -78,7 +78,7 @@ class ExerciseControllerTest {
         when(exerciseService.getExercises(USER_A)).thenReturn(List.of(SQUAT_RESPONSE));
 
         // Act & Assert
-        mockMvc.perform(get("/api/exercises").cookie(tokenCookie(USER_A)))
+        mockMvc.perform(get("/api/v1/exercises").cookie(tokenCookie(USER_A)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id").value(SQUAT))
@@ -94,7 +94,7 @@ class ExerciseControllerTest {
         when(exerciseService.getMuscleGroups()).thenReturn(List.of(new MuscleGroupResponse(7, "Beine")));
 
         // Act & Assert
-        mockMvc.perform(get("/api/exercises/muscle-groups").cookie(tokenCookie(USER_A)))
+        mockMvc.perform(get("/api/v1/exercises/muscle-groups").cookie(tokenCookie(USER_A)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(7))
                 .andExpect(jsonPath("$[0].name").value("Beine"));
@@ -107,7 +107,7 @@ class ExerciseControllerTest {
         when(exerciseService.createExercise(eq(USER_A), any(ExerciseRequest.class))).thenReturn(SQUAT_RESPONSE);
 
         // Act & Assert
-        mockMvc.perform(post("/api/exercises")
+        mockMvc.perform(post("/api/v1/exercises")
                         .cookie(tokenCookie(USER_A))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -123,7 +123,7 @@ class ExerciseControllerTest {
     @Test
     @DisplayName("UT-06 Übung ohne Name und Muskelgruppe ergibt 400 mit Feldfehlern")
     void createExercise_invalid_returns400() throws Exception {
-        mockMvc.perform(post("/api/exercises")
+        mockMvc.perform(post("/api/v1/exercises")
                         .cookie(tokenCookie(USER_A))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -145,7 +145,7 @@ class ExerciseControllerTest {
                 .thenThrow(new ConflictException(ErrorMessages.NAME_ALREADY_IN_USE));
 
         // Act & Assert
-        mockMvc.perform(post("/api/exercises")
+        mockMvc.perform(post("/api/v1/exercises")
                         .cookie(tokenCookie(USER_A))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -163,7 +163,7 @@ class ExerciseControllerTest {
         when(exerciseService.updateExercise(eq(USER_A), eq(SQUAT), any(ExerciseRequest.class))).thenReturn(SQUAT_RESPONSE);
 
         // Act & Assert
-        mockMvc.perform(put("/api/exercises/{exerciseId}", SQUAT)
+        mockMvc.perform(put("/api/v1/exercises/{exerciseId}", SQUAT)
                         .cookie(tokenCookie(USER_A))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -183,7 +183,7 @@ class ExerciseControllerTest {
                 .thenThrow(new NotFoundException(ErrorMessages.EXERCISE_NOT_FOUND));
 
         // Act & Assert
-        mockMvc.perform(put("/api/exercises/{exerciseId}", PULL_UP)
+        mockMvc.perform(put("/api/v1/exercises/{exerciseId}", PULL_UP)
                         .cookie(tokenCookie(USER_A))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -196,7 +196,7 @@ class ExerciseControllerTest {
     @Test
     @DisplayName("UT-07 Übung löschen ergibt 204")
     void deleteExercise_returns204() throws Exception {
-        mockMvc.perform(delete("/api/exercises/{exerciseId}", SQUAT).cookie(tokenCookie(USER_A)))
+        mockMvc.perform(delete("/api/v1/exercises/{exerciseId}", SQUAT).cookie(tokenCookie(USER_A)))
                 .andExpect(status().isNoContent())
                 .andExpect(content().string(""));
 
@@ -211,7 +211,7 @@ class ExerciseControllerTest {
                 .when(exerciseService).deleteExercise(USER_A, SQUAT);
 
         // Act & Assert
-        mockMvc.perform(delete("/api/exercises/{exerciseId}", SQUAT).cookie(tokenCookie(USER_A)))
+        mockMvc.perform(delete("/api/v1/exercises/{exerciseId}", SQUAT).cookie(tokenCookie(USER_A)))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.status").value(409));
     }
