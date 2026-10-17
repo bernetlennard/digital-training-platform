@@ -1,5 +1,6 @@
 package ch.bernet.trainingplatform.controller.user;
 
+import ch.bernet.trainingplatform.common.ApiStatus;
 import ch.bernet.trainingplatform.security.JwtCookieService;
 import ch.bernet.trainingplatform.service.user.UserService;
 import ch.bernet.trainingplatform.service.user.dto.ChangeEmailRequest;
@@ -7,6 +8,9 @@ import ch.bernet.trainingplatform.service.user.dto.ChangePasswordRequest;
 import ch.bernet.trainingplatform.service.user.dto.DeleteAccountRequest;
 import ch.bernet.trainingplatform.service.user.dto.UpdateProfileRequest;
 import ch.bernet.trainingplatform.service.user.dto.UserResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -20,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Tag(name = "Benutzerkonto")
 @RestController
 @RequestMapping("/api/users/me")
 public class UserController {
@@ -32,11 +37,16 @@ public class UserController {
         this.jwtCookieService = jwtCookieService;
     }
 
+    @Operation(summary = "Eigenes Profil lesen")
+    @ApiResponse(responseCode = "200", description = ApiStatus.OK)
     @GetMapping
     public UserResponse getProfile(@AuthenticationPrincipal Long userId) {
         return userService.getProfile(userId);
     }
 
+    @Operation(summary = "Vor- und Nachname ändern")
+    @ApiResponse(responseCode = "200", description = ApiStatus.OK)
+    @ApiResponse(responseCode = "400", description = ApiStatus.BAD_REQUEST)
     @PutMapping
     public ResponseEntity<UserResponse> updateProfile(@AuthenticationPrincipal Long userId,
                                       @Valid @RequestBody UpdateProfileRequest request) {
@@ -46,6 +56,11 @@ public class UserController {
                 .body(userResponse);
     }
 
+    @Operation(summary = "E-Mail-Adresse ändern")
+    @ApiResponse(responseCode = "200", description = ApiStatus.OK)
+    @ApiResponse(responseCode = "400", description = ApiStatus.BAD_REQUEST)
+    @ApiResponse(responseCode = "401", description = ApiStatus.UNAUTHORIZED)
+    @ApiResponse(responseCode = "409", description = ApiStatus.CONFLICT)
     @PutMapping("/email")
     public ResponseEntity<UserResponse> changeEmail(@AuthenticationPrincipal Long userId,
                                     @Valid @RequestBody ChangeEmailRequest request) {
@@ -57,6 +72,10 @@ public class UserController {
                 .body(userResponse);
     }
 
+    @Operation(summary = "Passwort ändern")
+    @ApiResponse(responseCode = "204", description = ApiStatus.NO_CONTENT)
+    @ApiResponse(responseCode = "400", description = ApiStatus.BAD_REQUEST)
+    @ApiResponse(responseCode = "401", description = ApiStatus.UNAUTHORIZED)
     @PutMapping("/password")
     public ResponseEntity<Void> changePassword(@AuthenticationPrincipal Long userId,
                                                @Valid @RequestBody ChangePasswordRequest request) {
@@ -68,6 +87,10 @@ public class UserController {
                 .body(null);
     }
 
+    @Operation(summary = "Konto mit allen Daten löschen")
+    @ApiResponse(responseCode = "204", description = ApiStatus.NO_CONTENT)
+    @ApiResponse(responseCode = "400", description = ApiStatus.BAD_REQUEST)
+    @ApiResponse(responseCode = "401", description = ApiStatus.UNAUTHORIZED)
     @DeleteMapping
     public ResponseEntity<Void> deleteAccount(@AuthenticationPrincipal Long userId,
                                               @Valid @RequestBody DeleteAccountRequest request) {

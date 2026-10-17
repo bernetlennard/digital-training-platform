@@ -198,15 +198,17 @@ Jegliche Messages, welche den Exceptions übergeben werden, sind als Konstanten 
 Somit lassen sich einheitliche Fehlermeldungen an einem gebündelten Ort im Code sauber verwalten.
 
 ### 7. Swagger
-Swagger ist in der Anwendung integriert und liefert eine OpenAPI-Dokumentation.
-Diese hilft dabei, die REST-API zu entwerfen, zu bauen, zu dokumentieren, zu testen und zu nutzen.
+Swagger ist in der Anwendung integriert und liefert eine OpenAPI-Dokumentation. 2.0 wird verwendet.
+In diesem Projekt wird jeder Controller mit einem Tag beschriftet.
+Über die Klasse ApiStatus werden pro Endpunkt die HTTP-Methoden beschrieben.
+Diese Dokumentation hilft dabei, die REST-API zu entwerfen, zu bauen, zu dokumentieren, zu testen und zu nutzen.
 
 Swagger ist nur lokal aktiv, im Docker-Container ist es ausgeschaltet (siehe Dockerfile). Nach dem Start ist es erreichbar unter:
 
 * **Swagger UI:** http://localhost:8080/swagger-ui.html
 * **OpenAPI-Spezifikation:** http://localhost:8080/v3/api-docs
 
-Die Swagger-Pfade sind in Spring Security freigegeben. Im Container liefern sie trotzdem 404, da springdoc dort ausgeschaltet ist.
+Die Swagger-Pfade sind in Spring Security freigegeben. Im Container liefern sie trotzdem 404, da Swagger dort ausgeschaltet ist.
 
 Da das JWT nur aus dem Cookie gelesen wird, nützt der «Authorize»-Button von Swagger nichts.
 Stattdessen in Swagger zuerst `POST /api/auth/login` ausführen. Danach schickt der Browser das Cookie bei jedem Request automatisch mit.
