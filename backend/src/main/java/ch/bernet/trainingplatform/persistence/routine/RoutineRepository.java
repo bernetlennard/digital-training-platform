@@ -8,7 +8,6 @@ import java.util.Optional;
 public interface RoutineRepository extends JpaRepository<Routine, Long> {
 
     // TODO: @Query, nur deleted = false (sonst ignoriert Spring Data das "Active" im Namen)
-/*
     public List<Routine> findActiveByUserId(Long userId);
 
     // TODO: @Query, nur deleted = false
@@ -21,6 +20,5 @@ public interface RoutineRepository extends JpaRepository<Routine, Long> {
 
     // TODO: @Query, true wenn eine nicht gelöschte Routine die Übung enthält (#FA-2.6)
     public boolean existsActiveWithExercise(Long userId, Long exerciseId);
-*/
 
 }

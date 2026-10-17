@@ -8,7 +8,6 @@ import java.util.Set;
 
 public interface TrainingSessionRepository extends JpaRepository<TrainingSession, Long> {
 
-/*
     // TODO: prüfen, ob gelöschte Einheiten (deleted = true) ausgeschlossen werden müssen
     public Optional<TrainingSession> findByIdAndUserId(Long id, Long userId);
 
@@ -22,6 +21,5 @@ public interface TrainingSessionRepository extends JpaRepository<TrainingSession
 
     // TODO: @Modifying + @Query, nur Einheiten im Status PLANNED löschen
     public void deletePlannedByRoutineId(Long routineId);
-*/
 
 }
