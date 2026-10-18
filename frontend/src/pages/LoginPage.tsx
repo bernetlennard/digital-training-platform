@@ -82,6 +82,11 @@ export function LoginPage() {
               Registrieren
             </Link>
           </Typography>
+          <Typography variant="body2" sx={{ textAlign: 'center' }}>
+            <Link component={RouterLink} to="/datenschutz">
+              Datenschutzerklärung
+            </Link>
+          </Typography>
         </Stack>
       </form>
     </AuthLayout>

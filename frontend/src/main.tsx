@@ -9,6 +9,7 @@ import '@fontsource/roboto/500.css'
 import '@fontsource/roboto/700.css'
 import App from './App.tsx'
 import { AuthProvider } from './auth/AuthProvider'
+import { NotificationProvider } from './notifications/NotificationProvider'
 import { theme } from './theme'
 
 createRoot(document.getElementById('root')!).render(
@@ -16,9 +17,11 @@ createRoot(document.getElementById('root')!).render(
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <BrowserRouter>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
+        <NotificationProvider>
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </NotificationProvider>
       </BrowserRouter>
     </ThemeProvider>
   </StrictMode>,

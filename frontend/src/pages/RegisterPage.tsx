@@ -10,13 +10,24 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link as RouterLink } from 'react-router'
 import { getErrorMessage } from '../api/client'
-import type { CredentialsRequest } from '../api/types'
 import { useAuth } from '../auth/useAuth'
 import { AuthLayout } from '../components/AuthLayout'
-import { emailRules, textFieldProps } from '../components/formFields'
+import {
+  emailRules,
+  emptyToNull,
+  newPasswordRules,
+  PASSWORD_HINT,
+  personNameRules,
+  textFieldProps,
+} from '../components/formFields'
 import { PasswordField } from '../components/PasswordField'
 
-const PASSWORD_HINT = '15 bis 64 Zeichen'
+interface RegisterFormValues {
+  email: string
+  password: string
+  firstName: string
+  lastName: string
+}
 
 export function RegisterPage() {
   const { register: registerAccount } = useAuth()
@@ -25,15 +36,21 @@ export function RegisterPage() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<CredentialsRequest>({
-    defaultValues: { email: '', password: '' },
+  } = useForm<RegisterFormValues>({
+    defaultValues: { email: '', password: '', firstName: '', lastName: '' },
   })
 
-  const onSubmit = async (credentials: CredentialsRequest) => {
+  const onSubmit = async (values: RegisterFormValues) => {
     setSubmitError(undefined)
     try {
       // Nach der Registrierung ist der Sportler direkt angemeldet (Cookie vom Server)
-      await registerAccount(credentials)
+      await registerAccount(
+        { email: values.email, password: values.password },
+        {
+          firstName: emptyToNull(values.firstName),
+          lastName: emptyToNull(values.lastName),
+        },
+      )
     } catch (error) {
       setSubmitError(
         getErrorMessage(error, {
@@ -59,23 +76,28 @@ export function RegisterPage() {
             helperText={errors.email?.message}
           />
           <PasswordField
-            {...textFieldProps(
-              register('password', {
-                required: 'Bitte Passwort eingeben.',
-                minLength: {
-                  value: 15,
-                  message: `Das Passwort braucht ${PASSWORD_HINT}.`,
-                },
-                maxLength: {
-                  value: 64,
-                  message: `Das Passwort braucht ${PASSWORD_HINT}.`,
-                },
-              }),
-            )}
+            {...textFieldProps(register('password', newPasswordRules))}
             label="Passwort"
             autoComplete="new-password"
             error={!!errors.password}
             helperText={errors.password?.message ?? PASSWORD_HINT}
+          />
+          {/* Freiwillig, für die Registrierung reichen E-Mail und Passwort (Datenminimierung) */}
+          <TextField
+            {...textFieldProps(register('firstName', personNameRules))}
+            label="Vorname"
+            autoComplete="given-name"
+            fullWidth
+            error={!!errors.firstName}
+            helperText={errors.firstName?.message ?? 'Freiwillig'}
+          />
+          <TextField
+            {...textFieldProps(register('lastName', personNameRules))}
+            label="Nachname"
+            autoComplete="family-name"
+            fullWidth
+            error={!!errors.lastName}
+            helperText={errors.lastName?.message ?? 'Freiwillig'}
           />
           <Button
             type="submit"
@@ -90,6 +112,11 @@ export function RegisterPage() {
             Bereits registriert?{' '}
             <Link component={RouterLink} to="/anmelden">
               Anmelden
+            </Link>
+          </Typography>
+          <Typography variant="body2" sx={{ textAlign: 'center' }}>
+            <Link component={RouterLink} to="/datenschutz">
+              Datenschutzerklärung
             </Link>
           </Typography>
         </Stack>

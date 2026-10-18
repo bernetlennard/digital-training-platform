@@ -20,9 +20,11 @@ export function setUnauthorizedHandler(handler: (() => void) | undefined) {
   onUnauthorized = handler
 }
 
-interface RequestOptions {
+export interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
   body?: unknown
+  /** Der Endpunkt prüft das Passwort: 401 heisst «Passwort falsch», nicht «Sitzung abgelaufen» */
+  checksPassword?: boolean
 }
 
 /**
@@ -36,7 +38,7 @@ export async function request<T>(
   path: string,
   options: RequestOptions = {},
 ): Promise<T> {
-  const { method = 'GET', body } = options
+  const { method = 'GET', body, checksPassword = false } = options
   const headers: Record<string, string> = { Accept: 'application/json' }
   if (body !== undefined) {
     headers['Content-Type'] = 'application/json'
@@ -56,7 +58,7 @@ export async function request<T>(
   if (!response.ok) {
     const error = await readError(response)
     // Beim Login bedeutet 401 «falsche Zugangsdaten», nicht «Sitzung abgelaufen»
-    if (error.status === 401 && !path.startsWith('/auth/')) {
+    if (error.status === 401 && !checksPassword && !path.startsWith('/auth/')) {
       onUnauthorized?.()
     }
     throw error
@@ -78,8 +80,18 @@ async function readError(response: Response): Promise<ApiError> {
   }
 }
 
+/** Pfadparameter als ID. Ein ungültiger Wert wird wie ein fehlender Datensatz behandelt (404). */
+export function parseId(param: string | undefined): number {
+  const id = Number(param)
+  if (!Number.isSafeInteger(id) || id < 1) {
+    throw new ApiError(404, 'Not found')
+  }
+  return id
+}
+
 /**
  * Liefert eine deutsche Meldung für die Oberfläche (#NFA-7.4, #NFA-7.11).
+ * Die message des Backends ist englisch und technisch, darum zählt nur der Statuscode.
  * Mit byStatus kann eine Ansicht für einzelne Statuscodes eine eigene Meldung festlegen.
  */
 export function getErrorMessage(
@@ -95,6 +107,12 @@ export function getErrorMessage(
     }
     if (error.status === 400) {
       return 'Bitte überprüfe deine Eingaben.'
+    }
+    if (error.status === 401) {
+      return 'Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.'
+    }
+    if (error.status === 404) {
+      return 'Der Eintrag wurde nicht gefunden. Vielleicht wurde er inzwischen gelöscht.'
     }
   }
   return 'Es ist ein unerwarteter Fehler aufgetreten. Bitte versuche es erneut.'
