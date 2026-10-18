@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import * as authApi from '../api/auth'
 import { setUnauthorizedHandler } from '../api/client'
 import type { UserResponse } from '../api/types'
+import * as usersApi from '../api/users'
 import { AuthContext, type AuthContextValue } from './AuthContext'
 
 /**
@@ -44,13 +45,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login: async (credentials) => {
         setUser(await authApi.login(credentials))
       },
-      register: async (credentials) => {
-        setUser(await authApi.register(credentials))
+      register: async (credentials, profile) => {
+        let registered = await authApi.register(credentials)
+        // Die Registrierung kennt nur E-Mail und Passwort. Vor- und Nachname gehen gleich danach
+        // ans Profil, das Auth-Cookie ist zu diesem Zeitpunkt schon gesetzt.
+        if (profile.firstName || profile.lastName) {
+          try {
+            registered = await usersApi.updateProfile(profile)
+          } catch {
+            // Das Konto besteht bereits, die Namen lassen sich unter «Konto» nachtragen
+          }
+        }
+        setUser(registered)
       },
       logout: async () => {
         await authApi.logout()
         setUser(null)
       },
+      setUser,
     }),
     [user, isLoading],
   )

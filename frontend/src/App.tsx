@@ -1,8 +1,18 @@
 import { Navigate, Route, Routes } from 'react-router'
+import { AppLayout } from './components/AppLayout'
 import { RedirectIfAuthenticated, RequireAuth } from './components/RouteGuards'
-import { HomePage } from './pages/HomePage'
+import { AccountPage } from './pages/AccountPage'
+import { ExercisesPage } from './pages/ExercisesPage'
+import { HistoryPage } from './pages/HistoryPage'
+import { LiveTrainingPage } from './pages/LiveTrainingPage'
 import { LoginPage } from './pages/LoginPage'
+import { PrivacyPage } from './pages/PrivacyPage'
 import { RegisterPage } from './pages/RegisterPage'
+import { RoutineEditPage } from './pages/RoutineEditPage'
+import { RoutineHistoryPage } from './pages/RoutineHistoryPage'
+import { RoutinesPage } from './pages/RoutinesPage'
+import { SessionDetailPage } from './pages/SessionDetailPage'
+import { StartPage } from './pages/StartPage'
 
 function App() {
   return (
@@ -12,10 +22,25 @@ function App() {
         <Route path="/anmelden" element={<LoginPage />} />
         <Route path="/registrieren" element={<RegisterPage />} />
       </Route>
+      <Route path="/datenschutz" element={<PrivacyPage />} />
 
       {/* Nur mit Anmeldung (#NFA-7.7) */}
       <Route element={<RequireAuth />}>
-        <Route path="/" element={<HomePage />} />
+        <Route element={<AppLayout />}>
+          <Route path="/" element={<StartPage />} />
+          <Route path="/routinen" element={<RoutinesPage />} />
+          <Route path="/routinen/:routineId" element={<RoutineEditPage />} />
+          <Route path="/uebungen" element={<ExercisesPage />} />
+          <Route path="/verlauf" element={<HistoryPage />} />
+          <Route path="/verlauf/:routineId" element={<RoutineHistoryPage />} />
+          <Route
+            path="/verlauf/einheit/:sessionId"
+            element={<SessionDetailPage />}
+          />
+          <Route path="/konto" element={<AccountPage />} />
+        </Route>
+        {/* Vollbild ohne Hauptnavigation */}
+        <Route path="/training" element={<LiveTrainingPage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
