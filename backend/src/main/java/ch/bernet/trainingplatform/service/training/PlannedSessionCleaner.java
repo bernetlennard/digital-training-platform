@@ -15,7 +15,8 @@ public class PlannedSessionCleaner implements RoutineDeletionListener {
 
     @Override
     public void onRoutineDeleted(Long userId, Long routineId) {
-        // TODO: geplante Einheiten der Routine löschen (deletePlannedByRoutineId)
+        // geplante Einheiten der Routine löschen (deletePlannedByRoutineId)
+        trainingSessionRepository.deletePlannedByRoutineId(userId, routineId);
     }
 
 }

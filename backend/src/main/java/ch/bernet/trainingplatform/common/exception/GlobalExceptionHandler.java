@@ -1,4 +1,4 @@
-package ch.bernet.trainingplatform.common;
+package ch.bernet.trainingplatform.common.exception;
 
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;

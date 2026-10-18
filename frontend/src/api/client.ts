@@ -44,7 +44,7 @@ export async function request<T>(
 
   let response: Response
   try {
-    response = await fetch(`/api${path}`, {
+    response = await fetch(`/api/v1${path}`, {
       method,
       headers,
       body: body === undefined ? undefined : JSON.stringify(body),

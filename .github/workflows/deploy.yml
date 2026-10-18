@@ -1,0 +1,75 @@
+name: Deploy
+
+# Läuft nur, wenn ein Pull Request auf main gemerged wird, nicht beim blossen Schliessen
+on:
+  pull_request:
+    types: [closed]
+    branches: [main]
+
+# Nie zwei Deployments gleichzeitig, ein laufendes wird nicht abgebrochen
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  # Commit, der durch den Merge auf main entstanden ist, auch bei Squash und Rebase
+  IMAGE_TAG: ${{ github.event.pull_request.merge_commit_sha }}
+
+jobs:
+  images:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ env.IMAGE_TAG }}
+
+      - uses: docker/setup-buildx-action@v4
+
+      - uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # SHA-Tag für das Deployment, latest als Rückfallwert für docker-compose.yml
+      - uses: docker/build-push-action@v7
+        with:
+          context: ${{ matrix.app }}
+          push: true
+          tags: |
+            bernetlennard/dtp-${{ matrix.app }}:${{ env.IMAGE_TAG }}
+            bernetlennard/dtp-${{ matrix.app }}:latest
+          cache-from: type=gha,scope=${{ matrix.app }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.app }}
+
+  deploy:
+    needs: images
+    runs-on: ubuntu-latest
+    steps:
+      # Host-Key fest hinterlegt statt beim ersten Verbinden blind zu vertrauen
+      - name: SSH einrichten
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
+          echo "${{ secrets.VPS_KNOWN_HOSTS }}" > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/id_ed25519 ~/.ssh/known_hosts
+
+      - name: Neue Images ziehen und Stack neu starten
+        env:
+          VPS_USER: ${{ secrets.VPS_USER }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+        run: |
+          ssh "$VPS_USER@$VPS_HOST" IMAGE_TAG="$IMAGE_TAG" 'bash -s' <<'EOF'
+          set -euo pipefail
+          cd /home/ubuntu/trainingplatform
+          docker compose pull frontend backend
+          docker compose up -d --wait
+          docker image prune -f
+          EOF

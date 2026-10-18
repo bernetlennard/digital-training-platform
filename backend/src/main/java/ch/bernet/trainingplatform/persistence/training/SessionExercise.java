@@ -1,14 +1,8 @@
 package ch.bernet.trainingplatform.persistence.training;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OrderBy;
-import jakarta.persistence.Table;
+import ch.bernet.trainingplatform.common.exception.BusinessRuleException;
+import ch.bernet.trainingplatform.common.exception.NotFoundException;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -40,23 +34,51 @@ public class SessionExercise {
     }
 
     public void addSet(BigDecimal weightKg, int repetitions, Integer restSeconds) {
-        // TODO: neuen Satz mit Satznummer n + 1 anhängen
+        // neuen Satz mit Satznummer n + 1 anhängen
+        ExerciseSet set = new ExerciseSet(sets.size() + 1, weightKg, repetitions, restSeconds);
+        sets.add(set);
     }
 
     public void updateSet(Long setId, BigDecimal weightKg, int repetitions, Integer restSeconds) {
-        // TODO: Satz suchen (sonst NotFoundException) und Werte überschreiben
+        // Satz suchen (sonst NotFoundException) und Werte überschreiben
+        ExerciseSet exerciseSet = sets.stream()
+                .filter(s -> setId.equals(s.getId()))
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("Set not found"));
+
+        exerciseSet.setWeightKg(weightKg);
+        exerciseSet.setRepetitions(repetitions);
+        exerciseSet.setRestSeconds(restSeconds);
     }
 
     public void moveSet(Long setId, int newSetNumber) {
-        // TODO: Satz an newSetNumber verschieben, danach renumberSets (#FA-5.4)
+        // Satz an newSetNumber verschieben, danach renumberSets (#FA-5.4)
+        ExerciseSet exerciseSet = sets.stream()
+                .filter(s -> setId.equals(s.getId()))
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("Set not found"));
+        if (newSetNumber < 1 || newSetNumber > sets.size()) {
+            throw new BusinessRuleException("Set number out of range");
+        }
+        sets.remove(exerciseSet);
+        sets.add(newSetNumber - 1, exerciseSet);
+        renumberSets();
     }
 
     public void removeSet(Long setId) {
-        // TODO: Satz entfernen (sonst NotFoundException), danach renumberSets
+        // Satz entfernen (sonst NotFoundException), danach renumberSets
+        boolean isRemoved = sets.removeIf(s -> setId.equals(s.getId()));
+        if (!isRemoved) {
+            throw new NotFoundException("Set not found");
+        }
+        renumberSets();
     }
 
     private void renumberSets() {
-        // TODO: Satznummern lückenlos 1..n setzen
+        // Satznummern lückenlos 1..n setzen
+        for(int i = 0; i < sets.size(); i++) {
+            sets.get(i).setSetNumber(i + 1);
+        }
     }
 
 }

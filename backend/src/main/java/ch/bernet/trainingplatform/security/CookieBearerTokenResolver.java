@@ -13,7 +13,7 @@ import java.util.Set;
 public class CookieBearerTokenResolver implements BearerTokenResolver {
 
     private static final Set<String> PUBLIC_PATHS =
-            Set.of("/api/auth/register", "/api/auth/login", "/api/auth/logout");
+            Set.of("/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/auth/logout");
 
     @Override
     public String resolve(@NonNull HttpServletRequest request) {

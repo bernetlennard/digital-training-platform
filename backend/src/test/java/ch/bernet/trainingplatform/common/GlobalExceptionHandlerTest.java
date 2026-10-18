@@ -1,10 +1,10 @@
 package ch.bernet.trainingplatform.common;
 
+import ch.bernet.trainingplatform.common.exception.*;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.util.List;
 
@@ -17,11 +17,11 @@ class GlobalExceptionHandlerTest {
     @Test
     @DisplayName("UT-01 Fachliche Fehler ergeben den passenden Statuscode im Fehlerformat")
     void handleDomain_returnsStatusAndMessage() {
-        assertErrorResponse(new AuthenticationFailedException("E-Mail-Adresse oder Passwort ist falsch."), HttpStatus.UNAUTHORIZED);
-        assertErrorResponse(new NotFoundException("Die Routine wurde nicht gefunden."), HttpStatus.NOT_FOUND);
-        assertErrorResponse(new ConflictException("Eine Übung mit diesem Namen existiert bereits."), HttpStatus.CONFLICT);
-        assertErrorResponse(new BusinessRuleException("Das Datum darf nicht in der Vergangenheit liegen."), HttpStatus.UNPROCESSABLE_CONTENT);
-        assertErrorResponse(new AccountLockedException("Zu viele Fehlversuche. Bitte in 15 Minuten erneut versuchen."), HttpStatus.TOO_MANY_REQUESTS);
+        assertErrorResponse(new AuthenticationFailedException(ErrorMessages.INVALID_AUTHENTICATION), HttpStatus.UNAUTHORIZED);
+        assertErrorResponse(new NotFoundException(ErrorMessages.ROUTINE_NOT_FOUND), HttpStatus.NOT_FOUND);
+        assertErrorResponse(new ConflictException(ErrorMessages.NAME_ALREADY_IN_USE), HttpStatus.CONFLICT);
+        assertErrorResponse(new BusinessRuleException(ErrorMessages.PLANNED_DATE_IN_PAST), HttpStatus.UNPROCESSABLE_CONTENT);
+        assertErrorResponse(new AccountLockedException(ErrorMessages.ACCOUNT_LOCKED), HttpStatus.TOO_MANY_REQUESTS);
     }
 
     @Test

@@ -1,4 +1,4 @@
-package ch.bernet.trainingplatform.common;
+package ch.bernet.trainingplatform.common.exception;
 
 import java.util.List;
 

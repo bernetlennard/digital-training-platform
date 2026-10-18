@@ -15,8 +15,8 @@ public class RoutineExerciseUsageChecker implements ExerciseUsageChecker {
 
     @Override
     public boolean isUsedInActiveRoutine(Long userId, Long exerciseId) {
-        // TODO: routineRepository.existsActiveWithExercise verwenden
-        return false;
+        // routineRepository.existsActiveWithExercise verwenden
+        return routineRepository.existsActiveWithExercise(userId, exerciseId);
     }
 
 }

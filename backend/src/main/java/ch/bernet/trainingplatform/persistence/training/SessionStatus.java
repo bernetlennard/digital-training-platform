@@ -2,6 +2,9 @@ package ch.bernet.trainingplatform.persistence.training;
 
 import lombok.Getter;
 
+import java.util.Arrays;
+import java.util.HashMap;
+
 @Getter
 public enum SessionStatus {
 
@@ -18,8 +21,11 @@ public enum SessionStatus {
     }
 
     public static SessionStatus fromId(int id) {
-        // TODO: passende Konstante suchen, sonst IllegalArgumentException
-        return null;
+        // passende Konstante suchen, sonst IllegalArgumentException
+        return Arrays.stream(values())
+                .filter(s -> s.id == id)
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("No SessionStatus with id " + id));
     }
 
 }

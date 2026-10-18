@@ -1,7 +1,12 @@
 package ch.bernet.trainingplatform.service.routine.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
 import java.util.List;
 
-public record RoutineRequest(String name, List<Long> exerciseIds) {
-    // TODO: Validierung ergänzen (@NotBlank, @Size(max = 100), @NotEmpty für exerciseIds)
+public record RoutineRequest(@NotBlank @Size(max = 100) String name,
+                             @NotEmpty List<@NotNull Long> exerciseIds) {
 }

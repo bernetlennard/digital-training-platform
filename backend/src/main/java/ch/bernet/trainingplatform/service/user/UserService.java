@@ -1,10 +1,10 @@
 package ch.bernet.trainingplatform.service.user;
 
-import ch.bernet.trainingplatform.common.AccountLockedException;
-import ch.bernet.trainingplatform.common.AuthenticationFailedException;
-import ch.bernet.trainingplatform.common.ConflictException;
-import ch.bernet.trainingplatform.common.ErrorMessages;
-import ch.bernet.trainingplatform.common.NotFoundException;
+import ch.bernet.trainingplatform.common.exception.AccountLockedException;
+import ch.bernet.trainingplatform.common.exception.AuthenticationFailedException;
+import ch.bernet.trainingplatform.common.exception.ConflictException;
+import ch.bernet.trainingplatform.common.exception.ErrorMessages;
+import ch.bernet.trainingplatform.common.exception.NotFoundException;
 import ch.bernet.trainingplatform.persistence.user.AppUser;
 import ch.bernet.trainingplatform.persistence.user.AppUserRepository;
 import ch.bernet.trainingplatform.service.user.dto.ChangeEmailRequest;
@@ -15,7 +15,6 @@ import ch.bernet.trainingplatform.service.user.dto.RegisterRequest;
 import ch.bernet.trainingplatform.service.user.dto.UpdateProfileRequest;
 import ch.bernet.trainingplatform.service.user.dto.UserResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +38,7 @@ public class UserService {
 
     @Transactional
     public UserResponse register(RegisterRequest request) {
+        // E-Mail normalisieren, Duplikat -> ConflictException, Passwort hashen, speichern
         String email = normalizeEmail(request.email());
         if (appUserRepository.existsByEmail(email)) {
             throw new ConflictException(ErrorMessages.EMAIL_ALREADY_IN_USE);
@@ -56,6 +56,8 @@ public class UserService {
 
     @Transactional
     public UserResponse authenticate(LoginRequest request) {
+        // Sperre prüfen -> AccountLockedException (#NFA-1.3), Passwort prüfen -> AuthenticationFailedException (#NFA-1.4)
+        // bei Fehler loginLockService.registerFailure, bei Erfolg loginLockService.clear
         String email = normalizeEmail(request.email());
 
         if (loginLockService.isLocked(email)) {
@@ -79,12 +81,14 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public UserResponse getProfile(Long id) {
+        // appUserRepository.findById verwenden, sonst NotFoundException
         AppUser appUser = returnAppUserIfExists(id);
         return UserMapper.toResponse(appUser);
     }
 
     @Transactional
     public UserResponse updateProfile(Long userId, UpdateProfileRequest request) {
+        // Vor- und Nachname setzen
         AppUser appUser = returnAppUserIfExists(userId);
         appUser.setFirstName(request.firstName());
         appUser.setLastName(request.lastName());
@@ -95,6 +99,7 @@ public class UserService {
 
     @Transactional
     public UserResponse changeEmail(Long userId, ChangeEmailRequest request) {
+        // Passwort bestätigen, neue E-Mail normalisieren, Duplikat -> ConflictException
         AppUser appUser = returnAppUserIfExists(userId);
         verifyPassword(appUser, request.password());
 
@@ -111,6 +116,7 @@ public class UserService {
 
     @Transactional
     public void changePassword(Long userId, ChangePasswordRequest request) {
+        // aktuelles Passwort bestätigen, neues Passwort hashen und speichern
         AppUser appUser = returnAppUserIfExists(userId);
         verifyPassword(appUser, request.currentPassword());
         String newPasswordHash = passwordEncoder.encode(request.newPassword());
@@ -120,6 +126,7 @@ public class UserService {
 
     @Transactional
     public void deleteAccount(Long userId, DeleteAccountRequest request) {
+        // Passwort bestätigen, Benutzer löschen (Daten werden per ON DELETE CASCADE entfernt)
         AppUser appUser = returnAppUserIfExists(userId);
         verifyPassword(appUser, request.password());
         appUserRepository.delete(appUser);
@@ -128,10 +135,12 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public boolean exists(Long userId) {
+        // appUserRepository.existsById verwenden
         return appUserRepository.existsById(userId);
     }
 
     private AppUser returnAppUserIfExists(Long userId) {
+        // Benutzer laden, sonst NotFoundException
         Optional<AppUser> optionalAppUser = appUserRepository.findById(userId);
         if (optionalAppUser.isEmpty()) {
             throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
@@ -140,6 +149,7 @@ public class UserService {
     }
 
     private void verifyPassword(AppUser user, String rawPassword) {
+        // passwordEncoder.matches, sonst AuthenticationFailedException
         if (!passwordEncoder.matches(rawPassword, user.getPasswordHash())) {
             loginLockService.registerFailure(user.getEmail());
             throw new AuthenticationFailedException(ErrorMessages.INVALID_AUTHENTICATION);
@@ -147,6 +157,7 @@ public class UserService {
     }
 
     private String normalizeEmail(String email) {
+        // trimmen und in Kleinbuchstaben umwandeln (ck_app_user_email)
         return email.trim().toLowerCase(Locale.ROOT);
     }
 

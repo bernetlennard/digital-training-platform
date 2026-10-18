@@ -10,6 +10,7 @@ public final class UserMapper {
     }
 
     public static UserResponse toResponse(AppUser user) {
+        // AppUser auf UserResponse abbilden
         return new UserResponse(user.getId(), user.getEmail(), user.getFirstName(), user.getLastName());
     }
 

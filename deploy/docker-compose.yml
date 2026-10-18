@@ -1,6 +1,7 @@
 # Produktiver Stack auf einem Host: Caddy, Frontend, Backend und PostgreSQL (#NFA-7.18).
 # Werte und Secrets (DOMAIN, DB_PASSWORD, JWT_SECRET) kommen aus deploy/.env, nie aus dem Repository (#NFA-7.20).
 # Frontend und Backend kommen als fertige Images von Docker Hub, hier wird nichts gebaut.
+# IMAGE_TAG setzt der Deploy-Workflow auf den Commit-SHA, ohne ihn gilt latest.
 name: trainingplatform
 
 services:
@@ -22,12 +23,12 @@ services:
     depends_on: [frontend, backend]
 
   frontend:
-    image: bernetlennard/dtp-frontend:latest
+    image: bernetlennard/dtp-frontend:${IMAGE_TAG:-latest}
     restart: unless-stopped
     networks: [web]
 
   backend:
-    image: bernetlennard/dtp-backend:latest
+    image: bernetlennard/dtp-backend:${IMAGE_TAG:-latest}
     restart: unless-stopped
     environment:
       DB_URL: jdbc:postgresql://db:5432/digital_training_platform

@@ -68,7 +68,7 @@ class SecurityConfigTest {
     @Test
     @DisplayName("UT-02 Geschützter Endpunkt ohne Token ergibt 401")
     void protectedEndpoint_withoutToken_returns401() throws Exception {
-        mockMvc.perform(get("/api/users/me"))
+        mockMvc.perform(get("/api/v1/users/me"))
                 .andExpectAll(unauthorizedErrorResponse());
 
         verify(userService, never()).getProfile(any());
@@ -83,7 +83,7 @@ class SecurityConfigTest {
                 Clock.offset(Clock.systemUTC(), Duration.ofHours(-9)));
 
         // Act & Assert
-        mockMvc.perform(get("/api/users/me").cookie(tokenCookie(pastIssuer)))
+        mockMvc.perform(get("/api/v1/users/me").cookie(tokenCookie(pastIssuer)))
                 .andExpectAll(unauthorizedErrorResponse());
 
         verify(userService, never()).getProfile(any());
@@ -99,7 +99,7 @@ class SecurityConfigTest {
                 jwtProperties, Clock.systemUTC());
 
         // Act & Assert
-        mockMvc.perform(get("/api/users/me").cookie(tokenCookie(foreignIssuer)))
+        mockMvc.perform(get("/api/v1/users/me").cookie(tokenCookie(foreignIssuer)))
                 .andExpectAll(unauthorizedErrorResponse());
 
         verify(userService, never()).getProfile(any());
@@ -113,7 +113,7 @@ class SecurityConfigTest {
         String token = jwtCookieService.createAuthCookie(USER_A).getValue();
 
         // Act & Assert
-        mockMvc.perform(get("/api/users/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+        mockMvc.perform(get("/api/v1/users/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpectAll(unauthorizedErrorResponse());
 
         verify(userService, never()).getProfile(any());
@@ -128,9 +128,9 @@ class SecurityConfigTest {
         when(userService.authenticate(any(LoginRequest.class))).thenReturn(userResponse);
 
         // Act & Assert
-        mockMvc.perform(post("/api/auth/register").contentType(MediaType.APPLICATION_JSON).content(CREDENTIALS))
+        mockMvc.perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON).content(CREDENTIALS))
                 .andExpect(status().is2xxSuccessful());
-        mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON).content(CREDENTIALS))
+        mockMvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).content(CREDENTIALS))
                 .andExpect(status().is2xxSuccessful());
     }
 
@@ -142,7 +142,7 @@ class SecurityConfigTest {
         when(userService.exists(USER_A)).thenReturn(false);
 
         // Act & Assert
-        mockMvc.perform(get("/api/users/me").cookie(token))
+        mockMvc.perform(get("/api/v1/users/me").cookie(token))
                 .andExpectAll(unauthorizedErrorResponse());
 
         verify(userService, never()).getProfile(any());

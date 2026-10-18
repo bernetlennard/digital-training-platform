@@ -1,8 +1,9 @@
 package ch.bernet.trainingplatform.controller.user;
 
-import ch.bernet.trainingplatform.common.AccountLockedException;
-import ch.bernet.trainingplatform.common.AuthenticationFailedException;
-import ch.bernet.trainingplatform.common.ConflictException;
+import ch.bernet.trainingplatform.common.exception.AccountLockedException;
+import ch.bernet.trainingplatform.common.exception.AuthenticationFailedException;
+import ch.bernet.trainingplatform.common.exception.ConflictException;
+import ch.bernet.trainingplatform.common.exception.ErrorMessages;
 import ch.bernet.trainingplatform.security.CookieBearerTokenResolver;
 import ch.bernet.trainingplatform.security.JwtCookieService;
 import ch.bernet.trainingplatform.security.SecurityConfig;
@@ -67,7 +68,7 @@ class AuthControllerTest {
         when(userService.register(any(RegisterRequest.class))).thenReturn(USER_RESPONSE);
 
         // Act & Assert
-        mockMvc.perform(postJson("/api/auth/register", credentials(EMAIL, PASSWORD)))
+        mockMvc.perform(postJson("/api/v1/auth/register", credentials(EMAIL, PASSWORD)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(USER_A))
                 .andExpect(jsonPath("$.email").value(EMAIL))
@@ -79,7 +80,7 @@ class AuthControllerTest {
     @Test
     @DisplayName("UT-01 Ungültige Eingaben ergeben 400 mit Feldfehlern")
     void register_invalidInput_returns400WithFieldErrors() throws Exception {
-        mockMvc.perform(postJson("/api/auth/register", credentials("keine-email", "zu-kurz")))
+        mockMvc.perform(postJson("/api/v1/auth/register", credentials("keine-email", "zu-kurz")))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.status").value(400))
                 .andExpect(jsonPath("$.message").isNotEmpty())
@@ -97,13 +98,13 @@ class AuthControllerTest {
     void register_existingEmail_returns409() throws Exception {
         // Arrange
         when(userService.register(any(RegisterRequest.class)))
-                .thenThrow(new ConflictException("Die E-Mail-Adresse ist bereits registriert."));
+                .thenThrow(new ConflictException(ErrorMessages.EMAIL_ALREADY_IN_USE));
 
         // Act & Assert
-        mockMvc.perform(postJson("/api/auth/register", credentials(EMAIL, PASSWORD)))
+        mockMvc.perform(postJson("/api/v1/auth/register", credentials(EMAIL, PASSWORD)))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.status").value(409))
-                .andExpect(jsonPath("$.message").value("Die E-Mail-Adresse ist bereits registriert."))
+                .andExpect(jsonPath("$.message").value(ErrorMessages.EMAIL_ALREADY_IN_USE))
                 .andExpect(jsonPath("$.details").isEmpty())
                 .andExpect(cookie().doesNotExist(COOKIE_NAME));
     }
@@ -115,7 +116,7 @@ class AuthControllerTest {
         when(userService.authenticate(any(LoginRequest.class))).thenReturn(USER_RESPONSE);
 
         // Act & Assert
-        mockMvc.perform(postJson("/api/auth/login", credentials(EMAIL, PASSWORD)))
+        mockMvc.perform(postJson("/api/v1/auth/login", credentials(EMAIL, PASSWORD)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(USER_A))
                 .andExpect(jsonPath("$.email").value(EMAIL))
@@ -129,18 +130,18 @@ class AuthControllerTest {
     void login_wrongPasswordOrUnknownEmail_returnsIdentical401() throws Exception {
         // Arrange
         when(userService.authenticate(any(LoginRequest.class)))
-                .thenThrow(new AuthenticationFailedException("E-Mail-Adresse oder Passwort ist falsch."));
+                .thenThrow(new AuthenticationFailedException(ErrorMessages.INVALID_AUTHENTICATION));
 
         // Act
-        MvcResult wrongPassword = mockMvc.perform(postJson("/api/auth/login", credentials(EMAIL, "ein-falsches-passwort")))
+        MvcResult wrongPassword = mockMvc.perform(postJson("/api/v1/auth/login", credentials(EMAIL, "ein-falsches-passwort")))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.status").value(401))
-                .andExpect(jsonPath("$.message").value("E-Mail-Adresse oder Passwort ist falsch."))
+                .andExpect(jsonPath("$.message").value(ErrorMessages.INVALID_AUTHENTICATION))
                 .andExpect(jsonPath("$.details").isEmpty())
                 .andExpect(cookie().doesNotExist(COOKIE_NAME))
                 .andReturn();
 
-        MvcResult unknownEmail = mockMvc.perform(postJson("/api/auth/login", credentials("unbekannt@test.ch", PASSWORD)))
+        MvcResult unknownEmail = mockMvc.perform(postJson("/api/v1/auth/login", credentials("unbekannt@test.ch", PASSWORD)))
                 .andExpect(status().isUnauthorized())
                 .andExpect(cookie().doesNotExist(COOKIE_NAME))
                 .andReturn();
@@ -155,13 +156,13 @@ class AuthControllerTest {
     void login_locked_returns429() throws Exception {
         // Arrange
         when(userService.authenticate(any(LoginRequest.class)))
-                .thenThrow(new AccountLockedException("Zu viele Fehlversuche. Bitte in 15 Minuten erneut versuchen."));
+                .thenThrow(new AccountLockedException(ErrorMessages.ACCOUNT_LOCKED));
 
         // Act & Assert
-        mockMvc.perform(postJson("/api/auth/login", credentials(EMAIL, PASSWORD)))
+        mockMvc.perform(postJson("/api/v1/auth/login", credentials(EMAIL, PASSWORD)))
                 .andExpect(status().isTooManyRequests())
                 .andExpect(jsonPath("$.status").value(429))
-                .andExpect(jsonPath("$.message").value("Zu viele Fehlversuche. Bitte in 15 Minuten erneut versuchen."))
+                .andExpect(jsonPath("$.message").value(ErrorMessages.ACCOUNT_LOCKED))
                 .andExpect(jsonPath("$.details").isEmpty())
                 .andExpect(cookie().doesNotExist(COOKIE_NAME));
     }
@@ -174,7 +175,7 @@ class AuthControllerTest {
         Cookie token = new Cookie(COOKIE_NAME, jwtCookieService.createAuthCookie(USER_A).getValue());
 
         // Act & Assert
-        mockMvc.perform(post("/api/auth/logout").cookie(token))
+        mockMvc.perform(post("/api/v1/auth/logout").cookie(token))
                 .andExpect(status().isNoContent())
                 .andExpect(cookie().value(COOKIE_NAME, ""))
                 .andExpect(cookie().maxAge(COOKIE_NAME, 0))

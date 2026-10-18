@@ -27,7 +27,7 @@ public class LoginLockService {
 
     @Transactional(readOnly = true)
     public boolean isLocked(String email) {
-        // TODO: true, wenn lockedUntil in der Zukunft liegt
+        // true, wenn lockedUntil in der Zukunft liegt
         Optional<LoginLock> optionalLoginLock = loginLockRepository.findByEmail(email);
         if (optionalLoginLock.isEmpty()) {
             return false;
@@ -43,7 +43,7 @@ public class LoginLockService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void registerFailure(String email) {
-        // TODO: Fehlversuche hochzählen, ab MAX_FAILED_ATTEMPTS für LOCK_DURATION sperren (#NFA-1.3)
+        // Fehlversuche hochzählen, ab MAX_FAILED_ATTEMPTS für LOCK_DURATION sperren (#NFA-1.3)
         Optional<LoginLock> optionalLoginLock = loginLockRepository.findByEmail(email);
         if (optionalLoginLock.isEmpty()) {
             loginLockRepository.save(LoginLock.builder().email(email).failedAttempts(1).build());
@@ -60,7 +60,7 @@ public class LoginLockService {
 
     @Transactional
     public void clear(String email) {
-        // TODO: Eintrag nach erfolgreichem Login löschen
+        // Eintrag nach erfolgreichem Login löschen
         loginLockRepository.deleteByEmail(email);
     }
 

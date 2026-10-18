@@ -1,5 +1,7 @@
 package ch.bernet.trainingplatform;
 
+import org.springframework.test.util.ReflectionTestUtils;
+
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -20,8 +22,15 @@ public final class TestData {
     public static final Long SQUAT = 11L;
     public static final Long PULL_UP = 12L;
     public static final Long ROUTINE_ID = 20L;
+    public static final Long SESSION_ID = 30L;
 
     private TestData() {
+    }
+
+    // Setzt die ID, die sonst erst die Datenbank vergibt
+    public static <T> T withId(T entity, Long id) {
+        ReflectionTestUtils.setField(entity, "id", id);
+        return entity;
     }
 
 }

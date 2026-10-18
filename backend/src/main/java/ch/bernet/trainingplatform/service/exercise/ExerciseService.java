@@ -1,16 +1,20 @@
 package ch.bernet.trainingplatform.service.exercise;
 
+import ch.bernet.trainingplatform.common.exception.ConflictException;
+import ch.bernet.trainingplatform.common.exception.ErrorMessages;
+import ch.bernet.trainingplatform.common.exception.NotFoundException;
 import ch.bernet.trainingplatform.persistence.exercise.Exercise;
 import ch.bernet.trainingplatform.persistence.exercise.ExerciseRepository;
+import ch.bernet.trainingplatform.persistence.exercise.MuscleGroup;
 import ch.bernet.trainingplatform.service.exercise.dto.ExerciseRequest;
 import ch.bernet.trainingplatform.service.exercise.dto.ExerciseResponse;
 import ch.bernet.trainingplatform.service.exercise.dto.MuscleGroupResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class ExerciseService {
@@ -25,50 +29,90 @@ public class ExerciseService {
 
     @Transactional(readOnly = true)
     public List<ExerciseResponse> getExercises(Long userId) {
-        // TODO: aktive Übungen des Benutzers laden und mappen
-        return null;
+        // aktive Übungen des Benutzers laden und mappen
+        List<Exercise> exerciseList = exerciseRepository.findActiveByUserId(userId);
+        return exerciseList.stream().map(ExerciseMapper::toResponse).toList();
     }
 
     public List<MuscleGroupResponse> getMuscleGroups() {
-        // TODO: alle MuscleGroup-Werte mappen
-        return null;
+        // alle MuscleGroup-Werte mappen
+        return Stream.of(MuscleGroup.values()).map(ExerciseMapper::toResponse).toList();
     }
 
     @Transactional
     public ExerciseResponse createExercise(Long userId, ExerciseRequest request) {
-        // TODO: assertNameUnique, Muskelgruppe über fromId auflösen, speichern
-        return null;
+        // assertNameUnique, Muskelgruppe über fromId auflösen, speichern
+        assertNameUnique(userId, request.name(), null);
+
+        MuscleGroup muscleGroup = MuscleGroup.fromId(request.muscleGroupId());
+        Exercise exercise = new Exercise(userId, request.name(), muscleGroup, request.description());
+
+        exerciseRepository.save(exercise);
+        return ExerciseMapper.toResponse(exercise);
     }
 
     @Transactional
     public ExerciseResponse updateExercise(Long userId, Long exerciseId, ExerciseRequest request) {
-        // TODO: findActiveExercise, assertNameUnique (eigene ID ausnehmen), Felder setzen
-        return null;
+        // findActiveExercise, assertNameUnique (eigene ID ausnehmen), Felder setzen
+        Exercise exercise = findActiveExercise(userId, exerciseId);
+        assertNameUnique(userId, request.name(), exerciseId);
+        exercise.setName(request.name());
+        exercise.setMuscleGroup(MuscleGroup.fromId(request.muscleGroupId()));
+        exercise.setDescription(request.description());
+
+        exerciseRepository.save(exercise);
+        return ExerciseMapper.toResponse(exercise);
     }
 
     @Transactional
     public void deleteExercise(Long userId, Long exerciseId) {
-        // TODO: in aktiver Routine verwendet -> ConflictException (#FA-2.6), sonst Soft Delete
+        // in aktiver Routine verwendet -> ConflictException (#FA-2.6), sonst Soft Delete
+        Exercise exercise = findActiveExercise(userId, exerciseId);
+        if (exerciseUsageChecker.isUsedInActiveRoutine(userId, exerciseId)) {
+            throw new ConflictException(ErrorMessages.EXERCISE_IN_USE);
+        }
+        exercise.setDeleted(true);
+        exerciseRepository.save(exercise);
     }
 
     @Transactional(readOnly = true)
     public void assertActiveExercises(Long userId, Collection<Long> exerciseIds) {
-        // TODO: alle IDs müssen aktive Übungen des Benutzers sein, sonst NotFoundException
+        // alle IDs müssen aktive Übungen des Benutzers sein, sonst NotFoundException
+        Set<Long> requestedIds = new HashSet<>(exerciseIds);
+        Set<Long> activeIds = exerciseRepository.findAllByIdInAndUserId(requestedIds, userId).stream()
+                .filter(exercise -> !exercise.isDeleted())
+                .map(Exercise::getId)
+                .collect(Collectors.toSet());
+
+        if (!activeIds.equals(requestedIds)) {
+            throw new NotFoundException(ErrorMessages.EXERCISE_NOT_FOUND);
+        }
     }
 
     @Transactional(readOnly = true)
     public Map<Long, ExerciseResponse> findByIds(Long userId, Collection<Long> exerciseIds) {
-        // TODO: Übungen (auch gelöschte) des Benutzers laden, Map nach ID
-        return null;
+        // Übungen (auch gelöschte) des Benutzers laden, Map nach ID
+        return exerciseRepository.findAllByIdInAndUserId(exerciseIds, userId).stream()
+                .collect(Collectors.toMap(Exercise::getId, ExerciseMapper::toResponse));
     }
 
     private Exercise findActiveExercise(Long userId, Long exerciseId) {
-        // TODO: aktive Übung laden, sonst NotFoundException
-        return null;
+        // aktive Übung laden, sonst NotFoundException
+        Optional<Exercise> optionalExercise = exerciseRepository.findActiveByIdAndUserId(exerciseId, userId);
+        if (optionalExercise.isEmpty()) {
+            throw new NotFoundException(ErrorMessages.EXERCISE_NOT_FOUND);
+        }
+        return optionalExercise.get();
     }
 
     private void assertNameUnique(Long userId, String name, Long exerciseId) {
-        // TODO: gleicher Name bei anderer aktiver Übung -> ConflictException (exerciseId darf null sein)
+        // gleicher Name bei anderer aktiver Übung -> ConflictException (exerciseId darf null sein)
+        exerciseRepository.findActiveByUserIdAndName(userId, name).ifPresent(e -> {
+            if (e.getId().equals(exerciseId)) {
+                return;
+            }
+            throw new ConflictException(ErrorMessages.NAME_ALREADY_IN_USE);
+        });
     }
 
 }
