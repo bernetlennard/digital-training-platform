@@ -46,7 +46,8 @@ jobs:
             bernetlennard/dtp-${{ matrix.app }}:${{ env.IMAGE_TAG }}
             bernetlennard/dtp-${{ matrix.app }}:latest
           cache-from: type=gha,scope=${{ matrix.app }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.app }}
+          # Backend und Frontend teilen Alpine-Schichten; reserviert der andere Job sie gerade, scheitert nur der Cache, nicht der Build
+          cache-to: type=gha,mode=max,scope=${{ matrix.app }},ignore-error=true
 
   deploy:
     needs: images
