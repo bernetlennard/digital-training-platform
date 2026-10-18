@@ -8,6 +8,8 @@ import ch.bernet.trainingplatform.service.routine.dto.RoutineSummary;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -22,18 +24,23 @@ public class SessionAccess {
     }
 
     public RoutineResponse getActiveRoutine(Long userId, Long routineId) {
-        // TODO: routineService.getRoutine verwenden
-        return null;
+        // routineService.getRoutine verwenden
+        return routineService.getRoutine(userId, routineId);
     }
 
     public Map<Long, RoutineSummary> getRoutineSummaries(Long userId) {
-        // TODO: routineService.findAllSummaries als Map nach ID
-        return null;
+        // routineService.findAllSummaries als Map nach ID
+        List<RoutineSummary> allSummaries = routineService.findAllSummaries(userId);
+        Map<Long, RoutineSummary> map = new HashMap<>();
+        allSummaries.forEach(summary -> {
+            map.put(summary.id(), summary);
+        });
+        return map;
     }
 
     public Map<Long, ExerciseResponse> getExercises(Long userId, Collection<Long> exerciseIds) {
-        // TODO: exerciseService.findByIds verwenden
-        return null;
+        // exerciseService.findByIds verwenden
+        return exerciseService.findByIds(userId, exerciseIds);
     }
 
 }

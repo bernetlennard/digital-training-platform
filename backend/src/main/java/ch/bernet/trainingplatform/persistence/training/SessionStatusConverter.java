@@ -8,14 +8,21 @@ public class SessionStatusConverter implements AttributeConverter<SessionStatus,
 
     @Override
     public Integer convertToDatabaseColumn(SessionStatus status) {
-        // TODO: status.getId() zurückgeben (null-sicher)
-        return null;
+        // status.getId() zurückgeben (null-sicher)
+        if (status == null) {
+            return null;
+        }
+        return status.getId();
     }
 
     @Override
     public SessionStatus convertToEntityAttribute(Integer id) {
-        // TODO: SessionStatus.fromId(id) zurückgeben (null-sicher)
-        return null;
+        // SessionStatus.fromId(id) zurückgeben (null-sicher)
+        if (id == null) {
+            return null;
+        }
+
+        return SessionStatus.fromId(id);
     }
 
 }

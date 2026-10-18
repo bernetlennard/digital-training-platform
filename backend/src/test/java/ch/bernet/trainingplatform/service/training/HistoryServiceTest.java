@@ -58,7 +58,7 @@ class HistoryServiceTest {
     @DisplayName("UT-15 Routinen mit abgeschlossenen Einheiten inklusive gelöschter Routinen")
     void getHistoryRoutines_includesDeletedRoutines() {
         // Arrange: «Pull» hat noch keine abgeschlossene Einheit, «Beine» ist gelöscht
-        when(trainingSessionRepository.findCompletedRoutineIds(USER_A)).thenReturn(Set.of(ROUTINE_ID, 21L));
+        when(trainingSessionRepository.findCompletedRoutineIds(USER_A)).thenReturn(List.of(ROUTINE_ID, 21L));
         when(sessionAccess.getRoutineSummaries(USER_A)).thenReturn(Map.of(
                 ROUTINE_ID, new RoutineSummary(ROUTINE_ID, "Push", false),
                 21L, new RoutineSummary(21L, "Beine", true),

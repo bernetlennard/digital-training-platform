@@ -37,8 +37,7 @@ public class TrainingPlanController {
     @ApiResponse(responseCode = "200", description = ApiStatus.OK)
     @GetMapping
     public List<PlannedSessionResponse> getPlannedSessions(@AuthenticationPrincipal Long userId) {
-        // TODO: trainingPlanService.getPlannedSessions aufrufen
-        return null;
+        return trainingPlanService.getPlannedSessions(userId);
     }
 
     @Operation(summary = "Einheit planen")
@@ -50,8 +49,7 @@ public class TrainingPlanController {
     @ResponseStatus(HttpStatus.CREATED)
     public PlannedSessionResponse planSession(@AuthenticationPrincipal Long userId,
                                               @Valid @RequestBody PlanSessionRequest request) {
-        // TODO: trainingPlanService.planSession aufrufen
-        return null;
+        return trainingPlanService.planSession(userId, request);
     }
 
     @Operation(summary = "Geplante Einheit verschieben")
@@ -63,8 +61,7 @@ public class TrainingPlanController {
     public PlannedSessionResponse updatePlannedSession(@AuthenticationPrincipal Long userId,
                                                        @PathVariable Long sessionId,
                                                        @Valid @RequestBody PlanSessionRequest request) {
-        // TODO: trainingPlanService.updatePlannedSession aufrufen
-        return null;
+        return trainingPlanService.updatePlannedSession(userId, sessionId, request);
     }
 
     @Operation(summary = "Geplante Einheit löschen")
@@ -73,7 +70,7 @@ public class TrainingPlanController {
     @DeleteMapping("/{sessionId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deletePlannedSession(@AuthenticationPrincipal Long userId, @PathVariable Long sessionId) {
-        // TODO: trainingPlanService.deletePlannedSession aufrufen
+        trainingPlanService.deletePlannedSession(userId, sessionId);
     }
 
 }

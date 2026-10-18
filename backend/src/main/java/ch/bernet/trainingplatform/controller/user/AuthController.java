@@ -55,8 +55,6 @@ public class AuthController {
     @ApiResponse(responseCode = "429", description = ApiStatus.TOO_MANY_REQUESTS)
     @PostMapping("/login")
     public ResponseEntity<UserResponse> login(@Valid @RequestBody LoginRequest request) {
-        // TODO: authentifizieren, 200 mit Auth-Cookie (Set-Cookie) zurückgeben
-
         UserResponse userResponse = userService.authenticate(request);
         ResponseCookie cookie = jwtCookieService.createAuthCookie(userResponse.id());
 
@@ -69,8 +67,6 @@ public class AuthController {
     @ApiResponse(responseCode = "204", description = ApiStatus.NO_CONTENT)
     @PostMapping("/logout")
     public ResponseEntity<Void> logout() {
-        // TODO: 204 mit Logout-Cookie (Set-Cookie) zurückgeben
-
         ResponseCookie cookie = jwtCookieService.createLogoutCookie();
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT)

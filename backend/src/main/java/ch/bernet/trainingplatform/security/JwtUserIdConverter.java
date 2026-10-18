@@ -22,7 +22,7 @@ public class JwtUserIdConverter implements Converter<Jwt, AbstractAuthentication
 
     @Override
     public AbstractAuthenticationToken convert(Jwt jwt) {
-        // TODO: Benutzer-ID aus dem subject lesen, mit userService.exists prüfen, als Principal setzen
+        // Benutzer-ID aus dem subject lesen, mit userService.exists prüfen, als Principal setzen
         Long id = Long.valueOf(jwt.getSubject());
         if(!userService.exists(id)){
             throw new BadCredentialsException(ErrorMessages.USER_NOT_FOUND);

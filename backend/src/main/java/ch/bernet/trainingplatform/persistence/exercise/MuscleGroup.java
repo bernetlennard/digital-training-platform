@@ -2,9 +2,8 @@ package ch.bernet.trainingplatform.persistence.exercise;
 
 import lombok.Getter;
 
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
 
 @Getter
 public enum MuscleGroup {
@@ -20,13 +19,6 @@ public enum MuscleGroup {
 
     private final int id;
     private final String label;
-    private static final HashMap<Integer, MuscleGroup> ALL = new HashMap<>();
-
-    static {
-        for (MuscleGroup muscleGroup : values()) {
-            ALL.put(muscleGroup.getId(), muscleGroup);
-        }
-    }
 
     MuscleGroup(int id, String label) {
         this.id = id;
@@ -35,9 +27,9 @@ public enum MuscleGroup {
 
     public static MuscleGroup fromId(int id) {
         // passende Konstante suchen, sonst IllegalArgumentException
-        if(ALL.containsKey(id)) {
-            return ALL.get(id);
-        }
-        throw new IllegalArgumentException("No MuscleGroup with id " + id);
+        return Arrays.stream(values())
+                .filter(s -> s.id == id)
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("No MuscleGroup with id " + id));
     }
 }

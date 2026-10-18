@@ -25,7 +25,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-// TODO: Pfade der einzelnen Endpunkte mit der API-Spezifikation abgleichen
 @Tag(name = "Live-Training")
 @RestController
 @RequestMapping(path = "/api/v{version}/sessions", version = "1")
@@ -43,8 +42,7 @@ public class LiveSessionController {
     @ApiResponse(responseCode = "409", description = ApiStatus.CONFLICT)
     @PostMapping("/planned/{sessionId}/start")
     public SessionResponse startPlannedSession(@AuthenticationPrincipal Long userId, @PathVariable Long sessionId) {
-        // TODO: liveSessionService.startPlannedSession aufrufen
-        return null;
+        return liveSessionService.startPlannedSession(userId, sessionId);
     }
 
     @Operation(summary = "Spontane Einheit starten")
@@ -56,8 +54,7 @@ public class LiveSessionController {
     @ResponseStatus(HttpStatus.CREATED)
     public SessionResponse startSpontaneousSession(@AuthenticationPrincipal Long userId,
                                                    @Valid @RequestBody StartSessionRequest request) {
-        // TODO: liveSessionService.startSpontaneousSession aufrufen
-        return null;
+        return liveSessionService.startSpontaneousSession(userId, request);
     }
 
     @Operation(summary = "Aktive Einheit lesen")
@@ -65,8 +62,9 @@ public class LiveSessionController {
     @ApiResponse(responseCode = "204", description = ApiStatus.NO_CONTENT)
     @GetMapping("/active")
     public ResponseEntity<SessionResponse> getActiveSession(@AuthenticationPrincipal Long userId) {
-        // TODO: 200 mit Einheit oder 204, wenn keine aktive Einheit existiert
-        return null;
+        // 200 mit Einheit oder 204, wenn keine aktive Einheit existiert
+        SessionResponse session = liveSessionService.getActiveSession(userId);
+        return session == null ? ResponseEntity.noContent().build() : ResponseEntity.ok(session);
     }
 
     @Operation(summary = "Notiz zur Einheit setzen")
@@ -76,7 +74,7 @@ public class LiveSessionController {
     @PutMapping("/active/note")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateNote(@AuthenticationPrincipal Long userId, @Valid @RequestBody NoteRequest request) {
-        // TODO: liveSessionService.updateNote aufrufen
+        liveSessionService.updateNote(userId, request);
     }
 
     @Operation(summary = "Satz erfassen")
@@ -88,8 +86,7 @@ public class LiveSessionController {
     public SessionExerciseResponse addSet(@AuthenticationPrincipal Long userId,
                                           @PathVariable Long sessionExerciseId,
                                           @Valid @RequestBody SetRequest request) {
-        // TODO: liveSessionService.addSet aufrufen
-        return null;
+        return liveSessionService.addSet(userId, sessionExerciseId, request);
     }
 
     @Operation(summary = "Satz ändern")
@@ -100,8 +97,7 @@ public class LiveSessionController {
     public SessionExerciseResponse updateSet(@AuthenticationPrincipal Long userId,
                                              @PathVariable Long setId,
                                              @Valid @RequestBody SetRequest request) {
-        // TODO: liveSessionService.updateSet aufrufen
-        return null;
+        return liveSessionService.updateSet(userId, setId, request);
     }
 
     @Operation(summary = "Satz verschieben")
@@ -113,8 +109,7 @@ public class LiveSessionController {
     public SessionExerciseResponse moveSet(@AuthenticationPrincipal Long userId,
                                            @PathVariable Long setId,
                                            @Valid @RequestBody MoveSetRequest request) {
-        // TODO: liveSessionService.moveSet aufrufen
-        return null;
+        return liveSessionService.moveSet(userId, setId, request);
     }
 
     @Operation(summary = "Satz löschen")
@@ -122,8 +117,7 @@ public class LiveSessionController {
     @ApiResponse(responseCode = "404", description = ApiStatus.NOT_FOUND)
     @DeleteMapping("/active/sets/{setId}")
     public SessionExerciseResponse deleteSet(@AuthenticationPrincipal Long userId, @PathVariable Long setId) {
-        // TODO: liveSessionService.deleteSet aufrufen
-        return null;
+        return liveSessionService.deleteSet(userId, setId);
     }
 
     @Operation(summary = "Einheit abschliessen")
@@ -133,7 +127,7 @@ public class LiveSessionController {
     @PostMapping("/active/finish")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void finishSession(@AuthenticationPrincipal Long userId) {
-        // TODO: liveSessionService.finishSession aufrufen
+        liveSessionService.finishSession(userId);
     }
 
     @Operation(summary = "Einheit abbrechen")
@@ -142,7 +136,7 @@ public class LiveSessionController {
     @PostMapping("/active/cancel")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void cancelSession(@AuthenticationPrincipal Long userId) {
-        // TODO: liveSessionService.cancelSession aufrufen
+        liveSessionService.cancelSession(userId);
     }
 
 }
