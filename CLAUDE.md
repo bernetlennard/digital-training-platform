@@ -181,6 +181,7 @@ Messages sind englische Konstanten in `ErrorMessages` (keine String-Literale in 
   - Lint-Regel `react-hooks/refs`: keine `ref.current` im Render. Für «geändert?» `getFieldState(name).isDirty` von RHF nutzen.
 - **Live-Training:**
   - `LiveTrainingPage` lädt immer `GET /sessions/active` (Fortsetzen nach Reload, #FA-5.9). Kopfzeile: Startzeit und laufende Dauer (`StartedInfo`, alle 30 s).
+  - Übungsbeschreibungen lädt sie getrennt über `GET /exercises` (die Einheit liefert nur Namen; ohne Backend-Änderung). `ExerciseHint` zeigt sie oben in der Karte, ab 160 Zeichen oder mehr als 3 Zeilen gekürzt mit «Mehr anzeigen». Die Übungsliste zeigt sie unter der Muskelgruppe, auf 2 Zeilen gekürzt.
   - `SessionExerciseCard`:
     - Das `NewSetForm` ist mit `suggestedSets[0]` vorbelegt und wird über `key={sets.length}` neu aufgebaut. Die übrigen Vorschläge stehen als «Satz n · offen» darunter.
     - Fortschritt «x von y Sätzen», grünes Häkchen, sobald keine Vorschläge mehr offen sind.

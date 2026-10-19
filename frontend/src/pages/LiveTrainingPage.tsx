@@ -16,6 +16,7 @@ import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link as RouterLink, useNavigate } from 'react-router'
 import { getErrorMessage } from '../api/client'
+import { getExercises } from '../api/exercises'
 import {
   cancelSession,
   finishSession,
@@ -37,11 +38,24 @@ import { formatDuration, formatStart } from '../format'
 import { useNotify } from '../notifications/useNotify'
 
 /**
+ * Beschreibungen aus dem Übungskatalog nach Übungs-ID. Die Einheit selbst liefert nur die Namen.
+ * Eine inzwischen gelöschte Übung fehlt im Katalog und erscheint dann ohne Beschreibung.
+ */
+async function loadDescriptions() {
+  const exercises = await getExercises()
+  return new Map(
+    exercises.map((exercise) => [exercise.id, exercise.description]),
+  )
+}
+
+/**
  * Live-Training (SAF8): Vollbild ohne Hauptnavigation. Lädt immer die aktive Einheit vom Server,
  * damit sie sich nach Neuladen, Gerätewechsel oder neuer Anmeldung fortsetzen lässt (#FA-5.9).
  */
 export function LiveTrainingPage() {
   const session = useApiData(getActiveSession)
+  // Getrennt geladen: Klappt das nicht, läuft das Training trotzdem, nur ohne Beschreibungen
+  const descriptions = useApiData(loadDescriptions)
 
   const replaceExercise = (updated: SessionExerciseResponse) => {
     session.setData(
@@ -85,6 +99,7 @@ export function LiveTrainingPage() {
             active ? (
               <LiveTraining
                 session={active}
+                descriptions={descriptions.data}
                 onExerciseChange={replaceExercise}
               />
             ) : (
@@ -132,9 +147,11 @@ function noteHint(state: 'saving' | 'saved' | undefined, isDirty: boolean) {
 
 function LiveTraining({
   session,
+  descriptions,
   onExerciseChange,
 }: {
   session: SessionResponse
+  descriptions: Map<number, string | null> | undefined
   onExerciseChange: (exercise: SessionExerciseResponse) => void
 }) {
   const navigate = useNavigate()
@@ -204,6 +221,7 @@ function LiveTraining({
           <SessionExerciseCard
             key={exercise.id}
             exercise={exercise}
+            description={descriptions?.get(exercise.exerciseId)}
             defaultExpanded={exercise.id === openExerciseId}
             onChange={onExerciseChange}
           />
