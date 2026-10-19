@@ -1,0 +1,114 @@
+# ST-01 Registrieren, anmelden, abmelden, Konto mit Trainingsdaten löschen
+
+@baseUrl = http://localhost:8080/api/v1
+@password = SicheresPasswort123!
+
+### ST-01.1 Registrieren
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "st01-{{$random.uuid}}@example.ch",
+  "password": "{{password}}"
+}
+
+> {%
+    client.test('201', () => client.assert(response.status === 201, `Status ${response.status}`))
+    client.global.set('email', response.body.email)
+    client.log(`user_id: ${response.body.id}`)
+%}
+
+### ST-01.2 Trainingsdaten: Übung
+POST {{baseUrl}}/exercises
+Content-Type: application/json
+
+{
+  "name": "Bankdrücken",
+  "muscleGroupId": 1
+}
+
+> {%
+    client.test('201', () => client.assert(response.status === 201, `Status ${response.status}`))
+    client.global.set('exerciseId', response.body.id)
+%}
+
+### ST-01.2 Trainingsdaten: Routine
+POST {{baseUrl}}/routines
+Content-Type: application/json
+
+{
+  "name": "Oberkörper",
+  "exerciseIds": [{{exerciseId}}]
+}
+
+> {%
+    client.test('201', () => client.assert(response.status === 201, `Status ${response.status}`))
+    client.global.set('routineId', response.body.id)
+%}
+
+### ST-01.2 Trainingsdaten: Training starten
+POST {{baseUrl}}/sessions
+Content-Type: application/json
+
+{
+  "routineId": {{routineId}}
+}
+
+> {%
+    client.test('201', () => client.assert(response.status === 201, `Status ${response.status}`))
+    client.global.set('sessionExerciseId', response.body.exercises[0].id)
+%}
+
+### ST-01.2 Trainingsdaten: Satz erfassen
+POST {{baseUrl}}/sessions/active/exercises/{{sessionExerciseId}}/sets
+Content-Type: application/json
+
+{
+  "weightKg": 60,
+  "repetitions": 10,
+  "restSeconds": 90
+}
+
+> {% client.test('201', () => client.assert(response.status === 201, `Status ${response.status}`)) %}
+
+### ST-01.2 Trainingsdaten: Training abschliessen
+POST {{baseUrl}}/sessions/active/finish
+
+> {% client.test('204', () => client.assert(response.status === 204, `Status ${response.status}`)) %}
+
+### ST-01.3 Abmelden
+POST {{baseUrl}}/auth/logout
+
+> {% client.test('204', () => client.assert(response.status === 204, `Status ${response.status}`)) %}
+
+### ST-01.4 Anmelden
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+> {% client.test('200', () => client.assert(response.status === 200, `Status ${response.status}`)) %}
+
+### ST-01.5 Konto mit allen Trainingsdaten löschen
+DELETE {{baseUrl}}/users/me
+Content-Type: application/json
+
+{
+  "password": "{{password}}"
+}
+
+> {% client.test('204', () => client.assert(response.status === 204, `Status ${response.status}`)) %}
+
+### ST-01.6 Anmelden nicht mehr möglich
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+> {% client.test('401', () => client.assert(response.status === 401, `Status ${response.status}`)) %}

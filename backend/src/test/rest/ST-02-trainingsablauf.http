@@ -1,0 +1,140 @@
+# ST-02 Training durchführen, Sätze verschieben und löschen, abschliessen
+
+@baseUrl = http://localhost:8080/api/v1
+@password = SicheresPasswort123!
+
+### ST-02.1 Vorbereitung: Sportler registrieren
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "st02-{{$random.uuid}}@example.ch",
+  "password": "{{password}}"
+}
+
+> {% client.test('201', () => client.assert(response.status === 201, `Status ${response.status}`)) %}
+
+### ST-02.1 Vorbereitung: Übung
+POST {{baseUrl}}/exercises
+Content-Type: application/json
+
+{
+  "name": "Bankdrücken",
+  "muscleGroupId": 1
+}
+
+> {%
+    client.test('201', () => client.assert(response.status === 201, `Status ${response.status}`))
+    client.global.set('exerciseId', response.body.id)
+%}
+
+### ST-02.1 Vorbereitung: Routine
+POST {{baseUrl}}/routines
+Content-Type: application/json
+
+{
+  "name": "Oberkörper",
+  "exerciseIds": [{{exerciseId}}]
+}
+
+> {%
+    client.test('201', () => client.assert(response.status === 201, `Status ${response.status}`))
+    client.global.set('routineId', response.body.id)
+%}
+
+### ST-02.2 Training starten
+POST {{baseUrl}}/sessions
+Content-Type: application/json
+
+{
+  "routineId": {{routineId}}
+}
+
+> {%
+    client.test('201', () => client.assert(response.status === 201, `Status ${response.status}`))
+    client.global.set('sessionId', response.body.id)
+    client.global.set('sessionExerciseId', response.body.exercises[0].id)
+%}
+
+### ST-02.3 Satz 1 erfassen
+POST {{baseUrl}}/sessions/active/exercises/{{sessionExerciseId}}/sets
+Content-Type: application/json
+
+{
+  "weightKg": 60,
+  "repetitions": 10,
+  "restSeconds": 90
+}
+
+> {%
+    client.test('201', () => client.assert(response.status === 201, `Status ${response.status}`))
+    client.global.set('firstSetId', response.body.sets[0].id)
+%}
+
+### ST-02.3 Satz 2 erfassen
+POST {{baseUrl}}/sessions/active/exercises/{{sessionExerciseId}}/sets
+Content-Type: application/json
+
+{
+  "weightKg": 70,
+  "repetitions": 8,
+  "restSeconds": 90
+}
+
+> {% client.test('201', () => client.assert(response.status === 201, `Status ${response.status}`)) %}
+
+### ST-02.3 Satz 3 erfassen
+POST {{baseUrl}}/sessions/active/exercises/{{sessionExerciseId}}/sets
+Content-Type: application/json
+
+{
+  "weightKg": 80,
+  "repetitions": 6,
+  "restSeconds": 120
+}
+
+> {%
+    client.test('201', () => client.assert(response.status === 201, `Status ${response.status}`))
+    client.global.set('thirdSetId', response.body.sets[2].id)
+%}
+
+### ST-02.4 Satz 3 an Position 1 verschieben
+PUT {{baseUrl}}/sessions/active/sets/{{thirdSetId}}/position
+Content-Type: application/json
+
+{
+  "newSetNumber": 1
+}
+
+> {% client.test('200', () => client.assert(response.status === 200, `Status ${response.status}`)) %}
+
+### ST-02.4 Satz mit 60 kg löschen
+DELETE {{baseUrl}}/sessions/active/sets/{{firstSetId}}
+
+> {% client.test('200', () => client.assert(response.status === 200, `Status ${response.status}`)) %}
+
+### ST-02.5 Training abschliessen
+POST {{baseUrl}}/sessions/active/finish
+
+> {% client.test('204', () => client.assert(response.status === 204, `Status ${response.status}`)) %}
+
+### ST-02.6 Training in der Historie
+GET {{baseUrl}}/history/sessions/{{sessionId}}
+
+> {%
+    client.test('200, Sätze lückenlos in neuer Reihenfolge', () => {
+        client.assert(response.status === 200, `Status ${response.status}`)
+        const sets = response.body.exercises[0].sets.map(s => `${s.setNumber}:${s.weightKg}x${s.repetitions}`).join(', ')
+        client.assert(sets === '1:80x6, 2:70x8', sets)
+    })
+%}
+
+### ST-02 Aufräumen: Konto löschen
+DELETE {{baseUrl}}/users/me
+Content-Type: application/json
+
+{
+  "password": "{{password}}"
+}
+
+> {% client.test('204', () => client.assert(response.status === 204, `Status ${response.status}`)) %}

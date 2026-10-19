@@ -1,0 +1,145 @@
+# ST-03 Zweiter Sportler greift auf Daten des ersten zu
+# Erwartet: Jeweils 404. Es werden keine Daten gelesen oder verändert.
+
+@baseUrl = http://localhost:8080/api/v1
+@password = SicheresPasswort123!
+
+### ST-03.1 Sportler A registrieren
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "st03-a-{{$random.uuid}}@example.ch",
+  "password": "{{password}}"
+}
+
+> {%
+    client.test('201', () => client.assert(response.status === 201, `Status ${response.status}`))
+    client.global.set('emailA', response.body.email)
+%}
+
+### ST-03.1 A legt eine Übung an
+POST {{baseUrl}}/exercises
+Content-Type: application/json
+
+{
+  "name": "Bankdrücken",
+  "muscleGroupId": 1
+}
+
+> {%
+    client.test('201', () => client.assert(response.status === 201, `Status ${response.status}`))
+    client.global.set('exerciseIdA', response.body.id)
+%}
+
+### ST-03.1 A legt eine Routine an
+POST {{baseUrl}}/routines
+Content-Type: application/json
+
+{
+  "name": "Oberkörper",
+  "exerciseIds": [{{exerciseIdA}}]
+}
+
+> {%
+    client.test('201', () => client.assert(response.status === 201, `Status ${response.status}`))
+    client.global.set('routineIdA', response.body.id)
+%}
+
+### ST-03.2 Sportler B registrieren (ab hier Anfragen als B)
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "st03-b-{{$random.uuid}}@example.ch",
+  "password": "{{password}}"
+}
+
+> {%
+    client.test('201', () => client.assert(response.status === 201, `Status ${response.status}`))
+    client.global.set('emailB', response.body.email)
+%}
+
+### ST-03.3 B liest die Routine von A
+GET {{baseUrl}}/routines/{{routineIdA}}
+
+> {% client.test('404', () => client.assert(response.status === 404, `Status ${response.status}`)) %}
+
+### ST-03.3 B ändert die Übung von A
+PUT {{baseUrl}}/exercises/{{exerciseIdA}}
+Content-Type: application/json
+
+{
+  "name": "Geändert von B",
+  "muscleGroupId": 2
+}
+
+> {% client.test('404', () => client.assert(response.status === 404, `Status ${response.status}`)) %}
+
+### ST-03.3 B löscht die Routine von A
+DELETE {{baseUrl}}/routines/{{routineIdA}}
+
+> {% client.test('404', () => client.assert(response.status === 404, `Status ${response.status}`)) %}
+
+### ST-03.3 B startet ein Training mit der Routine von A
+POST {{baseUrl}}/sessions
+Content-Type: application/json
+
+{
+  "routineId": {{routineIdA}}
+}
+
+> {% client.test('404', () => client.assert(response.status === 404, `Status ${response.status}`)) %}
+
+### ST-03.4 Sportler A meldet sich an (ab hier Anfragen als A)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{emailA}}",
+  "password": "{{password}}"
+}
+
+> {% client.test('200', () => client.assert(response.status === 200, `Status ${response.status}`)) %}
+
+### ST-03.4 Daten von A unverändert
+GET {{baseUrl}}/routines
+
+> {%
+    client.test('200, Routine und Übung unverändert', () => {
+        client.assert(response.status === 200, `Status ${response.status}`)
+        const routines = response.body.map(r => `${r.name}: ${r.exercises.map(e => e.name).join(', ')}`).join(' | ')
+        client.assert(routines === 'Oberkörper: Bankdrücken', routines)
+    })
+%}
+
+### ST-03 Aufräumen: Konto A löschen
+DELETE {{baseUrl}}/users/me
+Content-Type: application/json
+
+{
+  "password": "{{password}}"
+}
+
+> {% client.test('204', () => client.assert(response.status === 204, `Status ${response.status}`)) %}
+
+### ST-03 Aufräumen: als B anmelden
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{emailB}}",
+  "password": "{{password}}"
+}
+
+> {% client.test('200', () => client.assert(response.status === 200, `Status ${response.status}`)) %}
+
+### ST-03 Aufräumen: Konto B löschen
+DELETE {{baseUrl}}/users/me
+Content-Type: application/json
+
+{
+  "password": "{{password}}"
+}
+
+> {% client.test('204', () => client.assert(response.status === 204, `Status ${response.status}`)) %}
