@@ -30,7 +30,7 @@ Branches: Arbeit auf `develop`, PR auf `main` deployt. Lennard committet in der 
 ## Lokal bauen, starten, testen
 
 - **Backend-Tests:** `cd backend && ./mvnw -q test`. `java`/`mvn` sind nicht im PATH; falls JAVA_HOME fehlt, `JAVA_HOME="$HOME/.jdks/temurin-25.0.4.1"` voranstellen. Rund 200 Tests, alle grün.
-- **Frontend:** `cd frontend && npm run lint && npm run typecheck && npm run build`. `npm test` (Vitest) hat noch keine Tests (`--passWithNoTests`).
+- **Frontend:** `cd frontend && npm run lint && npm run typecheck && npm test && npm run build`. Vitest-Unit-Tests UTF-01..06 nur für reine Funktionen (`setForm`, `api/client`, `format`), sonst manuelle Systemtests STF-01..52. Zeitzone in `vite.config.ts` fix Europe/Zurich, Uhr per `vi.setSystemTime`. Übersicht: `frontend/Frontend-Unit-Tests.docx`.
 - **App starten:** im Desktop-App-Browser per `preview_start` mit «backend» bzw. «frontend». Vite proxied `/api` auf 8080, damit das SameSite=Strict-Cookie ohne CORS funktioniert.
 - **Backend-Konfiguration:** `backend/.env` (gitignored) mit `DB_PASSWORD`, `JWT_SECRET` (≥ 32 Zeichen, sonst Startabbruch); optional `DB_URL`, `DB_USERNAME`. Lokale DB: PostgreSQL 18 auf 5432, DB `digital_training_platform`.
 - **Swagger** nur lokal: http://localhost:8080/swagger-ui.html (zuerst `POST /api/v1/auth/login`, der Authorize-Button nützt nichts). Im Container ist es aus.
@@ -211,4 +211,3 @@ Messages sind englische Konstanten in `ErrorMessages` (keine String-Literale in 
 ## Offene Punkte (Stand 2026-10-19)
 - Diplomarbeit-Text für #FA-5.5 (FA-Tabelle, Business-Regel, DTO-Tabelle `suggestedSets`/`SetSuggestion.setNumber`, UT-13, GUI «Satz-Eingabe») passt Lennard selbst an.
 - Datenschutzseite: Kontaktadresse fehlt noch.
-- Frontend-Tests (Vitest + RTL) noch keine.

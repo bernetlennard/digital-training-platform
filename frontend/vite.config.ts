@@ -15,5 +15,8 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: './src/setupTests.ts',
+    // Feste Zeitzone wie auf dem Smartphone in der Schweiz, damit Datum und Uhrzeit
+    // auch in der Pipeline (UTC) gleich formatiert werden
+    env: { TZ: 'Europe/Zurich' },
   },
 })
