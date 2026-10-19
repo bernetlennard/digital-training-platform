@@ -28,10 +28,10 @@ public final class TrainingMapper {
         return new SetResponse(set.getId(), set.getSetNumber(), set.getWeightKg(), set.getRepetitions(), set.getRestSeconds());
     }
 
-    public static SessionExerciseResponse toExercise(SessionExercise item, String name, SetSuggestion next) {
-        // SessionExercise inkl. Sätze (toSet) abbilden, next darf null sein
+    public static SessionExerciseResponse toExercise(SessionExercise item, String name, List<SetSuggestion> suggestedSets) {
+        // SessionExercise inkl. Sätze (toSet) und Vorschlägen für die offenen Sätze abbilden
         List<SetResponse> sets = item.getSets().stream().map(TrainingMapper::toSet).toList();
-        return new SessionExerciseResponse(item.getId(), item.getExerciseId(), name, item.getPosition(), sets, next);
+        return new SessionExerciseResponse(item.getId(), item.getExerciseId(), name, item.getPosition(), sets, suggestedSets);
     }
 
     public static SessionResponse toSession(TrainingSession session, RoutineSummary routine,

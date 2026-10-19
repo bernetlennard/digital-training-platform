@@ -14,7 +14,7 @@ import { useApiData } from '../api/useApiData'
 import { AsyncContent } from '../components/AsyncContent'
 import { EmptyState } from '../components/EmptyState'
 import { PageHeader } from '../components/PageHeader'
-import { formatDuration, formatInstantDate, formatTime } from '../format'
+import { formatDuration, formatInstantWeekdayDate, formatTime } from '../format'
 
 async function loadRoutineHistory(routineIdParam: string | undefined) {
   const routineId = parseId(routineIdParam)
@@ -70,7 +70,7 @@ export function RoutineHistoryPage() {
                     to={`/verlauf/einheit/${session.id}`}
                   >
                     <ListItemText
-                      primary={formatInstantDate(session.startedAt)}
+                      primary={formatInstantWeekdayDate(session.startedAt)}
                       secondary={`${formatTime(session.startedAt)} Uhr · ${formatDuration(session.startedAt, session.finishedAt)}`}
                     />
                   </ListItemButton>

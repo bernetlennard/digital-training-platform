@@ -6,6 +6,12 @@ const dateFormat = new Intl.DateTimeFormat('de-CH', {
   month: '2-digit',
   year: 'numeric',
 })
+const weekdayDateFormat = new Intl.DateTimeFormat('de-CH', {
+  weekday: 'short',
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+})
 const timeFormat = new Intl.DateTimeFormat('de-CH', {
   hour: '2-digit',
   minute: '2-digit',
@@ -14,15 +20,32 @@ const numberFormat = new Intl.NumberFormat('de-CH', {
   maximumFractionDigits: 2,
 })
 
-/** «2026-10-28» als «28.10.2026». Ohne new Date(isoDate), das würde als UTC gelesen. */
-export function formatDate(date: IsoDate) {
+/** «2026-10-28» als lokales Datum. Ohne new Date(isoDate), das würde als UTC gelesen. */
+function toLocalDate(date: IsoDate) {
   const [year, month, day] = date.split('-').map(Number)
-  return dateFormat.format(new Date(year, month - 1, day))
+  return new Date(year, month - 1, day)
 }
 
-/** Datum eines Zeitpunkts in der Zeitzone des Geräts, z. B. «28.10.2026» */
-export function formatInstantDate(instant: IsoInstant) {
-  return dateFormat.format(new Date(instant))
+/** «2026-10-28» als «28.10.2026» */
+export function formatDate(date: IsoDate) {
+  return dateFormat.format(toLocalDate(date))
+}
+
+/** «2026-10-28» als «Mi., 28.10.2026», damit man den Trainingstag auf einen Blick erkennt */
+export function formatWeekdayDate(date: IsoDate) {
+  return weekdayDateFormat.format(toLocalDate(date))
+}
+
+/** Datum eines Zeitpunkts in der Zeitzone des Geräts, z. B. «Mi., 28.10.2026» */
+export function formatInstantWeekdayDate(instant: IsoInstant) {
+  return weekdayDateFormat.format(new Date(instant))
+}
+
+/** Start eines Trainings: heute nur die Uhrzeit («um 18:30»), sonst mit Datum («am 28.10.2026, 18:30») */
+export function formatStart(instant: IsoInstant) {
+  const isToday =
+    dateFormat.format(new Date(instant)) === dateFormat.format(new Date())
+  return isToday ? `um ${formatTime(instant)}` : `am ${formatDateTime(instant)}`
 }
 
 /** Zeitpunkt in der Zeitzone des Geräts, z. B. «28.10.2026, 18:30» */

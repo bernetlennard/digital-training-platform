@@ -1,6 +1,7 @@
 package ch.bernet.trainingplatform.persistence.training;
 
 import ch.bernet.trainingplatform.common.exception.ConflictException;
+import ch.bernet.trainingplatform.common.exception.ErrorMessages;
 import ch.bernet.trainingplatform.common.exception.NotFoundException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -18,7 +19,7 @@ import java.util.List;
 @Table(name = "training_session")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class TrainingSession implements Comparable<TrainingSession> {
+public class TrainingSession {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -55,7 +56,7 @@ public class TrainingSession implements Comparable<TrainingSession> {
     public void start(Instant now, List<Long> exerciseIds) {
         // nur aus PLANNED, Übungsliste der Routine kopieren (#FA-3.5), startedAt setzen, Status ACTIVE
         if (status != SessionStatus.PLANNED) {
-            throw new NotFoundException("Session is not planned.");
+            throw new NotFoundException(ErrorMessages.SESSION_NOT_PLANNED);
         }
 
         exercises.clear();
@@ -70,11 +71,11 @@ public class TrainingSession implements Comparable<TrainingSession> {
     public void finish(Instant now) {
         // nur aus ACTIVE; mind. ein Satz (#FA-5.7), Übungen ohne Satz entfernen, finishedAt setzen, Status COMPLETED
         if (status != SessionStatus.ACTIVE) {
-            throw new NotFoundException("Session is not active.");
+            throw new NotFoundException(ErrorMessages.SESSION_NOT_ACTIVE);
         }
 
         if (exercises.stream().allMatch(e -> e.getSets().isEmpty())) {
-            throw new ConflictException("Session has no exercises with sets.");
+            throw new ConflictException(ErrorMessages.SESSION_WITHOUT_SETS);
         }
         exercises.removeIf(e -> e.getSets().isEmpty());
 
@@ -85,7 +86,7 @@ public class TrainingSession implements Comparable<TrainingSession> {
     public void revertToPlanned() {
         // Abbruch einer geplanten Einheit: Übungen und startedAt entfernen, Status PLANNED (#FA-5.8)
         if (status != SessionStatus.ACTIVE) {
-            throw new NotFoundException("Session is not active.");
+            throw new NotFoundException(ErrorMessages.SESSION_NOT_ACTIVE);
         }
 
         exercises.clear();
@@ -96,7 +97,7 @@ public class TrainingSession implements Comparable<TrainingSession> {
     public void reschedule(Long routineId, LocalDate plannedDate) {
         // nur im Status PLANNED; Routine und Datum ändern
         if (status != SessionStatus.PLANNED) {
-            throw new NotFoundException("Session is not planned.");
+            throw new NotFoundException(ErrorMessages.SESSION_NOT_PLANNED);
         }
 
         this.routineId = routineId;
@@ -106,7 +107,7 @@ public class TrainingSession implements Comparable<TrainingSession> {
     public void markDeleted() {
         // nur im Status COMPLETED erlaubt (#FA-6.5)
         if (status != SessionStatus.COMPLETED || deleted) {
-            throw new NotFoundException("Session is not completed or already deleted.");
+            throw new NotFoundException(ErrorMessages.SESSION_NOT_COMPLETED);
         }
 
         deleted = true;
@@ -122,19 +123,14 @@ public class TrainingSession implements Comparable<TrainingSession> {
         return exercises.stream()
                 .filter(e -> sessionExerciseId.equals(e.getId()))
                 .findFirst()
-                .orElseThrow(() -> new NotFoundException("SessionExercise not found"));
+                .orElseThrow(() -> new NotFoundException(ErrorMessages.SESSION_EXERCISE_NOT_FOUND));
     }
 
     public SessionExercise getExerciseOfSet(Long setId) {
         // Übung suchen, die den Satz enthält, sonst NotFoundException
         return exercises.stream().filter(e -> e.getSets().stream().anyMatch(s -> setId.equals(s.getId())))
                 .findFirst()
-                .orElseThrow(() -> new NotFoundException("SessionExercise not found"));
-    }
-
-    @Override
-    public int compareTo(TrainingSession trainingSession) {
-        return this.plannedDate.compareTo(trainingSession.plannedDate);
+                .orElseThrow(() -> new NotFoundException(ErrorMessages.SET_NOT_FOUND));
     }
 
 }

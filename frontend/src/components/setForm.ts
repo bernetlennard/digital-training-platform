@@ -48,7 +48,7 @@ export const restSecondsRules = {
 } satisfies RegisterOptions<SetFormValues, 'restSeconds'>
 
 /** Vorbelegung aus einem Vorschlag oder einem bestehenden Satz, sonst leer (#FA-5.5) */
-export function toSetFormValues(set: SetSuggestion | null): SetFormValues {
+export function toSetFormValues(set: SetSuggestion | undefined): SetFormValues {
   return {
     weightKg: set ? String(set.weightKg) : '',
     repetitions: set ? String(set.repetitions) : '',

@@ -2,19 +2,24 @@ import Add from '@mui/icons-material/Add'
 import ArrowDownward from '@mui/icons-material/ArrowDownward'
 import ArrowUpward from '@mui/icons-material/ArrowUpward'
 import Close from '@mui/icons-material/Close'
+import Search from '@mui/icons-material/Search'
 import {
   Alert,
+  Box,
   Button,
+  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   FormHelperText,
   IconButton,
+  InputAdornment,
   Link,
   List,
   ListItem,
   ListItemButton,
+  ListItemIcon,
   ListItemText,
   Paper,
   Stack,
@@ -241,7 +246,7 @@ function RoutineForm({
               disabled={available.length === 0}
               sx={{ alignSelf: 'flex-start' }}
             >
-              Übung hinzufügen
+              Übungen hinzufügen
             </Button>
           )}
         </Stack>
@@ -271,12 +276,14 @@ function RoutineForm({
       {isPickerOpen && (
         <ExercisePicker
           exercises={available}
-          onPick={(exercise) => {
-            append({
-              exerciseId: exercise.id,
-              name: exercise.name,
-              muscleGroupName: exercise.muscleGroupName,
-            })
+          onPick={(picked) => {
+            append(
+              picked.map((exercise) => ({
+                exerciseId: exercise.id,
+                name: exercise.name,
+                muscleGroupName: exercise.muscleGroupName,
+              })),
+            )
             setIsPickerOpen(false)
           }}
           onClose={() => setIsPickerOpen(false)}
@@ -299,37 +306,108 @@ function RoutineForm({
   )
 }
 
-/** Auswahl einer Übung aus dem Katalog */
+/** Ab dieser Anzahl Übungen hilft ein Suchfeld, sonst ist die Liste auf einen Blick erfassbar */
+const SEARCH_THRESHOLD = 8
+
+/**
+ * Auswahl aus dem Katalog. Mehrere Übungen lassen sich auf einmal ankreuzen, sie kommen in der
+ * Reihenfolge des Antippens in die Routine.
+ */
 function ExercisePicker({
   exercises,
   onPick,
   onClose,
 }: {
   exercises: ExerciseResponse[]
-  onPick: (exercise: ExerciseResponse) => void
+  onPick: (exercises: ExerciseResponse[]) => void
   onClose: () => void
 }) {
+  const [selected, setSelected] = useState<ExerciseResponse[]>([])
+  const [search, setSearch] = useState('')
+  const query = search.trim().toLocaleLowerCase('de')
+  const visible = exercises.filter(
+    (exercise) =>
+      exercise.name.toLocaleLowerCase('de').includes(query) ||
+      exercise.muscleGroupName.toLocaleLowerCase('de').includes(query),
+  )
+
+  const toggle = (exercise: ExerciseResponse) => {
+    setSelected((current) =>
+      current.includes(exercise)
+        ? current.filter((item) => item !== exercise)
+        : [...current, exercise],
+    )
+  }
+
   return (
     <Dialog open onClose={onClose} fullWidth maxWidth="xs" scroll="paper">
-      <DialogTitle>Übung hinzufügen</DialogTitle>
+      <DialogTitle>Übungen hinzufügen</DialogTitle>
+      {exercises.length >= SEARCH_THRESHOLD && (
+        <Box sx={{ px: 3, pb: 2 }}>
+          <TextField
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            label="Suchen"
+            type="search"
+            size="small"
+            fullWidth
+            autoComplete="off"
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search />
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
+        </Box>
+      )}
       <DialogContent dividers sx={{ p: 0 }}>
-        <List disablePadding>
-          {exercises.map((exercise) => (
-            <ListItemButton
-              key={exercise.id}
-              divider
-              onClick={() => onPick(exercise)}
-            >
-              <ListItemText
-                primary={exercise.name}
-                secondary={exercise.muscleGroupName}
-              />
-            </ListItemButton>
-          ))}
-        </List>
+        {visible.length === 0 ? (
+          <Typography color="text.secondary" sx={{ p: 3 }}>
+            Keine Übung gefunden.
+          </Typography>
+        ) : (
+          <List disablePadding>
+            {visible.map((exercise) => {
+              const position = selected.indexOf(exercise) + 1
+              return (
+                <ListItemButton
+                  key={exercise.id}
+                  divider
+                  selected={position > 0}
+                  onClick={() => toggle(exercise)}
+                >
+                  <ListItemIcon sx={{ minWidth: 40 }}>
+                    <Checkbox
+                      edge="start"
+                      checked={position > 0}
+                      tabIndex={-1}
+                      disableRipple
+                      slotProps={{ input: { 'aria-label': exercise.name } }}
+                    />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={exercise.name}
+                    secondary={exercise.muscleGroupName}
+                  />
+                </ListItemButton>
+              )
+            })}
+          </List>
+        )}
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Abbrechen</Button>
+        <Button
+          variant="contained"
+          disabled={selected.length === 0}
+          onClick={() => onPick(selected)}
+        >
+          {selected.length > 1 ? `${selected.length} hinzufügen` : 'Hinzufügen'}
+        </Button>
       </DialogActions>
     </Dialog>
   )

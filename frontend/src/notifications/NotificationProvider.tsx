@@ -41,8 +41,11 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           if (reason !== 'clickaway') setOpen(false)
         }}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        // Auf dem Smartphone über der unteren Navigation
-        sx={{ bottom: { xs: 72, md: 24 } }}
+        // Auf dem Smartphone über der unteren Navigation. Ihre Höhe setzt AppLayout, im
+        // Live-Training ohne Navigation bleibt die Meldung am unteren Rand.
+        sx={{
+          bottom: { xs: 'calc(8px + var(--bottom-nav-height, 0px))', md: 24 },
+        }}
       >
         <Alert
           severity={notification?.severity}

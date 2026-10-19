@@ -54,7 +54,7 @@ class LiveSessionControllerTest {
 
     private static final SessionExerciseResponse SQUAT_EXERCISE = new SessionExerciseResponse(101L, SQUAT, "Kniebeuge", 1,
             List.of(new SetResponse(501L, 1, new BigDecimal("100.00"), 5, 180)),
-            new SetSuggestion(new BigDecimal("100.00"), 5, 180));
+            List.of(new SetSuggestion(2, new BigDecimal("100.00"), 5, 180)));
 
     private static final SessionResponse ACTIVE = new SessionResponse(SESSION_ID, ROUTINE_ID, "Push", false, "aktiv",
             NOW, null, null, List.of(SQUAT_EXERCISE));
@@ -161,7 +161,8 @@ class LiveSessionControllerTest {
                 .andExpect(jsonPath("$.exercises", hasSize(1)))
                 .andExpect(jsonPath("$.exercises[0].id").value(101))
                 .andExpect(jsonPath("$.exercises[0].sets[0].setNumber").value(1))
-                .andExpect(jsonPath("$.exercises[0].nextSet.repetitions").value(5));
+                .andExpect(jsonPath("$.exercises[0].suggestedSets[0].setNumber").value(2))
+                .andExpect(jsonPath("$.exercises[0].suggestedSets[0].repetitions").value(5));
     }
 
     @Test
@@ -192,7 +193,7 @@ class LiveSessionControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(101))
                 .andExpect(jsonPath("$.sets", hasSize(1)))
-                .andExpect(jsonPath("$.nextSet").exists());
+                .andExpect(jsonPath("$.suggestedSets", hasSize(1)));
 
         verify(liveSessionService).addSet(USER_A, 101L, new SetRequest(new BigDecimal("100.5"), 5, 180));
     }

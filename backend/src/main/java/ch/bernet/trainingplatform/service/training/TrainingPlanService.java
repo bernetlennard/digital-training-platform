@@ -1,6 +1,7 @@
 package ch.bernet.trainingplatform.service.training;
 
 import ch.bernet.trainingplatform.common.exception.BusinessRuleException;
+import ch.bernet.trainingplatform.common.exception.ErrorMessages;
 import ch.bernet.trainingplatform.common.exception.NotFoundException;
 import ch.bernet.trainingplatform.persistence.training.SessionStatus;
 import ch.bernet.trainingplatform.persistence.training.TrainingSession;
@@ -53,7 +54,7 @@ public class TrainingPlanService {
         // Einheit laden (sonst NotFoundException), assertNotInPast, Routine prüfen, reschedule
         TrainingSession session = trainingSessionRepository.findByIdAndUserId(sessionId, userId)
                 .filter(s -> s.getStatus() == SessionStatus.PLANNED)
-                .orElseThrow(() -> new NotFoundException("Session not found"));
+                .orElseThrow(() -> new NotFoundException(ErrorMessages.SESSION_NOT_FOUND));
         assertNotInPast(session.getPlannedDate());
         assertNotInPast(request.plannedDate());
         RoutineResponse routineResponse = sessionAccess.getActiveRoutine(userId, request.routineId());
@@ -64,9 +65,9 @@ public class TrainingPlanService {
     @Transactional
     public void deletePlannedSession(Long userId, Long sessionId) {
         // geplante Einheit laden (sonst NotFoundException) und hart löschen
-        TrainingSession session = trainingSessionRepository.findByIdAndUserId(sessionId, userId).orElseThrow(() -> new NotFoundException("Session not found"));
+        TrainingSession session = trainingSessionRepository.findByIdAndUserId(sessionId, userId).orElseThrow(() -> new NotFoundException(ErrorMessages.SESSION_NOT_FOUND));
         if (session.getStatus() != SessionStatus.PLANNED) {
-            throw new NotFoundException("No planned session found");
+            throw new NotFoundException(ErrorMessages.SESSION_NOT_PLANNED);
         }
         trainingSessionRepository.delete(session);
     }
@@ -74,7 +75,7 @@ public class TrainingPlanService {
     private void assertNotInPast(LocalDate date) {
         // Datum vor heute (clock) -> BusinessRuleException (#FA-4.2)
         if (date.isBefore(LocalDate.now(clock))) {
-            throw new BusinessRuleException("Date is not in the past");
+            throw new BusinessRuleException(ErrorMessages.PLANNED_DATE_IN_PAST);
         }
     }
 

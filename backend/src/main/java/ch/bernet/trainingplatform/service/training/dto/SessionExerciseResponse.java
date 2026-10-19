@@ -8,6 +8,6 @@ public record SessionExerciseResponse(
         String exerciseName,
         int position,
         List<SetResponse> sets,
-        SetSuggestion nextSet
+        List<SetSuggestion> suggestedSets
 ) {
 }

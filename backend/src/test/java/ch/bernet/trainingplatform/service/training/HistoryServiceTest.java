@@ -119,8 +119,8 @@ class HistoryServiceTest {
                 .containsExactly(
                         tuple("Bankdrücken", 1, List.of(new SetResponse(501L, 1, new BigDecimal("80.00"), 8, 120))),
                         tuple("Kniebeuge", 2, List.of(new SetResponse(502L, 1, new BigDecimal("100.00"), 5, 180))));
-        // Im Verlauf gibt es keinen Vorschlag für einen nächsten Satz
-        assertThat(response.exercises()).extracting(SessionExerciseResponse::nextSet).containsOnlyNulls();
+        // Im Verlauf gibt es keine Vorschläge
+        assertThat(response.exercises()).extracting(SessionExerciseResponse::suggestedSets).containsOnly(List.of());
     }
 
     @Test

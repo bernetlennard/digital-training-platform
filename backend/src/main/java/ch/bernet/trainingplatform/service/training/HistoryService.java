@@ -1,5 +1,6 @@
 package ch.bernet.trainingplatform.service.training;
 
+import ch.bernet.trainingplatform.common.exception.ErrorMessages;
 import ch.bernet.trainingplatform.common.exception.NotFoundException;
 import ch.bernet.trainingplatform.persistence.training.SessionExercise;
 import ch.bernet.trainingplatform.persistence.training.SessionStatus;
@@ -55,13 +56,13 @@ public class HistoryService {
         // abgeschlossene Einheit laden (sonst NotFoundException), Übungsnamen auflösen, mappen
         TrainingSession session = trainingSessionRepository.findByIdAndUserId(sessionId, userId)
                 .filter(s -> s.getStatus() == SessionStatus.COMPLETED && !s.isDeleted())
-                .orElseThrow(() -> new NotFoundException("Session not found"));
+                .orElseThrow(() -> new NotFoundException(ErrorMessages.SESSION_NOT_FOUND));
         RoutineSummary routine = sessionAccess.getRoutineSummaries(userId).get(session.getRoutineId());
         List<Long> exerciseIds = session.getExercises().stream().map(SessionExercise::getExerciseId).toList();
         Map<Long, ExerciseResponse> names = sessionAccess.getExercises(userId, exerciseIds);
-        // Im Verlauf gibt es keinen Vorschlag für den nächsten Satz
+        // Im Verlauf gibt es keine Vorschläge
         List<SessionExerciseResponse> exercises = session.getExercises().stream()
-                .map(item -> TrainingMapper.toExercise(item, names.get(item.getExerciseId()).name(), null))
+                .map(item -> TrainingMapper.toExercise(item, names.get(item.getExerciseId()).name(), List.of()))
                 .toList();
         return TrainingMapper.toSession(session, routine, exercises);
     }
@@ -70,7 +71,7 @@ public class HistoryService {
     public void deleteSession(Long userId, Long sessionId) {
         // Einheit laden (sonst NotFoundException), markDeleted (#FA-6.5)
         trainingSessionRepository.findByIdAndUserId(sessionId, userId)
-                .orElseThrow(() -> new NotFoundException("Session not found"))
+                .orElseThrow(() -> new NotFoundException(ErrorMessages.SESSION_NOT_FOUND))
                 .markDeleted();
     }
 

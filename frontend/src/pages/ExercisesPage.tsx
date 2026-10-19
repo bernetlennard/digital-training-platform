@@ -1,5 +1,6 @@
 import Add from '@mui/icons-material/Add'
 import {
+  Box,
   Button,
   List,
   ListItemButton,
@@ -65,7 +66,26 @@ export function ExercisesPage() {
                     >
                       <ListItemText
                         primary={exercise.name}
-                        secondary={exercise.muscleGroupName}
+                        secondary={
+                          <>
+                            {exercise.muscleGroupName}
+                            {/* Gekürzt auf zwei Zeilen, ganz im Dialog nach dem Antippen */}
+                            {exercise.description && (
+                              <Box
+                                component="span"
+                                sx={{
+                                  display: '-webkit-box',
+                                  WebkitLineClamp: 2,
+                                  WebkitBoxOrient: 'vertical',
+                                  overflow: 'hidden',
+                                  overflowWrap: 'anywhere',
+                                }}
+                              >
+                                {exercise.description}
+                              </Box>
+                            )}
+                          </>
+                        }
                       />
                     </ListItemButton>
                   ))}

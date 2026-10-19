@@ -1,4 +1,5 @@
 import { InputAdornment, Stack, TextField } from '@mui/material'
+import type { FocusEvent } from 'react'
 import type { FieldErrors, UseFormRegister } from 'react-hook-form'
 import { textFieldProps } from './formFields'
 import {
@@ -19,10 +20,16 @@ function unit(text: string) {
   }
 }
 
+/** Markiert den vorbelegten Wert, damit eine neue Zahl ihn gleich ersetzt */
+function selectAll(event: FocusEvent<HTMLInputElement>) {
+  event.currentTarget.select()
+}
+
 /**
  * Satz-Eingabe: drei Zahlenfelder nebeneinander. inputMode öffnet auf dem Smartphone die
  * numerische Tastatur (#NFA-5.4), für das Gewicht mit Dezimaltrennzeichen.
  * Die Einheit steht im Feld, damit die Beschriftung auch auf 360 Pixel ganz sichtbar bleibt.
+ * Die Beschriftung steht immer oben, sonst überdeckt sie im leeren Feld die Einheit.
  */
 export function SetFields({ register, errors }: SetFieldsProps) {
   return (
@@ -36,7 +43,8 @@ export function SetFields({ register, errors }: SetFieldsProps) {
         autoComplete="off"
         slotProps={{
           input: unit('kg'),
-          htmlInput: { inputMode: 'decimal' },
+          inputLabel: { shrink: true },
+          htmlInput: { inputMode: 'decimal', onFocus: selectAll },
         }}
         sx={{ flex: 1 }}
       />
@@ -47,7 +55,10 @@ export function SetFields({ register, errors }: SetFieldsProps) {
         error={!!errors.repetitions}
         helperText={errors.repetitions?.message}
         autoComplete="off"
-        slotProps={{ htmlInput: { inputMode: 'numeric' } }}
+        slotProps={{
+          inputLabel: { shrink: true },
+          htmlInput: { inputMode: 'numeric', onFocus: selectAll },
+        }}
         sx={{ flex: 1 }}
       />
       <TextField
@@ -58,7 +69,8 @@ export function SetFields({ register, errors }: SetFieldsProps) {
         autoComplete="off"
         slotProps={{
           input: unit('s'),
-          htmlInput: { inputMode: 'numeric' },
+          inputLabel: { shrink: true },
+          htmlInput: { inputMode: 'numeric', onFocus: selectAll },
         }}
         sx={{ flex: 1 }}
       />

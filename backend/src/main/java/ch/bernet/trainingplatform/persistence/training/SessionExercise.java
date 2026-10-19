@@ -1,6 +1,7 @@
 package ch.bernet.trainingplatform.persistence.training;
 
 import ch.bernet.trainingplatform.common.exception.BusinessRuleException;
+import ch.bernet.trainingplatform.common.exception.ErrorMessages;
 import ch.bernet.trainingplatform.common.exception.NotFoundException;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -44,7 +45,7 @@ public class SessionExercise {
         ExerciseSet exerciseSet = sets.stream()
                 .filter(s -> setId.equals(s.getId()))
                 .findFirst()
-                .orElseThrow(() -> new NotFoundException("Set not found"));
+                .orElseThrow(() -> new NotFoundException(ErrorMessages.SET_NOT_FOUND));
 
         exerciseSet.setWeightKg(weightKg);
         exerciseSet.setRepetitions(repetitions);
@@ -56,9 +57,9 @@ public class SessionExercise {
         ExerciseSet exerciseSet = sets.stream()
                 .filter(s -> setId.equals(s.getId()))
                 .findFirst()
-                .orElseThrow(() -> new NotFoundException("Set not found"));
+                .orElseThrow(() -> new NotFoundException(ErrorMessages.SET_NOT_FOUND));
         if (newSetNumber < 1 || newSetNumber > sets.size()) {
-            throw new BusinessRuleException("Set number out of range");
+            throw new BusinessRuleException(ErrorMessages.SET_NUMBER_OUT_OF_RANGE);
         }
         sets.remove(exerciseSet);
         sets.add(newSetNumber - 1, exerciseSet);
@@ -69,7 +70,7 @@ public class SessionExercise {
         // Satz entfernen (sonst NotFoundException), danach renumberSets
         boolean isRemoved = sets.removeIf(s -> setId.equals(s.getId()));
         if (!isRemoved) {
-            throw new NotFoundException("Set not found");
+            throw new NotFoundException(ErrorMessages.SET_NOT_FOUND);
         }
         renumberSets();
     }
