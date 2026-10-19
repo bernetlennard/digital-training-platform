@@ -1,14 +1,9 @@
-# Produktiver Stack auf einem Host: Caddy, Frontend, Backend und PostgreSQL (#NFA-7.18).
-# Werte und Secrets (DOMAIN, DB_PASSWORD, JWT_SECRET) kommen aus deploy/.env, nie aus dem Repository (#NFA-7.20).
-# Frontend und Backend kommen als fertige Images von Docker Hub, hier wird nichts gebaut.
-# IMAGE_TAG setzt der Deploy-Workflow auf den Commit-SHA, ohne ihn gilt latest.
 name: trainingplatform
 
 services:
   caddy:
     image: caddy:2.11.7-alpine@sha256:d8542f48d34a9cf4e4c11a478865229840e87e4c96ea3f439101f31a5d35f75f
     restart: unless-stopped
-    # Einziger Einstieg von aussen (#NFA-7.19): 80 leitet nur auf HTTPS um
     ports:
       - "80:80"
       - "443:443"
@@ -16,7 +11,6 @@ services:
       DOMAIN: ${DOMAIN:?DOMAIN fehlt in .env}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
-      # Zertifikate von Let's Encrypt, damit sie einen Neustart überleben
       - caddy_data:/data
       - caddy_config:/config
     networks: [web]
@@ -35,7 +29,6 @@ services:
       DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD fehlt in .env}
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET fehlt in .env}
     networks: [web, db]
-    # Flyway braucht beim Start eine erreichbare Datenbank
     depends_on:
       db:
         condition: service_healthy
@@ -45,7 +38,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_DB: digital_training_platform
-      # Gilt nur beim allerersten Start, wenn das Volume noch leer ist
+      # Gilt nur beim ersten Start mit leerem Volume
       POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD fehlt in .env}
     volumes:
       - db_data:/var/lib/postgresql
@@ -57,9 +50,7 @@ services:
       retries: 10
 
 networks:
-  # Caddy, Frontend und Backend
   web:
-  # Nur Backend und Datenbank, ohne Verbindung nach aussen
   db:
     internal: true
 

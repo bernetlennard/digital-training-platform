@@ -55,12 +55,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnexpected(Exception ex) {
-        // Fehler loggen (L11), 500 ohne Stacktrace/interne Details zurückgeben (L10)
-        String errorMessage = ErrorMessages.UNEXPECTED_ERROR;
-        log.error(errorMessage, ex);
+        // Fehler loggen, 500 ohne Stacktrace/interne Details zurückgeben
+        log.error(ErrorMessages.UNEXPECTED_ERROR, ex);
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
         return ResponseEntity.status(status)
-                .body(new ErrorResponse(status.value(), errorMessage, List.of()));
+                .body(new ErrorResponse(status.value(), ErrorMessages.UNEXPECTED_ERROR, List.of()));
     }
 
 }

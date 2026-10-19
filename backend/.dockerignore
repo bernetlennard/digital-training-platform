@@ -1,34 +1,17 @@
-# Build-Kontext klein halten: ins Image gehören nur pom.xml und src/main
-
-# Build
 target
-
-# Maven-Wrapper (im Image baut das Maven aus dem Basis-Image)
 .mvn
 mvnw
 mvnw.cmd
-
-# Tests laufen in der Pipeline, nicht im Image-Build
 src/test
-
-# Git
 .git
 .gitignore
 .gitattributes
-
-# IDE
 .idea
 *.iml
 *.iws
 *.ipr
-
-# Umgebungsvariablen
 .env
 .env.*
-
-# Dokumentation
 *.md
-
-# Docker
 Dockerfile*
 .dockerignore

@@ -24,7 +24,6 @@ import { PageHeader } from '../components/PageHeader'
 import { formatDateTime, formatDuration, formatWeight } from '../format'
 import { useNotify } from '../notifications/useNotify'
 
-/** Abgeschlossene Einheit mit Übungen, Sätzen und Notiz (SAF9, #FA-6.2). Nur lesen oder löschen (#FA-6.5). */
 export function SessionDetailPage() {
   const { sessionId } = useParams()
   const load = useCallback(

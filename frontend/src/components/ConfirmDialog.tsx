@@ -16,19 +16,13 @@ interface ConfirmDialogProps {
   children: ReactNode
   confirmLabel: string
   cancelLabel?: string
-  /** Rot für Aktionen, die Daten verwerfen */
   destructive?: boolean
-  /** Eigene Fehlermeldungen je Statuscode */
   errorMessages?: Record<number, string>
-  /** Führt die Aktion aus. Bei Erfolg schliesst der Aufrufer den Dialog. */
+  /** Bei Erfolg schliesst der Aufrufer den Dialog, bei einem Fehler bleibt er mit der Meldung offen */
   onConfirm: () => Promise<void>
   onClose: () => void
 }
 
-/**
- * Rückfrage vor dem Löschen oder Abbrechen (#NFA-7.5). Schlägt die Aktion fehl, bleibt der Dialog
- * offen und zeigt die Meldung (#NFA-7.4).
- */
 export function ConfirmDialog({
   title,
   children,

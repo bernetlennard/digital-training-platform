@@ -67,7 +67,7 @@ class HistoryServiceTest {
         // Act
         List<HistoryRoutineResponse> response = historyService.getHistoryRoutines(USER_A);
 
-        // Assert (#FA-6.3)
+        // Assert
         assertThat(response).containsExactlyInAnyOrder(
                 new HistoryRoutineResponse(ROUTINE_ID, "Push", false),
                 new HistoryRoutineResponse(21L, "Beine", true));
@@ -84,7 +84,7 @@ class HistoryServiceTest {
         // Act
         List<SessionSummaryResponse> response = historyService.getRoutineHistory(USER_A, ROUTINE_ID);
 
-        // Assert (#FA-6.1)
+        // Assert
         assertThat(response).containsExactly(
                 new SessionSummaryResponse(32L, OCTOBER_8, OCTOBER_8.plus(TRAINING_TIME)),
                 new SessionSummaryResponse(31L, OCTOBER_1, OCTOBER_1.plus(TRAINING_TIME)));
@@ -106,7 +106,7 @@ class HistoryServiceTest {
         // Act
         SessionResponse response = historyService.getSessionDetail(USER_A, SESSION_ID);
 
-        // Assert (#FA-6.2)
+        // Assert
         assertThat(response.id()).isEqualTo(SESSION_ID);
         assertThat(response.routineName()).isEqualTo("Push");
         assertThat(response.routineDeleted()).isTrue();
@@ -151,7 +151,7 @@ class HistoryServiceTest {
         // Act
         historyService.deleteSession(USER_A, SESSION_ID);
 
-        // Assert (#FA-6.4)
+        // Assert
         assertThat(session.isDeleted()).isTrue();
         verify(trainingSessionRepository, never()).delete(any());
         verify(trainingSessionRepository, never()).deleteById(any());

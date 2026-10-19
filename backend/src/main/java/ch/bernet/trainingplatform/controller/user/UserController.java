@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -48,12 +47,10 @@ public class UserController {
     @ApiResponse(responseCode = "200", description = ApiStatus.OK)
     @ApiResponse(responseCode = "400", description = ApiStatus.BAD_REQUEST)
     @PutMapping
-    public ResponseEntity<UserResponse> updateProfile(@AuthenticationPrincipal Long userId,
+    public UserResponse updateProfile(@AuthenticationPrincipal Long userId,
                                       @Valid @RequestBody UpdateProfileRequest request) {
         // userService.updateProfile aufrufen
-        UserResponse userResponse = userService.updateProfile(userId, request);
-        return ResponseEntity.status(HttpStatus.OK)
-                .body(userResponse);
+        return userService.updateProfile(userId, request);
     }
 
     @Operation(summary = "E-Mail-Adresse ändern")
@@ -63,11 +60,11 @@ public class UserController {
     @ApiResponse(responseCode = "409", description = ApiStatus.CONFLICT)
     @PutMapping("/email")
     public ResponseEntity<UserResponse> changeEmail(@AuthenticationPrincipal Long userId,
-                                    @Valid @RequestBody ChangeEmailRequest request) {
+                                                    @Valid @RequestBody ChangeEmailRequest request) {
         // userService.changeEmail aufrufen, 200 mit Auth-Cookie (Set-Cookie)
         UserResponse userResponse = userService.changeEmail(userId, request);
         ResponseCookie cookie = jwtCookieService.createAuthCookie(userResponse.id());
-        return ResponseEntity.status(HttpStatus.OK)
+        return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(userResponse);
     }
@@ -82,9 +79,9 @@ public class UserController {
         // userService.changePassword, 204 mit Auth-Cookie (Set-Cookie)
         userService.changePassword(userId, request);
         ResponseCookie cookie = jwtCookieService.createAuthCookie(userId);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT)
+        return ResponseEntity.noContent()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(null);
+                .build();
     }
 
     @Operation(summary = "Konto mit allen Daten löschen")
@@ -97,10 +94,9 @@ public class UserController {
         // userService.deleteAccount, 204 mit Logout-Cookie (Set-Cookie)
         userService.deleteAccount(userId, request);
         ResponseCookie cookie = jwtCookieService.createLogoutCookie();
-
-        return ResponseEntity.status(HttpStatus.NO_CONTENT)
+        return ResponseEntity.noContent()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(null);
+                .build();
     }
 
 }

@@ -8,9 +8,9 @@ import ch.bernet.trainingplatform.service.routine.dto.RoutineSummary;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Component
 public class SessionAccess {
@@ -30,12 +30,8 @@ public class SessionAccess {
 
     public Map<Long, RoutineSummary> getRoutineSummaries(Long userId) {
         // routineService.findAllSummaries als Map nach ID
-        List<RoutineSummary> allSummaries = routineService.findAllSummaries(userId);
-        Map<Long, RoutineSummary> map = new HashMap<>();
-        allSummaries.forEach(summary -> {
-            map.put(summary.id(), summary);
-        });
-        return map;
+        return routineService.findAllSummaries(userId).stream()
+                .collect(Collectors.toMap(RoutineSummary::id, Function.identity()));
     }
 
     public Map<Long, ExerciseResponse> getExercises(Long userId, Collection<Long> exerciseIds) {

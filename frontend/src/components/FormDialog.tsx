@@ -13,10 +13,8 @@ import type { FormEventHandler, ReactNode } from 'react'
 interface FormDialogProps {
   title: string
   submitLabel?: string
-  /** Rot für «Konto löschen» */
   destructive?: boolean
   isSubmitting: boolean
-  /** Meldung, wenn das Speichern fehlschlägt. Die Eingaben bleiben erhalten (#NFA-5.2). */
   error?: string
   onSubmit: FormEventHandler<HTMLFormElement>
   onClose: () => void
@@ -25,7 +23,7 @@ interface FormDialogProps {
   children: ReactNode
 }
 
-/** Dialog für kurze Formulare. Der Aufrufer zeigt ihn nur an, solange er offen ist. */
+// Immer offen: Der Aufrufer rendert den Dialog nur, solange er sichtbar sein soll
 export function FormDialog({
   title,
   submitLabel = 'Speichern',

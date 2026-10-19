@@ -37,18 +37,11 @@ const SET_ERRORS = {
 
 interface SessionExerciseCardProps {
   exercise: SessionExerciseResponse
-  /** Beschreibung aus dem Übungskatalog, z. B. Technik-Hinweise. Fehlt ohne Beschreibung. */
   description?: string | null
   defaultExpanded: boolean
-  /** Übernimmt die Antwort des Servers: alle Sätze und die offenen Vorschläge */
   onChange: (exercise: SessionExerciseResponse) => void
 }
 
-/**
- * Eine Übung im Live-Training. Aufgeklappt zeigt sie die Beschreibung der Übung, die erfassten
- * Sätze, darunter die Eingabe für den nächsten Satz und die noch offenen Sätze aus dem letzten
- * Training.
- */
 export function SessionExerciseCard({
   exercise,
   description,
@@ -68,7 +61,7 @@ export function SessionExerciseCard({
 
   return (
     <>
-      {/* MUI legt die Zusammenfassung in eine Überschrift (sonst h3), darin keine zweite */}
+      {/* MUI legt die Zusammenfassung in eine Überschrift (sonst h3), darum der Name als span */}
       <Accordion
         defaultExpanded={defaultExpanded}
         disableGutters
@@ -84,7 +77,6 @@ export function SessionExerciseCard({
               {exercise.exerciseName}
             </Typography>
             <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
-              {/* Erledigt, sobald Sätze erfasst und keine Vorschläge mehr offen sind */}
               {isDone && (
                 <CheckCircle
                   color="success"
@@ -105,8 +97,6 @@ export function SessionExerciseCard({
           <Stack spacing={2}>
             {description && <ExerciseHint text={description} />}
 
-            {/* Antippen öffnet Ändern, Verschieben und Löschen (SAF8). Die ganze Zeile ist das
-                Touch-Ziel, und Löschen liegt nicht direkt neben Ändern. */}
             {exercise.sets.length > 0 && (
               <List disablePadding dense>
                 {exercise.sets.map((set) => (
@@ -127,7 +117,7 @@ export function SessionExerciseCard({
               </List>
             )}
 
-            {/* Neu aufbauen, sobald sich die Anzahl Sätze ändert, damit der nächste Vorschlag drinsteht */}
+            {/* Der key baut das Formular neu auf, damit der nächste Vorschlag drinsteht */}
             <NewSetForm
               key={exercise.sets.length}
               exercise={exercise}
@@ -137,7 +127,6 @@ export function SessionExerciseCard({
               }}
             />
 
-            {/* Die übrigen Sätze aus dem letzten Training, erst mit «Speichern» erfasst */}
             {exercise.suggestedSets.length > 1 && (
               <List disablePadding dense>
                 {exercise.suggestedSets.slice(1).map((suggestion) => (
@@ -183,13 +172,14 @@ export function SessionExerciseCard({
   )
 }
 
-/** Ab dieser Länge zeigt der Hinweis zuerst nur drei Zeilen, damit die Satz-Eingabe sichtbar bleibt */
+// Lange Beschreibungen erst gekürzt, damit die Satz-Eingabe sichtbar bleibt
 const LONG_HINT_LENGTH = 160
+const HINT_LINES = 3
 
-/** Beschreibung der Übung als Hinweis über den Sätzen, lange Texte erst auf Wunsch ganz */
 function ExerciseHint({ text }: { text: string }) {
   const [showAll, setShowAll] = useState(false)
-  const isLong = text.length > LONG_HINT_LENGTH || text.split('\n').length > 3
+  const isLong =
+    text.length > LONG_HINT_LENGTH || text.split('\n').length > HINT_LINES
   const isClamped = isLong && !showAll
 
   return (
@@ -202,7 +192,7 @@ function ExerciseHint({ text }: { text: string }) {
           overflowWrap: 'anywhere',
           ...(isClamped && {
             display: '-webkit-box',
-            WebkitLineClamp: 3,
+            WebkitLineClamp: HINT_LINES,
             WebkitBoxOrient: 'vertical',
             overflow: 'hidden',
           }),
@@ -223,7 +213,6 @@ function ExerciseHint({ text }: { text: string }) {
   )
 }
 
-/** «Noch kein Satz», «2 Sätze» oder, solange Vorschläge offen sind, «1 von 3 Sätzen» */
 function progressLabel({ sets, suggestedSets }: SessionExerciseResponse) {
   if (suggestedSets.length > 0) {
     const total = sets.length + suggestedSets.length
@@ -234,12 +223,6 @@ function progressLabel({ sets, suggestedSets }: SessionExerciseResponse) {
     : countLabel(sets.length, 'Satz', 'Sätze')
 }
 
-/**
- * Eingabe für den nächsten Satz, vorbelegt mit dem ersten offenen Satz aus dem letzten Training
- * dieser Routine, sonst leer (#FA-5.5). Mit unveränderten Werten genügt ein Tipp auf
- * «Satz speichern» (#NFA-5.3). Schlägt das Speichern fehl, bleibt die Eingabe stehen und lässt
- * sich erneut senden (#NFA-5.2).
- */
 function NewSetForm({
   exercise,
   onSaved,
@@ -300,7 +283,6 @@ interface EditSetFormValues extends SetFormValues {
   setNumber: number
 }
 
-/** Satz ändern, verschieben (#FA-5.4) oder löschen */
 function EditSetDialog({
   set,
   setCount,
@@ -311,7 +293,6 @@ function EditSetDialog({
   set: SetResponse
   setCount: number
   onChange: (exercise: SessionExerciseResponse) => void
-  /** Öffnet die Rückfrage zum Löschen (#NFA-7.5) */
   onDelete: () => void
   onClose: () => void
 }) {
@@ -336,8 +317,7 @@ function EditSetDialog({
     }
     setSubmitError(undefined)
     try {
-      // Erst die Werte, dann die Position. Jede Antwort wird gleich übernommen, damit die
-      // Anzeige auch dann stimmt, wenn nur der erste Schritt klappt.
+      // Jede Antwort gleich übernehmen, damit die Anzeige auch stimmt, wenn nur der erste Schritt klappt
       if (valuesChanged) {
         onChange(await updateSet(set.id, toSetRequest(values)))
       }

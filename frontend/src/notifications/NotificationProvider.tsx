@@ -7,16 +7,12 @@ import {
 } from './NotificationContext'
 
 interface Notification {
-  /** Neue Nummer pro Meldung, damit eine neue Meldung die offene ersetzt und neu einblendet */
+  /** Neuer key pro Meldung, damit sie eine offene ersetzt und neu einblendet */
   key: number
   message: string
   severity: NotificationSeverity
 }
 
-/**
- * Erfolg bestätigt eine Snackbar unten rechts, die nach wenigen Sekunden verschwindet.
- * Fehler zeigen die Ansichten meist direkt beim Formular, damit die Eingabe sichtbar bleibt.
- */
 export function NotificationProvider({ children }: { children: ReactNode }) {
   const [notification, setNotification] = useState<Notification>()
   const [open, setOpen] = useState(false)
@@ -41,8 +37,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
           if (reason !== 'clickaway') setOpen(false)
         }}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        // Auf dem Smartphone über der unteren Navigation. Ihre Höhe setzt AppLayout, im
-        // Live-Training ohne Navigation bleibt die Meldung am unteren Rand.
+        // --bottom-nav-height setzt AppLayout, ohne Navigation bleibt die Meldung am unteren Rand
         sx={{
           bottom: { xs: 'calc(8px + var(--bottom-nav-height, 0px))', md: 24 },
         }}

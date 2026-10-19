@@ -20,17 +20,12 @@ function unit(text: string) {
   }
 }
 
-/** Markiert den vorbelegten Wert, damit eine neue Zahl ihn gleich ersetzt */
+// Markiert den vorbelegten Wert, damit eine neue Zahl ihn gleich ersetzt
 function selectAll(event: FocusEvent<HTMLInputElement>) {
   event.currentTarget.select()
 }
 
-/**
- * Satz-Eingabe: drei Zahlenfelder nebeneinander. inputMode öffnet auf dem Smartphone die
- * numerische Tastatur (#NFA-5.4), für das Gewicht mit Dezimaltrennzeichen.
- * Die Einheit steht im Feld, damit die Beschriftung auch auf 360 Pixel ganz sichtbar bleibt.
- * Die Beschriftung steht immer oben, sonst überdeckt sie im leeren Feld die Einheit.
- */
+// Die Beschriftung steht immer oben (shrink), sonst überdeckt sie im leeren Feld die Einheit
 export function SetFields({ register, errors }: SetFieldsProps) {
   return (
     <Stack direction="row" spacing={1}>

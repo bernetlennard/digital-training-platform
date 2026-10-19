@@ -8,12 +8,10 @@ import type {
   UserResponse,
 } from './types'
 
-/** Ändert Vor- und Nachname. */
 export function updateProfile(profile: UpdateProfileRequest) {
   return request<UserResponse>('/users/me', { method: 'PUT', body: profile })
 }
 
-/** Ändert die E-Mail-Adresse. Der Server setzt dabei ein neues Auth-Cookie. */
 export function changeEmail(change: ChangeEmailRequest) {
   return requestWithPassword<UserResponse>('/users/me/email', {
     method: 'PUT',
@@ -21,7 +19,6 @@ export function changeEmail(change: ChangeEmailRequest) {
   })
 }
 
-/** Ändert das Passwort. Der Server setzt dabei ein neues Auth-Cookie. */
 export function changePassword(change: ChangePasswordRequest) {
   return requestWithPassword<void>('/users/me/password', {
     method: 'PUT',
@@ -29,7 +26,6 @@ export function changePassword(change: ChangePasswordRequest) {
   })
 }
 
-/** Löscht das Konto mit allen Daten. Der Server löscht das Auth-Cookie. */
 export function deleteAccount(confirmation: DeleteAccountRequest) {
   return requestWithPassword<void>('/users/me', {
     method: 'DELETE',
@@ -37,11 +33,8 @@ export function deleteAccount(confirmation: DeleteAccountRequest) {
   })
 }
 
-/**
- * Für Endpunkte mit Passwortbestätigung. Ein 401 kann hier «Passwort falsch» oder «Sitzung
- * abgelaufen» heissen. Eine zweite Anfrage klärt das: Ist die Sitzung abgelaufen, führt deren
- * 401 wie überall zurück zur Anmeldung.
- */
+// 401 heisst hier «Passwort falsch» oder «Sitzung abgelaufen». Ist die Sitzung abgelaufen,
+// meldet die zweite Anfrage wie überall ab.
 async function requestWithPassword<T>(path: string, options: RequestOptions) {
   try {
     return await request<T>(path, { ...options, checksPassword: true })

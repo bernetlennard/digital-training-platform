@@ -70,7 +70,7 @@ class TrainingSessionTest {
         TrainingSession session = new TrainingSession(USER_A, ROUTINE_ID, TODAY);
         session.start(NOW, routine.getExercises().stream().map(RoutineExercise::getExerciseId).toList());
 
-        // Act: Routine nach dem Start ändern (#FA-3.5)
+        // Act: Routine nach dem Start ändern
         routine.replaceExercises(List.of(PULL_UP));
 
         // Assert

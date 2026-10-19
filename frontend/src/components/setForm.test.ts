@@ -7,7 +7,7 @@ import {
   weightRules,
 } from './setForm'
 
-describe('UTF-01 Satzwerte prüfen (#FA-5.3)', () => {
+describe('UTF-01 Satzwerte prüfen', () => {
   it.each(['0', '82,5', '82.25', '1000', ' 60 '])(
     'Gewicht «%s» ist gültig',
     (value) => {
@@ -51,7 +51,7 @@ describe('UTF-01 Satzwerte prüfen (#FA-5.3)', () => {
   })
 })
 
-describe('UTF-02 Satzwerte vorbelegen und umwandeln (#FA-5.5)', () => {
+describe('UTF-02 Satzwerte vorbelegen und umwandeln', () => {
   it('ohne Vorschlag bleibt die Eingabe leer', () => {
     expect(toSetFormValues(undefined)).toEqual({
       weightKg: '',

@@ -19,7 +19,7 @@ function jsonResponse(status: number, body: unknown) {
   })
 }
 
-describe('UTF-03 Fehlermeldungen je Statuscode (#NFA-7.4)', () => {
+describe('UTF-03 Fehlermeldungen je Statuscode', () => {
   it.each([
     [400, 'Bitte überprüfe deine Eingaben.'],
     [401, 'Deine Sitzung ist abgelaufen. Bitte melde dich erneut an.'],
@@ -63,7 +63,7 @@ describe('UTF-03 Fehlermeldungen je Statuscode (#NFA-7.4)', () => {
   })
 })
 
-describe('UTF-04 Anfragen an die REST-Schnittstelle (#NFA-1.2)', () => {
+describe('UTF-04 Anfragen an die REST-Schnittstelle', () => {
   const fetchMock = vi.fn<typeof fetch>()
   const onUnauthorized = vi.fn()
 
@@ -175,7 +175,7 @@ describe('UTF-04 Anfragen an die REST-Schnittstelle (#NFA-1.2)', () => {
   })
 })
 
-describe('UTF-05 IDs aus der Adresse (#NFA-7.6)', () => {
+describe('UTF-05 IDs aus der Adresse', () => {
   it('eine positive ganze Zahl ist eine gültige ID', () => {
     expect(parseId('42')).toBe(42)
   })

@@ -3,12 +3,21 @@ package ch.bernet.trainingplatform.persistence.training;
 import ch.bernet.trainingplatform.common.exception.ConflictException;
 import ch.bernet.trainingplatform.common.exception.ErrorMessages;
 import ch.bernet.trainingplatform.common.exception.NotFoundException;
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.apache.commons.lang3.builder.CompareToBuilder;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -54,7 +63,7 @@ public class TrainingSession {
     }
 
     public void start(Instant now, List<Long> exerciseIds) {
-        // nur aus PLANNED, Übungsliste der Routine kopieren (#FA-3.5), startedAt setzen, Status ACTIVE
+        // nur aus PLANNED, Übungsliste der Routine kopieren, startedAt setzen, Status ACTIVE
         if (status != SessionStatus.PLANNED) {
             throw new NotFoundException(ErrorMessages.SESSION_NOT_PLANNED);
         }
@@ -69,7 +78,7 @@ public class TrainingSession {
     }
 
     public void finish(Instant now) {
-        // nur aus ACTIVE; mind. ein Satz (#FA-5.7), Übungen ohne Satz entfernen, finishedAt setzen, Status COMPLETED
+        // nur aus ACTIVE; mind. ein Satz, Übungen ohne Satz entfernen, finishedAt setzen, Status COMPLETED
         if (status != SessionStatus.ACTIVE) {
             throw new NotFoundException(ErrorMessages.SESSION_NOT_ACTIVE);
         }
@@ -84,7 +93,7 @@ public class TrainingSession {
     }
 
     public void revertToPlanned() {
-        // Abbruch einer geplanten Einheit: Übungen und startedAt entfernen, Status PLANNED (#FA-5.8)
+        // Abbruch einer geplanten Einheit: Übungen und startedAt entfernen, Status PLANNED
         if (status != SessionStatus.ACTIVE) {
             throw new NotFoundException(ErrorMessages.SESSION_NOT_ACTIVE);
         }
@@ -105,7 +114,7 @@ public class TrainingSession {
     }
 
     public void markDeleted() {
-        // nur im Status COMPLETED erlaubt (#FA-6.5)
+        // nur im Status COMPLETED erlaubt
         if (status != SessionStatus.COMPLETED || deleted) {
             throw new NotFoundException(ErrorMessages.SESSION_NOT_COMPLETED);
         }
@@ -128,7 +137,8 @@ public class TrainingSession {
 
     public SessionExercise getExerciseOfSet(Long setId) {
         // Übung suchen, die den Satz enthält, sonst NotFoundException
-        return exercises.stream().filter(e -> e.getSets().stream().anyMatch(s -> setId.equals(s.getId())))
+        return exercises.stream()
+                .filter(e -> e.getSets().stream().anyMatch(s -> setId.equals(s.getId())))
                 .findFirst()
                 .orElseThrow(() -> new NotFoundException(ErrorMessages.SET_NOT_FOUND));
     }

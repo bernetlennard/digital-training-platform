@@ -84,7 +84,7 @@ class UserControllerTest {
                                 {"currentPassword": "%s", "newPassword": "%s"}
                                 """.formatted(PASSWORD, NEW_PASSWORD)))
                 .andExpect(status().isNoContent())
-                // Das Token wird erneuert und ist wieder 8 Stunden gültig (#FA-1.9)
+                // Das Token wird erneuert und ist wieder 8 Stunden gültig
                 .andExpect(cookie().value(COOKIE_NAME, not(emptyOrNullString())))
                 .andExpect(cookie().httpOnly(COOKIE_NAME, true))
                 .andExpect(cookie().secure(COOKIE_NAME, true))

@@ -18,7 +18,6 @@ async function loadHistoryRoutines() {
   return (await getHistoryRoutines()).toSorted(byName)
 }
 
-/** Routinen mit abgeschlossenen Einheiten, gelöschte markiert (SAF9, #FA-6.3) */
 export function HistoryPage() {
   const routines = useApiData(loadHistoryRoutines)
 

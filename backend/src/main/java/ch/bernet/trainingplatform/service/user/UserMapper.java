@@ -2,7 +2,6 @@ package ch.bernet.trainingplatform.service.user;
 
 import ch.bernet.trainingplatform.persistence.user.AppUser;
 import ch.bernet.trainingplatform.service.user.dto.UserResponse;
-import org.springframework.stereotype.Component;
 
 public final class UserMapper {
 

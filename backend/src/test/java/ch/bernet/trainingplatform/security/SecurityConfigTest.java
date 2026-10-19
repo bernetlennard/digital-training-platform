@@ -137,7 +137,7 @@ class SecurityConfigTest {
     @Test
     @DisplayName("UT-05 Token eines gelöschten Kontos ergibt 401")
     void protectedEndpoint_tokenOfDeletedUser_returns401() throws Exception {
-        // Arrange: Token ist gültig, das Konto existiert aber nicht mehr (#NFA-1.5)
+        // Arrange: Token ist gültig, das Konto existiert aber nicht mehr
         Cookie token = tokenCookie(jwtCookieService);
         when(userService.exists(USER_A)).thenReturn(false);
 

@@ -69,7 +69,7 @@ class TrainingPlanServiceTest {
         // Act
         List<PlannedSessionResponse> response = trainingPlanService.getPlannedSessions(USER_A);
 
-        // Assert (#FA-4.3, #NFA-4.1)
+        // Assert
         assertThat(response).containsExactly(
                 new PlannedSessionResponse(32L, LEGS_ROUTINE_ID, "Beine", TODAY.minusDays(1)),
                 new PlannedSessionResponse(33L, ROUTINE_ID, "Push", TODAY),
@@ -103,7 +103,7 @@ class TrainingPlanServiceTest {
     @Test
     @DisplayName("UT-10 Einplanen in der Vergangenheit ergibt 422")
     void planSession_inPast_throwsBusinessRule() {
-        // Act & Assert (#FA-4.2)
+        // Act & Assert
         assertThatThrownBy(() -> trainingPlanService.planSession(USER_A, new PlanSessionRequest(ROUTINE_ID, TODAY.minusDays(1))))
                 .isInstanceOf(BusinessRuleException.class);
 
@@ -156,7 +156,7 @@ class TrainingPlanServiceTest {
         PlannedSessionResponse response = trainingPlanService.updatePlannedSession(USER_A, SESSION_ID,
                 new PlanSessionRequest(LEGS_ROUTINE_ID, TODAY.plusDays(3)));
 
-        // Assert (#FA-4.4)
+        // Assert
         assertThat(session.getRoutineId()).isEqualTo(LEGS_ROUTINE_ID);
         assertThat(session.getPlannedDate()).isEqualTo(TODAY.plusDays(3));
         assertThat(response).isEqualTo(new PlannedSessionResponse(SESSION_ID, LEGS_ROUTINE_ID, "Beine", TODAY.plusDays(3)));
@@ -224,7 +224,7 @@ class TrainingPlanServiceTest {
         // Act
         trainingPlanService.deletePlannedSession(USER_A, SESSION_ID);
 
-        // Assert (#FA-4.5)
+        // Assert
         verify(trainingSessionRepository).delete(session);
     }
 

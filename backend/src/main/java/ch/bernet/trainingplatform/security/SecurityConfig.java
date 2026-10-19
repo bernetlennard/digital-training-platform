@@ -10,7 +10,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.argon2.Argon2PasswordEncoder;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -20,6 +19,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 
 @Configuration
 @EnableWebSecurity
@@ -51,7 +51,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(a -> a
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/login", "/api/v1/auth/logout").permitAll()
                         .requestMatchers("/error").permitAll()
-                        // Im Container ist springdoc aus, dort liefern diese Pfade 404 (#NFA-7.16)
+                        // Im Container ist springdoc aus, dort liefern diese Pfade 404
                         .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated()
                 )
@@ -70,14 +70,16 @@ public class SecurityConfig {
 
     @Bean
     public JwtEncoder jwtEncoder() {
-        SecretKeySpec sha256 = new SecretKeySpec(jwtProperties.secret().getBytes(), "HmacSHA256");
-        return new NimbusJwtEncoder(new ImmutableSecret<>(sha256));
+        return new NimbusJwtEncoder(new ImmutableSecret<>(secretKey()));
     }
 
     @Bean
     public JwtDecoder jwtDecoder() {
-        SecretKeySpec sha256 = new SecretKeySpec(jwtProperties.secret().getBytes(), "HmacSHA256");
-        return NimbusJwtDecoder.withSecretKey(sha256).macAlgorithm(MacAlgorithm.HS256).build();
+        return NimbusJwtDecoder.withSecretKey(secretKey()).macAlgorithm(MacAlgorithm.HS256).build();
+    }
+
+    private SecretKeySpec secretKey() {
+        return new SecretKeySpec(jwtProperties.secret().getBytes(StandardCharsets.UTF_8), "HmacSHA256");
     }
 
 }

@@ -3,7 +3,6 @@ import { Box, Button, Container, Paper, Stack, Typography } from '@mui/material'
 import type { ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 
-// Inhalt gemäss Kapitel «Datenschutz und rechtliche Aspekte»
 const DATA_CATEGORIES = [
   {
     category: 'Konto',
@@ -42,7 +41,6 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   )
 }
 
-/** Datenschutzerklärung, auch ohne Anmeldung erreichbar (#FA-1.4) */
 export function PrivacyPage() {
   const navigate = useNavigate()
   const location = useLocation()
@@ -88,7 +86,7 @@ export function PrivacyPage() {
           </Section>
 
           <Section title="Bearbeitete Daten und Aufbewahrung">
-            {/* Als Blöcke statt Tabelle, damit auf 360 Pixel nichts horizontal scrollt (#NFA-7.1) */}
+            {/* Blöcke statt Tabelle, damit auf dem Smartphone nichts horizontal scrollt */}
             {DATA_CATEGORIES.map((row) => (
               <Paper key={row.category} variant="outlined" sx={{ p: 2 }}>
                 <Typography variant="subtitle1" component="h3">

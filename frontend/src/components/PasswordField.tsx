@@ -11,7 +11,6 @@ interface PasswordFieldProps extends TextFieldRegistration {
   helperText?: ReactNode
 }
 
-/** Passwortfeld mit Anzeigen-Knopf. Einfügen bleibt erlaubt, damit Passwortmanager funktionieren. */
 export function PasswordField({
   label,
   autoComplete,

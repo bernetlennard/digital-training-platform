@@ -12,7 +12,9 @@ public final class ExerciseMapper {
 
     public static ExerciseResponse toResponse(Exercise exercise) {
         // Exercise auf ExerciseResponse abbilden
-        return new ExerciseResponse(exercise.getId(), exercise.getName(), exercise.getMuscleGroup().getId(), exercise.getMuscleGroup().getLabel(), exercise.getDescription());
+        MuscleGroup muscleGroup = exercise.getMuscleGroup();
+        return new ExerciseResponse(exercise.getId(), exercise.getName(), muscleGroup.getId(), muscleGroup.getLabel(),
+                exercise.getDescription());
     }
 
     public static MuscleGroupResponse toResponse(MuscleGroup group) {

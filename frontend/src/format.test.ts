@@ -13,7 +13,7 @@ import {
 // Feste Uhr wie im Backend: 15.10.2026, 10:00 in Zürich (Zeitzone in vite.config.ts)
 const NOW = '2026-10-15T08:00:00Z'
 
-describe('UTF-06 Deutsche Formate (#NFA-7.11)', () => {
+describe('UTF-06 Deutsche Formate', () => {
   beforeEach(() => {
     vi.useFakeTimers()
     vi.setSystemTime(NOW)
@@ -64,7 +64,7 @@ describe('UTF-06 Deutsche Formate (#NFA-7.11)', () => {
     expect(countLabel(3, 'Übung', 'Übungen')).toBe('3 Übungen')
   })
 
-  it('Namen werden alphabetisch sortiert, ohne Gross- und Kleinschreibung (#FA-2.3)', () => {
+  it('Namen werden alphabetisch sortiert, ohne Gross- und Kleinschreibung', () => {
     const names = ['Zug', 'Überzüge', 'bankdrücken', 'Ausfallschritt']
       .map((name) => ({ name }))
       .toSorted(byName)

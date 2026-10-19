@@ -1,6 +1,6 @@
 import type { ErrorResponse } from './types'
 
-/** Fehler einer API-Anfrage im einheitlichen Fehlerformat. Status 0 heisst: Server nicht erreichbar. */
+/** Status 0 heisst: Server nicht erreichbar */
 export class ApiError extends Error {
   readonly status: number
   readonly details: string[]
@@ -15,7 +15,6 @@ export class ApiError extends Error {
 
 let onUnauthorized: (() => void) | undefined
 
-/** Wird bei einem 401 aufgerufen, d. h. das Token fehlt oder ist abgelaufen. */
 export function setUnauthorizedHandler(handler: (() => void) | undefined) {
   onUnauthorized = handler
 }
@@ -23,17 +22,10 @@ export function setUnauthorizedHandler(handler: (() => void) | undefined) {
 export interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE'
   body?: unknown
-  /** Der Endpunkt prüft das Passwort: 401 heisst «Passwort falsch», nicht «Sitzung abgelaufen» */
   checksPassword?: boolean
 }
 
-/**
- * Schickt eine Anfrage an die REST-Schnittstelle unter /api.
- *
- * Das Auth-Cookie ist HttpOnly und für JavaScript unsichtbar. Der Browser schickt es selbst mit,
- * weil Frontend und API unter derselben Adresse laufen (lokal über den Vite-Proxy, in Produktion
- * über Caddy). Der Standardwert credentials: 'same-origin' von fetch genügt deshalb.
- */
+// Frontend und API laufen unter derselben Adresse, darum schickt fetch das Cookie ohne credentials-Option mit
 export async function request<T>(
   path: string,
   options: RequestOptions = {},
@@ -57,7 +49,7 @@ export async function request<T>(
 
   if (!response.ok) {
     const error = await readError(response)
-    // Beim Login bedeutet 401 «falsche Zugangsdaten», nicht «Sitzung abgelaufen»
+    // Beim Login und bei der Passwortbestätigung heisst 401 «Passwort falsch», nicht «Sitzung abgelaufen»
     if (error.status === 401 && !checksPassword && !path.startsWith('/auth/')) {
       onUnauthorized?.()
     }
@@ -80,7 +72,6 @@ async function readError(response: Response): Promise<ApiError> {
   }
 }
 
-/** Pfadparameter als ID. Ein ungültiger Wert wird wie ein fehlender Datensatz behandelt (404). */
 export function parseId(param: string | undefined): number {
   const id = Number(param)
   if (!Number.isSafeInteger(id) || id < 1) {
@@ -89,11 +80,7 @@ export function parseId(param: string | undefined): number {
   return id
 }
 
-/**
- * Liefert eine deutsche Meldung für die Oberfläche (#NFA-7.4, #NFA-7.11).
- * Die message des Backends ist englisch und technisch, darum zählt nur der Statuscode.
- * Mit byStatus kann eine Ansicht für einzelne Statuscodes eine eigene Meldung festlegen.
- */
+// Die message des Backends ist englisch und technisch, darum zählt nur der Statuscode
 export function getErrorMessage(
   error: unknown,
   byStatus: Record<number, string> = {},

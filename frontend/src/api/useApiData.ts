@@ -8,19 +8,14 @@ interface LoadResult<T> {
 }
 
 export interface ApiData<T> {
-  /** Geladene Daten. Beim Neuladen bleiben die alten sichtbar, bis die neuen da sind. */
   data: T | undefined
   error: unknown
   isLoading: boolean
   reload: () => void
-  /** Übernimmt eine Änderung direkt, z. B. die Antwort nach dem Speichern, ohne neu zu laden */
   setData: (update: (data: T) => T) => void
 }
 
-/**
- * Lädt die Daten einer Ansicht über die REST-Schnittstelle.
- * load muss stabil sein (Funktion auf Modulebene oder useCallback), sonst lädt jedes Rendern neu.
- */
+// load muss stabil sein (Funktion auf Modulebene oder useCallback), sonst lädt jedes Rendern neu
 export function useApiData<T>(load: () => Promise<T>): ApiData<T> {
   const [version, setVersion] = useState(0)
   const [result, setResult] = useState<LoadResult<T>>()
