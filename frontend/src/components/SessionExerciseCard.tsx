@@ -37,7 +37,7 @@ const SET_ERRORS = {
 interface SessionExerciseCardProps {
   exercise: SessionExerciseResponse
   defaultExpanded: boolean
-  /** Übernimmt die Antwort des Servers: alle Sätze und der neue Vorschlag */
+  /** Übernimmt die Antwort des Servers: alle Sätze und die offenen Vorschläge */
   onChange: (exercise: SessionExerciseResponse) => void
 }
 

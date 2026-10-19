@@ -71,7 +71,7 @@ export function updateNote(note: NoteRequest) {
   return request<void>('/sessions/active/note', { method: 'PUT', body: note })
 }
 
-/** Antwortet mit der ganzen Übung: alle Sätze und der Vorschlag für den nächsten Satz */
+/** Antwortet mit der ganzen Übung: alle Sätze und die noch offenen Vorschläge */
 export function addSet(sessionExerciseId: number, set: SetRequest) {
   return request<SessionExerciseResponse>(
     `/sessions/active/exercises/${sessionExerciseId}/sets`,
