@@ -10,12 +10,12 @@ Diese API ermöglicht das Erstellen, Löschen und Bearbeiten von Übungen, Routi
 2. [Verwendete Technologien](#2-verwendete-technologien)
 3. [Lokales Setup & Installation](#3-lokales-setup--installation)
    1. [Repository klonen](#schritt-1-repository-klonen)
-   2. [Datenbank Setup](#schritt-2-datenbank-setup)
+   2. [Datenbank-Setup](#schritt-2-datenbank-setup)
    3. [Anwendung starten](#schritt-3-anwendung-starten)
 4. [Technische Details](#4-technische-details)
    1. [Konfiguration](#1-konfiguration)
    2. [Dockerfile](#2-dockerfile)
-   3. [Flyway Migration](#3-flyway-migration)
+   3. [Flyway-Migration](#3-flyway-migration)
    4. [Spring Security](#4-spring-security)
    5. [Transaction Handling](#5-transaction-handling)
    6. [Exception Handling](#6-exception-handling)
@@ -34,7 +34,7 @@ Maven muss nicht installiert sein. Der Maven Wrapper (`mvnw` bzw. unter Windows 
 
 ### Umgebungsvariablen
 
-In `src/main/resources/application.properties` stehen nur Standardwerte. Diese werden über Umgebungsvariablen bzw. über ein `.env`-File im `/backend` Verzeichnis überschrieben.
+In `src/main/resources/application.properties` stehen nur Standardwerte. Diese werden über Umgebungsvariablen bzw. über ein `.env`-File im `/backend`-Verzeichnis überschrieben.
 Die Properties müssen also nicht angepasst werden, es reicht, die Variablen zu setzen:
 
 | Variable      | Pflicht | Standardwert                                                 | Beschreibung                                      |
@@ -90,13 +90,13 @@ Klonen Sie dieses Repository auf Ihren lokalen Computer:
 git clone https://github.com/bernetlennard/digital-training-platform.git
 cd digital-training-platform/backend
 ```
-### Schritt 2: Datenbank Setup
+### Schritt 2: Datenbank-Setup
 Bevor die Anwendung gestartet werden kann, muss die PostgreSQL-Datenbank lokal eingerichtet werden.
 
-**Schritt-für-Schritt Einrichtung:**
-1. Stelle sicher, dass der PostgreSQL-Server läuft.
-2. Erstelle die Datenbank `digital_training_platform` auf dem PostgreSQL-Server.
-3. Setze die Umgebungsvariablen gemäss [Kapitel 1](#umgebungsvariablen) im `.env`-File.
+**Schritt-für-Schritt-Einrichtung:**
+1. Stellen Sie sicher, dass der PostgreSQL-Server läuft.
+2. Erstellen Sie die Datenbank `digital_training_platform` auf dem PostgreSQL-Server.
+3. Setzen Sie die Umgebungsvariablen gemäss [Kapitel 1](#umgebungsvariablen) im `.env`-File.
 4. Dank der Flyway-Migration werden beim ersten erfolgreichen Start der Applikation alle Tabellen erstellt. Die Datenbank muss also leer sein.
 
 ### Schritt 3: Anwendung starten
@@ -104,10 +104,10 @@ Bevor die Anwendung gestartet werden kann, muss die PostgreSQL-Datenbank lokal e
 Die Anwendung kann in der lokalen Umgebung auf zwei Arten gestartet werden:
 
 **Option A: Über die IDE (z.B. IntelliJ IDEA)**
-Führe die Hauptklasse `src/main/java/ch/bernet/trainingplatform/TrainingplatformApplication.java` aus.
+Führen Sie die Hauptklasse `src/main/java/ch/bernet/trainingplatform/TrainingplatformApplication.java` aus.
 
 **Option B: Über Maven (Kommandozeile)**
-Navigiere im Terminal ins `/backend` Verzeichnis des Projekts und führe folgenden Befehl aus:
+Navigieren Sie im Terminal ins `/backend`-Verzeichnis des Projekts und führen Sie folgenden Befehl aus:
 ```bash
   ./mvnw spring-boot:run
 ```
@@ -120,10 +120,10 @@ Es gibt zusätzlich zu diesem File lokal noch ein `.env`-File. Hier werden Passw
 Das Property File verweist einfach auf diese Secrets.
 
 ### 2. Dockerfile
-Dockerfile erstellt für das Backend.
+Für das Backend wurde ein Dockerfile erstellt.
 Im Dockerfile wird Swagger ausgeschaltet, indem die Properties `SPRINGDOC_APIDOCS_ENABLED` und `SPRINGDOC_SWAGGERUI_ENABLED` auf `false` gesetzt werden.
 
-### 3. Flyway Migration
+### 3. Flyway-Migration
 Beim Start der Spring-Boot-App schaut Flyway im Ordner «db/migration» nach SQL-Dateien.
 Sie müssen dabei nach dem Schema «V1__...», «V2__...» benannt sein. Flyway führt jede Datei genau einmal aus, in der Reihenfolge der Versionsnummer.
 Sobald eine Datei gelaufen ist, wird dies in der Tabelle «flyway_schema_history» gemerkt.
@@ -188,20 +188,20 @@ Alle anderen Endpunkte brauchen ein gültiges JWT, ansonsten wird der Request mi
 |                  | DELETE  | `/api/v1/history/sessions/{sessionId}`                       |
 
 ### 5. Transaction Handling
-Jegliche Service-Methoden enthalten jeweils die Annotation @Transactional, sobald eine Transaktion auf der Datenbank ausgeführt werden muss.
+Jegliche Service-Methoden enthalten jeweils die Annotation `@Transactional`, sobald eine Transaktion auf der Datenbank ausgeführt werden muss.
 Über die Propagation kann man steuern, ob eine bestehende Transaktion übernommen wird, oder ob zwingend eine neue Transaktion erstellt werden soll.
 Nach dem Ablauf der Methode wird die Transaktion auf der Datenbank committed.
 
 ### 6. Exception Handling
-Jegliche Exceptions werden im Format des ErrorResponse-Records zurückgegeben.
-Somit lassen sich übersichtliche und einheitliche Fehlermeldungen bilden. Dies stellt der GlobalExceptionHandler sicher.
+Jegliche Exceptions werden im Format des `ErrorResponse`-Records zurückgegeben.
+Somit lassen sich übersichtliche und einheitliche Fehlermeldungen bilden. Dies stellt der `GlobalExceptionHandler` sicher.
 Jegliche Messages, welche den Exceptions übergeben werden, sind als Konstanten definiert.
 Somit lassen sich einheitliche Fehlermeldungen an einem gebündelten Ort im Code sauber verwalten.
 
 ### 7. Swagger
-Swagger ist in der Anwendung integriert und liefert eine OpenAPI-Dokumentation. 2.0 wird verwendet.
+Swagger ist in der Anwendung integriert und liefert eine OpenAPI-Dokumentation. Es wird OpenAPI 3.1 verwendet.
 In diesem Projekt wird jeder Controller mit einem Tag beschriftet.
-Über die Klasse ApiStatus werden pro Endpunkt die HTTP-Methoden beschrieben.
+Über die Klasse `ApiStatus` werden pro Endpunkt die HTTP-Statuscodes beschrieben.
 Diese Dokumentation hilft dabei, die REST-API zu entwerfen, zu bauen, zu dokumentieren, zu testen und zu nutzen.
 
 Swagger ist nur lokal aktiv, im Docker-Container ist es ausgeschaltet (siehe Dockerfile). Nach dem Start ist es erreichbar unter:
@@ -222,7 +222,7 @@ Die Versionierung gilt nur für Pfade unter `/api/`. Swagger und `/error` haben 
 Jeder Controller hat im `@RequestMapping` den Pfad `/api/v{version}/...` und die Version `1`, z.B. `@RequestMapping(path = "/api/v{version}/users/me", version = "1")`.
 
 Somit erkennt man direkt am Pfad, welche Version die Schnittstelle verwendet.
-Wenn man einen Endpunkt ändert bricht man den Schnittstellenvertrag und das bestehende Frontend funktioniert nicht mehr.
-Daher bekommt die neue Änderung in eine neue Version `v2`. Die Version `v1` bleibt daneben bestehen. So kann man schrittweise umsteigen.
+Wenn man einen Endpunkt ändert, bricht man den Schnittstellenvertrag und das bestehende Frontend funktioniert nicht mehr.
+Daher kommt die Änderung in eine neue Version `v2`. Die Version `v1` bleibt daneben bestehen. So kann man schrittweise umsteigen.
 Eine Version, die es nicht gibt (z.B. `/api/v2/...`), wird mit 400 abgelehnt. 
 Ein Pfad ohne Version (z.B. `/api/users/me`) ergibt 404.
