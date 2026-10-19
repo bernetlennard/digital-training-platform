@@ -10,6 +10,7 @@ import {
   Box,
   Container,
   Drawer,
+  GlobalStyles,
   IconButton,
   List,
   ListItemButton,
@@ -52,6 +53,16 @@ export function AppLayout() {
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100dvh' }}>
+      {/* Höhe der unteren Navigation, damit Meldungen sie nicht überdecken */}
+      <GlobalStyles
+        styles={(theme) => ({
+          [theme.breakpoints.down('md')]: {
+            ':root': {
+              '--bottom-nav-height': 'calc(56px + env(safe-area-inset-bottom))',
+            },
+          },
+        })}
+      />
       <AppBar
         position="fixed"
         sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}

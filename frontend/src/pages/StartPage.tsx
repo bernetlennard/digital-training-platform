@@ -35,7 +35,13 @@ import {
   PlanSessionDialog,
   StartSessionDialog,
 } from '../components/SessionDialogs'
-import { byName, formatDate, formatTime, todayIsoDate } from '../format'
+import {
+  byName,
+  formatDate,
+  formatStart,
+  formatWeekdayDate,
+  todayIsoDate,
+} from '../format'
 import { useNotify } from '../notifications/useNotify'
 import { NEW_ROUTINE_ID } from '../routes'
 
@@ -98,12 +104,13 @@ export function StartPage() {
               {active && <ActiveSessionCard session={active} />}
 
               {hasRoutines ? (
+                // Breite nach Inhalt, damit «Spontan starten» auch auf 360 Pixel einzeilig bleibt
                 <Stack direction="row" spacing={1}>
                   <Button
                     variant="outlined"
                     startIcon={<EventAvailable />}
                     onClick={() => setDialog({ type: 'plan' })}
-                    sx={{ flex: 1 }}
+                    sx={{ flex: '1 1 auto' }}
                   >
                     Einplanen
                   </Button>
@@ -112,7 +119,7 @@ export function StartPage() {
                     startIcon={<PlayArrow />}
                     onClick={() => setDialog({ type: 'start' })}
                     disabled={!!active}
-                    sx={{ flex: 1 }}
+                    sx={{ flex: '1 1 auto' }}
                   >
                     Spontan starten
                   </Button>
@@ -150,6 +157,7 @@ export function StartPage() {
                 ) : (
                   planned.map((item) => {
                     const isPast = item.plannedDate < today
+                    const isNext = item.id === nextId
                     return (
                       <Card key={item.id} variant="outlined">
                         <CardContent sx={{ pb: 0 }}>
@@ -159,7 +167,7 @@ export function StartPage() {
                             sx={{ alignItems: 'center', flexWrap: 'wrap' }}
                           >
                             <Typography variant="subtitle1" component="h3">
-                              {formatDate(item.plannedDate)}
+                              {formatWeekdayDate(item.plannedDate)}
                             </Typography>
                             {isPast && (
                               <Chip
@@ -168,11 +176,15 @@ export function StartPage() {
                                 label="vergangen"
                               />
                             )}
-                            {item.id === nextId && (
+                            {isNext && (
                               <Chip
                                 size="small"
                                 color="primary"
-                                label="nächstes"
+                                label={
+                                  item.plannedDate === today
+                                    ? 'heute'
+                                    : 'nächstes'
+                                }
                               />
                             )}
                           </Stack>
@@ -184,8 +196,11 @@ export function StartPage() {
                           </Typography>
                         </CardContent>
                         <CardActions>
+                          {/* Nur das nächste Training ist hervorgehoben, eine Hauptaktion pro Ansicht (#NFA-7.3) */}
                           <Button
-                            variant="contained"
+                            variant={
+                              isNext && !active ? 'contained' : 'outlined'
+                            }
                             startIcon={<PlayArrow />}
                             loading={startingId === item.id}
                             disabled={!!active || startingId !== undefined}
@@ -278,7 +293,7 @@ function ActiveSessionCard({ session }: { session: SessionResponse }) {
         </Typography>
         {session.startedAt && (
           <Typography color="text.secondary">
-            Gestartet um {formatTime(session.startedAt)}
+            Gestartet {formatStart(session.startedAt)}
           </Typography>
         )}
       </CardContent>

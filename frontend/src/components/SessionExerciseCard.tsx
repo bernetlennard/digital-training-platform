@@ -1,4 +1,4 @@
-import Delete from '@mui/icons-material/Delete'
+import CheckCircle from '@mui/icons-material/CheckCircle'
 import Edit from '@mui/icons-material/Edit'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import Save from '@mui/icons-material/Save'
@@ -8,9 +8,9 @@ import {
   AccordionSummary,
   Alert,
   Button,
-  IconButton,
   List,
   ListItem,
+  ListItemButton,
   ListItemText,
   MenuItem,
   Stack,
@@ -42,8 +42,8 @@ interface SessionExerciseCardProps {
 }
 
 /**
- * Eine Übung im Live-Training. Aufgeklappt zeigt sie die erfassten Sätze mit Ändern und Löschen
- * und darunter die Eingabe für den nächsten Satz.
+ * Eine Übung im Live-Training. Aufgeklappt zeigt sie die erfassten Sätze, darunter die Eingabe
+ * für den nächsten Satz und die noch offenen Sätze aus dem letzten Training.
  */
 export function SessionExerciseCard({
   exercise,
@@ -53,6 +53,7 @@ export function SessionExerciseCard({
   const notify = useNotify()
   const [editing, setEditing] = useState<SetResponse>()
   const [deleting, setDeleting] = useState<SetResponse>()
+  const isDone = exercise.sets.length > 0 && exercise.suggestedSets.length === 0
 
   const handleDelete = async (set: SetResponse) => {
     onChange(await deleteSet(set.id))
@@ -62,54 +63,59 @@ export function SessionExerciseCard({
 
   return (
     <>
-      <Accordion defaultExpanded={defaultExpanded} disableGutters>
+      {/* MUI legt die Zusammenfassung in eine Überschrift (sonst h3), darin keine zweite */}
+      <Accordion
+        defaultExpanded={defaultExpanded}
+        disableGutters
+        slotProps={{ heading: { component: 'h2' } }}
+      >
         <AccordionSummary expandIcon={<ExpandMore />}>
           <Stack sx={{ minWidth: 0 }}>
             <Typography
               variant="subtitle1"
-              component="h2"
+              component="span"
               sx={{ overflowWrap: 'anywhere' }}
             >
               {exercise.exerciseName}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-              {progressLabel(exercise)}
-            </Typography>
+            <Stack direction="row" spacing={0.5} sx={{ alignItems: 'center' }}>
+              {/* Erledigt, sobald Sätze erfasst und keine Vorschläge mehr offen sind */}
+              {isDone && (
+                <CheckCircle
+                  color="success"
+                  sx={{ fontSize: 18 }}
+                  aria-hidden
+                />
+              )}
+              <Typography
+                variant="body2"
+                color={isDone ? 'success.main' : 'text.secondary'}
+              >
+                {progressLabel(exercise)}
+              </Typography>
+            </Stack>
           </Stack>
         </AccordionSummary>
         <AccordionDetails>
           <Stack spacing={2}>
+            {/* Antippen öffnet Ändern, Verschieben und Löschen (SAF8). Die ganze Zeile ist das
+                Touch-Ziel, und Löschen liegt nicht direkt neben Ändern. */}
             {exercise.sets.length > 0 && (
               <List disablePadding dense>
                 {exercise.sets.map((set) => (
-                  <ListItem
+                  <ListItemButton
                     key={set.id}
-                    disableGutters
                     divider
-                    secondaryAction={
-                      <Stack direction="row">
-                        <IconButton
-                          aria-label={`Satz ${set.setNumber} ändern`}
-                          onClick={() => setEditing(set)}
-                        >
-                          <Edit />
-                        </IconButton>
-                        <IconButton
-                          aria-label={`Satz ${set.setNumber} löschen`}
-                          edge="end"
-                          onClick={() => setDeleting(set)}
-                        >
-                          <Delete />
-                        </IconButton>
-                      </Stack>
-                    }
-                    sx={{ pr: 12 }}
+                    aria-label={`Satz ${set.setNumber} ändern: ${formatSet(set)}`}
+                    onClick={() => setEditing(set)}
+                    sx={{ px: 0 }}
                   >
                     <ListItemText
                       primary={`Satz ${set.setNumber}`}
                       secondary={formatSet(set)}
                     />
-                  </ListItem>
+                    <Edit fontSize="small" color="action" />
+                  </ListItemButton>
                 ))}
               </List>
             )}
@@ -147,6 +153,10 @@ export function SessionExerciseCard({
           set={editing}
           setCount={exercise.sets.length}
           onChange={onChange}
+          onDelete={() => {
+            setEditing(undefined)
+            setDeleting(editing)
+          }}
           onClose={() => setEditing(undefined)}
         />
       )}
@@ -220,7 +230,7 @@ function NewSetForm({
         {saveError && <Alert severity="error">{saveError}</Alert>}
         {suggestion && (
           <Typography variant="body2" color="text.secondary">
-            Werte aus dem letzten Training mit dieser Routine
+            Werte vom letzten Training
           </Typography>
         )}
         <SetFields register={register} errors={errors} />
@@ -243,16 +253,19 @@ interface EditSetFormValues extends SetFormValues {
   setNumber: number
 }
 
-/** Satz ändern und verschieben (#FA-5.4) */
+/** Satz ändern, verschieben (#FA-5.4) oder löschen */
 function EditSetDialog({
   set,
   setCount,
   onChange,
+  onDelete,
   onClose,
 }: {
   set: SetResponse
   setCount: number
   onChange: (exercise: SessionExerciseResponse) => void
+  /** Öffnet die Rückfrage zum Löschen (#NFA-7.5) */
+  onDelete: () => void
   onClose: () => void
 }) {
   const notify = useNotify()
@@ -298,6 +311,11 @@ function EditSetDialog({
       error={submitError}
       onSubmit={handleSubmit(onSubmit)}
       onClose={onClose}
+      secondaryAction={
+        <Button color="error" onClick={onDelete} disabled={isSubmitting}>
+          Löschen
+        </Button>
+      }
     >
       <SetFields register={register} errors={errors} />
       {setCount > 1 && (

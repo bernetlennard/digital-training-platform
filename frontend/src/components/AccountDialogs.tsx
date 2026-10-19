@@ -28,7 +28,7 @@ interface ChangeEmailFormValues {
 
 /** Neue E-Mail-Adresse, bestätigt mit dem Passwort (#FA-1.8) */
 export function ChangeEmailDialog({ onClose }: DialogProps) {
-  const { setUser } = useAuth()
+  const { user, setUser } = useAuth()
   const notify = useNotify()
   const [submitError, setSubmitError] = useState<string>()
   const {
@@ -38,6 +38,11 @@ export function ChangeEmailDialog({ onClose }: DialogProps) {
   } = useForm<ChangeEmailFormValues>({
     defaultValues: { newEmail: '', password: '' },
   })
+
+  // Sonst meldet das Backend 409, als gehöre die eigene Adresse einem anderen Konto
+  const isOtherEmail = (value: string) =>
+    value.trim().toLowerCase() !== user?.email ||
+    'Das ist bereits deine E-Mail-Adresse.'
 
   const onSubmit = async (values: ChangeEmailFormValues) => {
     setSubmitError(undefined)
@@ -64,7 +69,9 @@ export function ChangeEmailDialog({ onClose }: DialogProps) {
       onClose={onClose}
     >
       <TextField
-        {...textFieldProps(register('newEmail', emailRules))}
+        {...textFieldProps(
+          register('newEmail', { ...emailRules, validate: isOtherEmail }),
+        )}
         label="Neue E-Mail-Adresse"
         type="email"
         autoComplete="email"

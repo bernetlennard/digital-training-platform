@@ -63,7 +63,7 @@ Branches: Arbeit auf `develop`, PR auf `main` deployt. Lennard committet in der 
 | `AccountLockedException` | 429 | Login gesperrt |
 | sonstige | 500 | geloggt, ohne Details |
 
-Messages sind englische Konstanten in `ErrorMessages`; das Frontend zeigt sie nie an.
+Messages sind englische Konstanten in `ErrorMessages` (keine String-Literale in `throw`); das Frontend zeigt sie nie an.
 
 ### Security
 - JWT (HS256, `app.jwt.secret`, 8 h) nur im Cookie `access_token` (HttpOnly, Secure, SameSite=Strict, Path=/). Kein Authorization-Header, stateless, CSRF aus.
@@ -72,7 +72,7 @@ Messages sind englische Konstanten in `ErrorMessages`; das Frontend zeigt sie ni
 - Öffentlich: `POST /api/v1/auth/*`, `/error`, Swagger-Pfade.
 - Neues Cookie bei register, login, E-Mail- und Passwortänderung. Gelöscht wird es bei logout und Kontolöschung.
 - Passwörter: Argon2id (`Argon2PasswordEncoder(16,32,1,60000,10)`, Bouncy Castle), 15–64 Zeichen.
-- Login-Sperre (`LoginLockService`, Tabelle `login_lock` pro E-Mail, auch ohne Konto): ab 5 Fehlversuchen 15 min gesperrt (429). Fehlversuche zählen auch bei Passwortbestätigung (E-Mail/Passwort ändern, Konto löschen). Erfolg löscht den Eintrag; `registerFailure` läuft in `REQUIRES_NEW`.
+- Login-Sperre (`LoginLockService`, Tabelle `login_lock` pro E-Mail, auch ohne Konto): ab 5 Fehlversuchen 15 min gesperrt (429). Fehlversuche zählen auch bei Passwortbestätigung (E-Mail/Passwort ändern, Konto löschen). Erfolg löscht den Eintrag; `registerFailure` läuft in `REQUIRES_NEW`. **Gewollt:** Nach Ablauf der Sperre zählt der Zähler weiter, der nächste Fehlversuch sperrt sofort wieder. Nicht als Bug melden.
 - E-Mails werden getrimmt und kleingeschrieben (DB-Check `email = lower(email)`).
 - API-Versionierung (Spring 7): `@RequestMapping(path="/api/v{version}/…", version="1")`. Unbekannte Version 400, ohne Version 404.
 
@@ -103,7 +103,7 @@ Messages sind englische Konstanten in `ErrorMessages`; das Frontend zeigt sie ni
   - `GET /sessions/active` liefert 200 oder 204.
   - Satz-Endpunkte antworten mit der ganzen `SessionExerciseResponse` (alle Sätze + Vorschläge). Satznummern sind immer lückenlos 1..n, auch nach Verschieben und Löschen.
   - Abschliessen braucht mindestens einen Satz (sonst 409). Übungen ohne Satz werden dabei entfernt.
-  - Abbrechen: Eine geplante Einheit geht zurück auf PLANNED (Übungen weg), eine spontane wird hart gelöscht (#FA-5.8).
+  - Abbrechen: Eine geplante Einheit geht zurück auf PLANNED (Übungen weg), eine spontane wird hart gelöscht (#FA-5.8). Wurde die Routine während des Trainings gelöscht, wird auch die geplante hart gelöscht (sonst bliebe eine nicht startbare geplante Einheit).
   - **Satzvorschläge #FA-5.5 (neu, `suggestOpenSets` + `ExerciseSetRepository.findLastCompletedSets`):**
     - Quelle: die Sätze der letzten abgeschlossenen, nicht gelöschten Einheit **derselben Routine**, in der die Übung vorkam. Wurde die Übung dort ausgelassen, wird weiter zurückgeschaut.
     - `suggestedSets` sind die Sätze mit `setNumber` > Anzahl bereits erfasster Sätze. Sie sind nicht gespeichert.
@@ -175,12 +175,25 @@ Messages sind englische Konstanten in `ErrorMessages`; das Frontend zeigt sie ni
   - Formulare mit React Hook Form. Satzwerte sind Strings, Komma oder Punkt erlaubt.
   - Nach dem Speichern die Serverantwort übernehmen und `notify('…')` aufrufen (Snackbar).
   - Bei Fehlern bleiben die Eingaben stehen (#NFA-5.2).
-  - Texte sind Deutsch (Schweiz, «ss»). Formate in `format.ts` (de-CH, `formatSet`, `countLabel`, `byName`).
+  - Texte sind Deutsch (Schweiz, «ss»). Formate in `format.ts` (de-CH, `formatSet`, `formatWeekdayDate` «Di., 20.10.2026», `formatStart` «um 18:30» bzw. «am …», `countLabel`, `byName`).
+  - Buttons ohne Grossbuchstaben (`theme.ts`), eine hervorgehobene Hauptaktion pro Ansicht (#NFA-7.3).
+  - Snackbar: `AppLayout` setzt auf dem Handy die CSS-Variable `--bottom-nav-height`, die Snackbar steht darüber. Ohne Navigation (Live-Training) liegt sie am unteren Rand.
+  - Lint-Regel `react-hooks/refs`: keine `ref.current` im Render. Für «geändert?» `getFieldState(name).isDirty` von RHF nutzen.
 - **Live-Training:**
-  - `LiveTrainingPage` lädt immer `GET /sessions/active` (Fortsetzen nach Reload, #FA-5.9).
-  - `SessionExerciseCard`: Das `NewSetForm` ist mit `suggestedSets[0]` vorbelegt und wird über `key={sets.length}` neu aufgebaut. Die übrigen Vorschläge stehen als «Satz n · offen» darunter. Fortschritt: «x von y Sätzen».
-  - Bearbeiten: Werte ändern (PUT), dann Position (PUT /position).
-- **Start:** laufendes Training zuoberst, geplante Trainings mit einem Tipp starten, einplanen, spontan starten.
+  - `LiveTrainingPage` lädt immer `GET /sessions/active` (Fortsetzen nach Reload, #FA-5.9). Kopfzeile: Startzeit und laufende Dauer (`StartedInfo`, alle 30 s).
+  - `SessionExerciseCard`:
+    - Das `NewSetForm` ist mit `suggestedSets[0]` vorbelegt und wird über `key={sets.length}` neu aufgebaut. Die übrigen Vorschläge stehen als «Satz n · offen» darunter.
+    - Fortschritt «x von y Sätzen», grünes Häkchen, sobald keine Vorschläge mehr offen sind.
+    - Antippen eines erfassten Satzes öffnet `EditSetDialog`: Werte (PUT), Position (PUT /position), «Löschen» mit Rückfrage.
+    - Accordion-Überschrift ist `h2` (`slotProps.heading`), der Name darin ein `span`.
+  - `SetFields` markiert beim Fokus den Wert, damit eine neue Zahl ihn ersetzt.
+  - Notiz speichert sich beim Verlassen des Felds (`onBlur`), Abschliessen speichert eine ungespeicherte Notiz mit.
+- **Start:**
+  - Laufendes Training zuoberst.
+  - Geplante Trainings mit Wochentag; nur das nächste hat einen gefüllten «Starten»-Knopf.
+  - «Spontan starten» zeigt die Routinen als Liste, ein Tipp startet.
+- **Routine bearbeiten:** Der Übungs-Picker erlaubt Mehrfachauswahl in Tipp-Reihenfolge, ab 8 Übungen mit Suchfeld.
+- **PWA-light:** `public/manifest.webmanifest`, `icon-192/512.png`, `apple-touch-icon.png`, `favicon.svg` (Hantel weiss auf #1976d2), `theme-color`. Ohne Service Worker. nginx liefert das Manifest als `application/manifest+json`.
 
 ## Deploy & CI
 - `deploy.yml` läuft bei gemergtem PR auf main:

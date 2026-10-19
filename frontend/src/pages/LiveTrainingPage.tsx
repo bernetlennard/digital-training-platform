@@ -12,7 +12,7 @@ import {
   Toolbar,
   Typography,
 } from '@mui/material'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link as RouterLink, useNavigate } from 'react-router'
 import { getErrorMessage } from '../api/client'
@@ -22,14 +22,18 @@ import {
   getActiveSession,
   updateNote,
 } from '../api/sessions'
-import type { SessionExerciseResponse, SessionResponse } from '../api/types'
+import type {
+  IsoInstant,
+  SessionExerciseResponse,
+  SessionResponse,
+} from '../api/types'
 import { useApiData } from '../api/useApiData'
 import { AsyncContent } from '../components/AsyncContent'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { EmptyState } from '../components/EmptyState'
 import { emptyToNull, textFieldProps } from '../components/formFields'
 import { SessionExerciseCard } from '../components/SessionExerciseCard'
-import { formatTime } from '../format'
+import { formatDuration, formatStart } from '../format'
 import { useNotify } from '../notifications/useNotify'
 
 /**
@@ -70,9 +74,7 @@ export function LiveTrainingPage() {
               {session.data?.routineName ?? 'Live-Training'}
             </Typography>
             {session.data?.startedAt && (
-              <Typography variant="body2" sx={{ opacity: 0.8 }}>
-                Gestartet um {formatTime(session.data.startedAt)}
-              </Typography>
+              <StartedInfo startedAt={session.data.startedAt} />
             )}
           </Box>
         </Toolbar>
@@ -103,8 +105,29 @@ export function LiveTrainingPage() {
   )
 }
 
+/** Startzeit und bisherige Dauer, jede halbe Minute aktualisiert */
+function StartedInfo({ startedAt }: { startedAt: IsoInstant }) {
+  const [now, setNow] = useState(() => new Date().toISOString())
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date().toISOString()), 30_000)
+    return () => clearInterval(timer)
+  }, [])
+
+  return (
+    <Typography variant="body2" sx={{ opacity: 0.8 }} noWrap>
+      Gestartet {formatStart(startedAt)} · {formatDuration(startedAt, now)}
+    </Typography>
+  )
+}
+
 interface NoteFormValues {
   note: string
+}
+
+function noteHint(state: 'saving' | 'saved' | undefined, isDirty: boolean) {
+  if (state === 'saving') return 'Wird gespeichert …'
+  if (isDirty) return 'Wird beim Verlassen des Felds gespeichert'
+  return state === 'saved' ? 'Gespeichert' : undefined
 }
 
 function LiveTraining({
@@ -118,12 +141,14 @@ function LiveTraining({
   const notify = useNotify()
   const [confirm, setConfirm] = useState<'finish' | 'cancel'>()
   const [noteError, setNoteError] = useState<string>()
+  const [noteState, setNoteState] = useState<'saving' | 'saved'>()
   const {
     register,
     handleSubmit,
     reset,
     getValues,
-    formState: { errors, isSubmitting, isDirty },
+    getFieldState,
+    formState: { errors, isDirty },
   } = useForm<NoteFormValues>({ defaultValues: { note: session.note ?? '' } })
 
   // Beim Fortsetzen ist die Übung aufgeklappt, an der zuletzt gearbeitet wurde, sonst die erste
@@ -135,24 +160,30 @@ function LiveTraining({
       )?.id,
   )
 
+  // reset macht den gespeicherten Text zum neuen Ausgangswert, danach ist das Feld nicht mehr «dirty»
   const saveNote = async (note: string) => {
     await updateNote({ note: emptyToNull(note) })
     reset({ note })
   }
 
+  // Die Notiz speichert sich beim Verlassen des Felds. So geht sie auch nicht verloren, wenn man
+  // zwischendurch zum Start wechselt oder das Handy sperrt.
   const onSaveNote = async ({ note }: NoteFormValues) => {
+    if (!getFieldState('note').isDirty) return
     setNoteError(undefined)
+    setNoteState('saving')
     try {
       await saveNote(note)
-      notify('Notiz gespeichert')
+      setNoteState('saved')
     } catch (error) {
       setNoteError(getErrorMessage(error))
+      setNoteState(undefined)
     }
   }
 
   const handleFinish = async () => {
     // Eine noch nicht gespeicherte Notiz geht mit
-    if (isDirty) {
+    if (getFieldState('note').isDirty) {
       await saveNote(getValues('note'))
     }
     await finishSession()
@@ -179,33 +210,23 @@ function LiveTraining({
         ))}
       </Box>
 
-      <form noValidate onSubmit={handleSubmit(onSaveNote)}>
-        <Stack spacing={1}>
-          {noteError && <Alert severity="error">{noteError}</Alert>}
-          <TextField
-            {...textFieldProps(
-              register('note', {
-                maxLength: { value: 1000, message: 'Höchstens 1000 Zeichen.' },
-              }),
-            )}
-            label="Notiz zum Training"
-            multiline
-            minRows={2}
-            fullWidth
-            error={!!errors.note}
-            helperText={errors.note?.message}
-          />
-          <Button
-            type="submit"
-            variant="outlined"
-            loading={isSubmitting}
-            disabled={!isDirty}
-            sx={{ alignSelf: 'flex-end' }}
-          >
-            Notiz speichern
-          </Button>
-        </Stack>
-      </form>
+      <Stack spacing={1}>
+        {noteError && <Alert severity="error">{noteError}</Alert>}
+        <TextField
+          {...textFieldProps(
+            register('note', {
+              maxLength: { value: 1000, message: 'Höchstens 1000 Zeichen.' },
+              onBlur: handleSubmit(onSaveNote),
+            }),
+          )}
+          label="Notiz zum Training"
+          multiline
+          minRows={2}
+          fullWidth
+          error={!!errors.note}
+          helperText={errors.note?.message ?? noteHint(noteState, isDirty)}
+        />
+      </Stack>
 
       <Stack spacing={1}>
         <Button

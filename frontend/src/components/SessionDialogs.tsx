@@ -1,4 +1,18 @@
-import { MenuItem, TextField } from '@mui/material'
+import PlayArrow from '@mui/icons-material/PlayArrow'
+import {
+  Alert,
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  List,
+  ListItemButton,
+  ListItemText,
+  MenuItem,
+  TextField,
+} from '@mui/material'
 import { useState } from 'react'
 import {
   Controller,
@@ -16,7 +30,7 @@ import {
   updatePlannedSession,
 } from '../api/sessions'
 import type { PlannedSessionResponse, RoutineResponse } from '../api/types'
-import { todayIsoDate } from '../format'
+import { countLabel, todayIsoDate } from '../format'
 import { useNotify } from '../notifications/useNotify'
 import { FormDialog } from './FormDialog'
 import { textFieldProps } from './formFields'
@@ -151,11 +165,7 @@ export function PlanSessionDialog({
   )
 }
 
-interface StartFormValues {
-  routineId: RoutineChoice
-}
-
-/** Routine ohne Planung direkt starten (#FA-5.1) */
+/** Routine ohne Planung direkt starten (#FA-5.1). Ein Tipp auf die Routine startet sie. */
 export function StartSessionDialog({
   routines,
   onClose,
@@ -164,33 +174,67 @@ export function StartSessionDialog({
   onClose: () => void
 }) {
   const navigate = useNavigate()
-  const [submitError, setSubmitError] = useState<string>()
-  const {
-    control,
-    handleSubmit,
-    formState: { isSubmitting },
-  } = useForm<StartFormValues>({ defaultValues: { routineId: '' } })
+  const [startingId, setStartingId] = useState<number>()
+  const [startError, setStartError] = useState<string>()
+  const isStarting = startingId !== undefined
 
-  const onSubmit = async (values: StartFormValues) => {
-    setSubmitError(undefined)
+  const handleStart = async (routine: RoutineResponse) => {
+    setStartError(undefined)
+    setStartingId(routine.id)
     try {
-      await startSpontaneousSession({ routineId: Number(values.routineId) })
+      await startSpontaneousSession({ routineId: routine.id })
       navigate('/training')
     } catch (error) {
-      setSubmitError(getErrorMessage(error, START_ERROR_MESSAGES))
+      setStartError(getErrorMessage(error, START_ERROR_MESSAGES))
+      setStartingId(undefined)
     }
   }
 
   return (
-    <FormDialog
-      title="Spontan starten"
-      submitLabel="Starten"
-      isSubmitting={isSubmitting}
-      error={submitError}
-      onSubmit={handleSubmit(onSubmit)}
-      onClose={onClose}
+    <Dialog
+      open
+      onClose={isStarting ? undefined : onClose}
+      fullWidth
+      maxWidth="xs"
+      scroll="paper"
     >
-      <RoutineSelect control={control} name="routineId" routines={routines} />
-    </FormDialog>
+      <DialogTitle>Spontan starten</DialogTitle>
+      <DialogContent dividers sx={{ p: 0 }}>
+        {startError && (
+          <Alert severity="error" sx={{ m: 2 }}>
+            {startError}
+          </Alert>
+        )}
+        <List disablePadding>
+          {routines.map((routine) => (
+            <ListItemButton
+              key={routine.id}
+              divider
+              disabled={isStarting}
+              onClick={() => handleStart(routine)}
+            >
+              <ListItemText
+                primary={routine.name}
+                secondary={`${countLabel(routine.exercises.length, 'Übung', 'Übungen')}: ${routine.exercises
+                  .map((exercise) => exercise.name)
+                  .join(', ')}`}
+                slotProps={{ secondary: { noWrap: true } }}
+                sx={{ minWidth: 0, mr: 1 }}
+              />
+              {startingId === routine.id ? (
+                <CircularProgress size={24} aria-label="Wird gestartet" />
+              ) : (
+                <PlayArrow color="primary" />
+              )}
+            </ListItemButton>
+          ))}
+        </List>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} disabled={isStarting}>
+          Abbrechen
+        </Button>
+      </DialogActions>
+    </Dialog>
   )
 }

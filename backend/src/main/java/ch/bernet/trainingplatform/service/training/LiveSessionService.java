@@ -1,6 +1,7 @@
 package ch.bernet.trainingplatform.service.training;
 
 import ch.bernet.trainingplatform.common.exception.ConflictException;
+import ch.bernet.trainingplatform.common.exception.ErrorMessages;
 import ch.bernet.trainingplatform.common.exception.NotFoundException;
 import ch.bernet.trainingplatform.persistence.training.*;
 import ch.bernet.trainingplatform.service.exercise.dto.ExerciseResponse;
@@ -37,10 +38,10 @@ public class LiveSessionService {
     public SessionResponse startPlannedSession(Long userId, Long sessionId) {
         // schon eine aktive Einheit -> ConflictException (#FA-5.1), geplante Einheit laden, start mit Übungen der Routine
         if (!trainingSessionRepository.findByUserIdAndStatus(userId, SessionStatus.ACTIVE).isEmpty()) {
-            throw new ConflictException("A different Session has already been started");
+            throw new ConflictException(ErrorMessages.SESSION_ALREADY_ACTIVE);
         }
         TrainingSession session = trainingSessionRepository.findByIdAndUserId(sessionId, userId)
-                .orElseThrow(() -> new NotFoundException("Session Not Found"));
+                .orElseThrow(() -> new NotFoundException(ErrorMessages.SESSION_NOT_FOUND));
         RoutineResponse routineResponse = sessionAccess.getActiveRoutine(userId, session.getRoutineId());
         List<Long> exerciseIds = routineResponse.exercises().stream().map(RoutineExerciseResponse::exerciseId).toList();
         session.start(clock.instant(), exerciseIds);
@@ -52,7 +53,7 @@ public class LiveSessionService {
     public SessionResponse startSpontaneousSession(Long userId, StartSessionRequest request) {
         // schon eine aktive Einheit -> ConflictException (#FA-5.1), Einheit ohne Datum anlegen und starten
         if (!trainingSessionRepository.findByUserIdAndStatus(userId, SessionStatus.ACTIVE).isEmpty()) {
-            throw new ConflictException("A different Session has already been started");
+            throw new ConflictException(ErrorMessages.SESSION_ALREADY_ACTIVE);
         }
 
         TrainingSession session = new TrainingSession(userId, request.routineId(), null);
@@ -121,9 +122,11 @@ public class LiveSessionService {
 
     @Transactional
     public void cancelSession(Long userId) {
-        // geplante Einheit -> revertToPlanned, spontane Einheit -> hart löschen (#FA-5.8)
+        // geplante Einheit -> revertToPlanned, spontane Einheit -> hart löschen (#FA-5.8).
+        // Wurde die Routine während des Trainings gelöscht, ebenfalls löschen: Ihre geplanten Einheiten
+        // sind schon weg, und eine Einheit mit gelöschter Routine lässt sich nicht mehr starten.
         TrainingSession session = getActiveOrThrow(userId);
-        if (session.isSpontaneous()) {
+        if (session.isSpontaneous() || isRoutineDeleted(userId, session.getRoutineId())) {
             trainingSessionRepository.delete(session);
         } else {
             session.revertToPlanned();
@@ -134,7 +137,11 @@ public class LiveSessionService {
         // aktive Einheit laden, sonst NotFoundException
         return trainingSessionRepository.findByUserIdAndStatus(userId, SessionStatus.ACTIVE).stream()
                 .findFirst()
-                .orElseThrow(() -> new NotFoundException("No active session found"));
+                .orElseThrow(() -> new NotFoundException(ErrorMessages.NO_ACTIVE_SESSION));
+    }
+
+    private boolean isRoutineDeleted(Long userId, Long routineId) {
+        return sessionAccess.getRoutineSummaries(userId).get(routineId).deleted();
     }
 
     private List<SetSuggestion> suggestOpenSets(Long userId, TrainingSession session, SessionExercise item) {

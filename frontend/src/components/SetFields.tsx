@@ -1,4 +1,5 @@
 import { InputAdornment, Stack, TextField } from '@mui/material'
+import type { FocusEvent } from 'react'
 import type { FieldErrors, UseFormRegister } from 'react-hook-form'
 import { textFieldProps } from './formFields'
 import {
@@ -17,6 +18,11 @@ function unit(text: string) {
   return {
     endAdornment: <InputAdornment position="end">{text}</InputAdornment>,
   }
+}
+
+/** Markiert den vorbelegten Wert, damit eine neue Zahl ihn gleich ersetzt */
+function selectAll(event: FocusEvent<HTMLInputElement>) {
+  event.currentTarget.select()
 }
 
 /**
@@ -38,7 +44,7 @@ export function SetFields({ register, errors }: SetFieldsProps) {
         slotProps={{
           input: unit('kg'),
           inputLabel: { shrink: true },
-          htmlInput: { inputMode: 'decimal' },
+          htmlInput: { inputMode: 'decimal', onFocus: selectAll },
         }}
         sx={{ flex: 1 }}
       />
@@ -51,7 +57,7 @@ export function SetFields({ register, errors }: SetFieldsProps) {
         autoComplete="off"
         slotProps={{
           inputLabel: { shrink: true },
-          htmlInput: { inputMode: 'numeric' },
+          htmlInput: { inputMode: 'numeric', onFocus: selectAll },
         }}
         sx={{ flex: 1 }}
       />
@@ -64,7 +70,7 @@ export function SetFields({ register, errors }: SetFieldsProps) {
         slotProps={{
           input: unit('s'),
           inputLabel: { shrink: true },
-          htmlInput: { inputMode: 'numeric' },
+          htmlInput: { inputMode: 'numeric', onFocus: selectAll },
         }}
         sx={{ flex: 1 }}
       />

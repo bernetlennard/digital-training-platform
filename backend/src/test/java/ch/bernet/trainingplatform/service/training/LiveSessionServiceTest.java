@@ -378,6 +378,7 @@ class LiveSessionServiceTest {
         // Arrange
         TrainingSession session = activeSession(TODAY, BENCH_PRESS, SQUAT);
         addSet(session.getExercises().get(0), 501L, "80.00", 8, 120);
+        stubNameLookups(false);
 
         // Act
         liveSessionService.cancelSession(USER_A);
@@ -402,6 +403,21 @@ class LiveSessionServiceTest {
         liveSessionService.cancelSession(USER_A);
 
         // Assert (#FA-5.8)
+        verify(trainingSessionRepository).delete(session);
+    }
+
+    @Test
+    @DisplayName("UT-14 Abbruch nach dem Löschen der Routine löscht auch eine geplante Einheit")
+    void cancelSession_plannedWithDeletedRoutine_deletesSession() {
+        // Arrange: Die Routine wurde während des Trainings gelöscht, ihre übrigen geplanten Einheiten sind schon weg
+        TrainingSession session = activeSession(TODAY, BENCH_PRESS);
+        addSet(session.getExercises().getFirst(), 501L, "80.00", 8, 120);
+        stubNameLookups(true);
+
+        // Act
+        liveSessionService.cancelSession(USER_A);
+
+        // Assert: Sie käme sonst als geplante Einheit zurück, die sich nicht mehr starten lässt
         verify(trainingSessionRepository).delete(session);
     }
 
