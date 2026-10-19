@@ -23,6 +23,7 @@ function unit(text: string) {
  * Satz-Eingabe: drei Zahlenfelder nebeneinander. inputMode öffnet auf dem Smartphone die
  * numerische Tastatur (#NFA-5.4), für das Gewicht mit Dezimaltrennzeichen.
  * Die Einheit steht im Feld, damit die Beschriftung auch auf 360 Pixel ganz sichtbar bleibt.
+ * Die Beschriftung steht immer oben, sonst überdeckt sie im leeren Feld die Einheit.
  */
 export function SetFields({ register, errors }: SetFieldsProps) {
   return (
@@ -36,6 +37,7 @@ export function SetFields({ register, errors }: SetFieldsProps) {
         autoComplete="off"
         slotProps={{
           input: unit('kg'),
+          inputLabel: { shrink: true },
           htmlInput: { inputMode: 'decimal' },
         }}
         sx={{ flex: 1 }}
@@ -47,7 +49,10 @@ export function SetFields({ register, errors }: SetFieldsProps) {
         error={!!errors.repetitions}
         helperText={errors.repetitions?.message}
         autoComplete="off"
-        slotProps={{ htmlInput: { inputMode: 'numeric' } }}
+        slotProps={{
+          inputLabel: { shrink: true },
+          htmlInput: { inputMode: 'numeric' },
+        }}
         sx={{ flex: 1 }}
       />
       <TextField
@@ -58,6 +63,7 @@ export function SetFields({ register, errors }: SetFieldsProps) {
         autoComplete="off"
         slotProps={{
           input: unit('s'),
+          inputLabel: { shrink: true },
           htmlInput: { inputMode: 'numeric' },
         }}
         sx={{ flex: 1 }}

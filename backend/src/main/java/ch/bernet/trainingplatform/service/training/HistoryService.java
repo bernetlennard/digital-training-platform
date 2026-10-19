@@ -59,9 +59,9 @@ public class HistoryService {
         RoutineSummary routine = sessionAccess.getRoutineSummaries(userId).get(session.getRoutineId());
         List<Long> exerciseIds = session.getExercises().stream().map(SessionExercise::getExerciseId).toList();
         Map<Long, ExerciseResponse> names = sessionAccess.getExercises(userId, exerciseIds);
-        // Im Verlauf gibt es keinen Vorschlag für den nächsten Satz
+        // Im Verlauf gibt es keine Vorschläge
         List<SessionExerciseResponse> exercises = session.getExercises().stream()
-                .map(item -> TrainingMapper.toExercise(item, names.get(item.getExerciseId()).name(), null))
+                .map(item -> TrainingMapper.toExercise(item, names.get(item.getExerciseId()).name(), List.of()))
                 .toList();
         return TrainingMapper.toSession(session, routine, exercises);
     }

@@ -135,8 +135,9 @@ export interface SetResponse {
   restSeconds: number | null
 }
 
-/** Vorbelegung für den nächsten Satz (#FA-5.5) */
+/** Noch offener Satz aus der letzten Einheit derselben Routine, nicht gespeichert (#FA-5.5) */
 export interface SetSuggestion {
+  setNumber: number
   weightKg: number
   repetitions: number
   restSeconds: number | null
@@ -148,7 +149,8 @@ export interface SessionExerciseResponse {
   exerciseName: string
   position: number
   sets: SetResponse[]
-  nextSet: SetSuggestion | null
+  /** Leer, wenn alle Sätze der letzten Einheit erfasst sind oder es keine gibt */
+  suggestedSets: SetSuggestion[]
 }
 
 export type SessionStatus = 'geplant' | 'aktiv' | 'abgeschlossen'

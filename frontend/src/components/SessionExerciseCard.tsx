@@ -73,9 +73,7 @@ export function SessionExerciseCard({
               {exercise.exerciseName}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {exercise.sets.length === 0
-                ? 'Noch kein Satz'
-                : countLabel(exercise.sets.length, 'Satz', 'Sätze')}
+              {progressLabel(exercise)}
             </Typography>
           </Stack>
         </AccordionSummary>
@@ -116,7 +114,7 @@ export function SessionExerciseCard({
               </List>
             )}
 
-            {/* Neu aufbauen, sobald sich die Anzahl Sätze ändert, damit der neue Vorschlag drinsteht */}
+            {/* Neu aufbauen, sobald sich die Anzahl Sätze ändert, damit der nächste Vorschlag drinsteht */}
             <NewSetForm
               key={exercise.sets.length}
               exercise={exercise}
@@ -125,6 +123,21 @@ export function SessionExerciseCard({
                 notify(`Satz ${exercise.sets.length + 1} gespeichert`)
               }}
             />
+
+            {/* Die übrigen Sätze aus dem letzten Training, erst mit «Speichern» erfasst */}
+            {exercise.suggestedSets.length > 1 && (
+              <List disablePadding dense>
+                {exercise.suggestedSets.slice(1).map((suggestion) => (
+                  <ListItem key={suggestion.setNumber} disableGutters divider>
+                    <ListItemText
+                      primary={`Satz ${suggestion.setNumber} · offen`}
+                      secondary={formatSet(suggestion)}
+                      slotProps={{ primary: { color: 'text.secondary' } }}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            )}
           </Stack>
         </AccordionDetails>
       </Accordion>
@@ -153,10 +166,22 @@ export function SessionExerciseCard({
   )
 }
 
+/** «Noch kein Satz», «2 Sätze» oder, solange Vorschläge offen sind, «1 von 3 Sätzen» */
+function progressLabel({ sets, suggestedSets }: SessionExerciseResponse) {
+  if (suggestedSets.length > 0) {
+    const total = sets.length + suggestedSets.length
+    return `${sets.length} von ${countLabel(total, 'Satz', 'Sätzen')}`
+  }
+  return sets.length === 0
+    ? 'Noch kein Satz'
+    : countLabel(sets.length, 'Satz', 'Sätze')
+}
+
 /**
- * Eingabe für den nächsten Satz, vorbelegt mit dem Vorschlag (#FA-5.5). Mit unveränderten Werten
- * genügt ein Tipp auf «Satz speichern» (#NFA-5.3). Schlägt das Speichern fehl, bleibt die Eingabe
- * stehen und lässt sich erneut senden (#NFA-5.2).
+ * Eingabe für den nächsten Satz, vorbelegt mit dem ersten offenen Satz aus dem letzten Training
+ * dieser Routine, sonst leer (#FA-5.5). Mit unveränderten Werten genügt ein Tipp auf
+ * «Satz speichern» (#NFA-5.3). Schlägt das Speichern fehl, bleibt die Eingabe stehen und lässt
+ * sich erneut senden (#NFA-5.2).
  */
 function NewSetForm({
   exercise,
@@ -165,13 +190,14 @@ function NewSetForm({
   exercise: SessionExerciseResponse
   onSaved: (exercise: SessionExerciseResponse) => void
 }) {
+  const suggestion = exercise.suggestedSets.at(0)
   const [saveError, setSaveError] = useState<string>()
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<SetFormValues>({
-    defaultValues: toSetFormValues(exercise.nextSet),
+    defaultValues: toSetFormValues(suggestion),
   })
 
   const onSubmit = async (values: SetFormValues) => {
@@ -192,6 +218,11 @@ function NewSetForm({
     <form noValidate onSubmit={handleSubmit(onSubmit)}>
       <Stack spacing={1}>
         {saveError && <Alert severity="error">{saveError}</Alert>}
+        {suggestion && (
+          <Typography variant="body2" color="text.secondary">
+            Werte aus dem letzten Training mit dieser Routine
+          </Typography>
+        )}
         <SetFields register={register} errors={errors} />
         <Button
           type="submit"

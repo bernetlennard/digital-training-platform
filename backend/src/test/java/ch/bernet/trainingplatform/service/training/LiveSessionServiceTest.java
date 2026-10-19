@@ -229,38 +229,44 @@ class LiveSessionServiceTest {
     }
 
     @Test
-    @DisplayName("UT-13 Vorschlag aus der letzten abgeschlossenen Einheit")
-    void suggestion_fromLastCompletedSession() {
+    @DisplayName("UT-13 Vorschläge für alle offenen Sätze aus der letzten Einheit derselben Routine")
+    void suggestions_fromLastSessionOfSameRoutine() {
         // Arrange: Bankdrücken hat schon einen Satz, Kniebeuge noch keinen
         TrainingSession session = activeSession(TODAY, BENCH_PRESS, SQUAT);
         addSet(session.getExercises().get(0), 501L, "80.00", 8, 120);
-        when(exerciseSetRepository.findLastCompletedSets(USER_A, BENCH_PRESS)).thenReturn(List.of(
+        when(exerciseSetRepository.findLastCompletedSets(USER_A, ROUTINE_ID, BENCH_PRESS)).thenReturn(List.of(
                 set(1, "75.00", 10, 90),
-                set(2, "77.50", 8, 90)));
-        when(exerciseSetRepository.findLastCompletedSets(USER_A, SQUAT)).thenReturn(List.of(
+                set(2, "77.50", 8, 90),
+                set(3, "77.50", 6, null)));
+        when(exerciseSetRepository.findLastCompletedSets(USER_A, ROUTINE_ID, SQUAT)).thenReturn(List.of(
                 set(1, "100.00", 5, 180)));
         stubNameLookups(false);
 
         // Act
         SessionResponse response = liveSessionService.getActiveSession(USER_A);
 
-        // Assert: jeweils der Satz mit der nächsten Nummer aus der letzten Einheit (#FA-5.5)
+        // Assert: alle Sätze der letzten Einheit, die heute noch fehlen (#FA-5.5)
         assertThat(response.exercises())
-                .extracting(SessionExerciseResponse::exerciseId, SessionExerciseResponse::nextSet)
+                .extracting(SessionExerciseResponse::exerciseId, SessionExerciseResponse::suggestedSets)
                 .containsExactly(
-                        tuple(BENCH_PRESS, new SetSuggestion(new BigDecimal("77.50"), 8, 90)),
-                        tuple(SQUAT, new SetSuggestion(new BigDecimal("100.00"), 5, 180)));
+                        tuple(BENCH_PRESS, List.of(
+                                new SetSuggestion(2, new BigDecimal("77.50"), 8, 90),
+                                new SetSuggestion(3, new BigDecimal("77.50"), 6, null))),
+                        tuple(SQUAT, List.of(
+                                new SetSuggestion(1, new BigDecimal("100.00"), 5, 180))));
+        // Gespeichert wird ein Vorschlag erst, wenn der Sportler ihn bestätigt
+        assertThat(session.getExercises()).extracting(exercise -> exercise.getSets().size()).containsExactly(1, 0);
     }
 
     @Test
-    @DisplayName("UT-13 Vorschlag aus dem vorherigen Satz der aktuellen Einheit")
-    void suggestion_fromPreviousSetOfCurrentSession() {
-        // Arrange: die letzte Einheit hatte nur 2 Sätze, jetzt folgt der 3. Satz
+    @DisplayName("UT-13 Nach den Sätzen der letzten Einheit gibt es keine Vorschläge mehr")
+    void suggestions_afterAllSetsOfLastSession_areEmpty() {
+        // Arrange: die letzte Einheit hatte 2 Sätze, beide sind schon erfasst
         TrainingSession session = activeSession(TODAY, BENCH_PRESS);
         SessionExercise benchPress = session.getExercises().getFirst();
         addSet(benchPress, 501L, "80.00", 8, 120);
         addSet(benchPress, 502L, "82.50", 6, 150);
-        when(exerciseSetRepository.findLastCompletedSets(USER_A, BENCH_PRESS)).thenReturn(List.of(
+        when(exerciseSetRepository.findLastCompletedSets(USER_A, ROUTINE_ID, BENCH_PRESS)).thenReturn(List.of(
                 set(1, "75.00", 10, 90),
                 set(2, "77.50", 8, 90)));
         stubNameLookups(false);
@@ -268,31 +274,33 @@ class LiveSessionServiceTest {
         // Act
         SessionResponse response = liveSessionService.getActiveSession(USER_A);
 
-        // Assert
-        assertThat(response.exercises().getFirst().nextSet())
-                .isEqualTo(new SetSuggestion(new BigDecimal("82.50"), 6, 150));
+        // Assert: ein zusätzlicher Satz bleibt leer, auch der vorherige Satz wird nicht übernommen
+        assertThat(response.exercises().getFirst().suggestedSets()).isEmpty();
     }
 
     @Test
-    @DisplayName("UT-13 Ohne frühere Werte gibt es keinen Vorschlag")
-    void suggestion_withoutHistory_isEmpty() {
-        // Arrange: keine abgeschlossene Einheit mit Bankdrücken und noch kein Satz in der aktuellen
+    @DisplayName("UT-13 Ohne frühere Einheit der Routine gibt es keine Vorschläge")
+    void suggestions_withoutHistoryOfRoutine_areEmpty() {
+        // Arrange: in keiner abgeschlossenen Einheit dieser Routine kam Bankdrücken vor
         activeSession(TODAY, BENCH_PRESS);
-        when(exerciseSetRepository.findLastCompletedSets(USER_A, BENCH_PRESS)).thenReturn(List.of());
+        when(exerciseSetRepository.findLastCompletedSets(USER_A, ROUTINE_ID, BENCH_PRESS)).thenReturn(List.of());
         stubNameLookups(false);
 
         // Act
         SessionResponse response = liveSessionService.getActiveSession(USER_A);
 
         // Assert
-        assertThat(response.exercises().getFirst().nextSet()).isNull();
+        assertThat(response.exercises().getFirst().suggestedSets()).isEmpty();
     }
 
     @Test
     @DisplayName("UT-12 Satz erfassen hängt ihn mit ID an die Übung der aktiven Einheit an")
     void addSet_activeSession_appendsSetWithId() {
-        // Arrange
+        // Arrange: die letzte Einheit der Routine hatte 2 Sätze
         TrainingSession session = activeSession(TODAY, BENCH_PRESS);
+        when(exerciseSetRepository.findLastCompletedSets(USER_A, ROUTINE_ID, BENCH_PRESS)).thenReturn(List.of(
+                set(1, "75.00", 10, 90),
+                set(2, "77.50", 8, 90)));
         stubNameLookups(false);
 
         // Act
@@ -311,8 +319,8 @@ class LiveSessionServiceTest {
             assertThat(set.id()).isNotNull();
             assertThat(set.setNumber()).isEqualTo(1);
         });
-        // Ohne frühere Einheit wird der eben erfasste Satz vorgeschlagen
-        assertThat(response.nextSet()).isEqualTo(new SetSuggestion(new BigDecimal("80.00"), 8, 120));
+        // Der Vorschlag für Satz 1 ist erledigt, der für Satz 2 bleibt
+        assertThat(response.suggestedSets()).containsExactly(new SetSuggestion(2, new BigDecimal("77.50"), 8, 90));
     }
 
     @Test

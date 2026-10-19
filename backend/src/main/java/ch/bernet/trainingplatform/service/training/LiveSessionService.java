@@ -79,34 +79,38 @@ public class LiveSessionService {
     @Transactional
     public SessionExerciseResponse addSet(Long userId, Long sessionExerciseId, SetRequest request) {
         // getActiveOrThrow, getExercise, addSet; flush, damit der neue Satz eine ID hat
-        SessionExercise item = getActiveOrThrow(userId).getExercise(sessionExerciseId);
+        TrainingSession session = getActiveOrThrow(userId);
+        SessionExercise item = session.getExercise(sessionExerciseId);
         item.addSet(request.weightKg(), request.repetitions(), request.restSeconds());
         trainingSessionRepository.flush();
-        return toResponse(userId, item);
+        return toResponse(userId, session, item);
     }
 
     @Transactional
     public SessionExerciseResponse updateSet(Long userId, Long setId, SetRequest request) {
         // getActiveOrThrow, getExerciseOfSet, updateSet
-        SessionExercise item = getActiveOrThrow(userId).getExerciseOfSet(setId);
+        TrainingSession session = getActiveOrThrow(userId);
+        SessionExercise item = session.getExerciseOfSet(setId);
         item.updateSet(setId, request.weightKg(), request.repetitions(), request.restSeconds());
-        return toResponse(userId, item);
+        return toResponse(userId, session, item);
     }
 
     @Transactional
     public SessionExerciseResponse moveSet(Long userId, Long setId, MoveSetRequest request) {
         // getActiveOrThrow, getExerciseOfSet, moveSet (#FA-5.4)
-        SessionExercise item = getActiveOrThrow(userId).getExerciseOfSet(setId);
+        TrainingSession session = getActiveOrThrow(userId);
+        SessionExercise item = session.getExerciseOfSet(setId);
         item.moveSet(setId, request.newSetNumber());
-        return toResponse(userId, item);
+        return toResponse(userId, session, item);
     }
 
     @Transactional
     public SessionExerciseResponse deleteSet(Long userId, Long setId) {
         // getActiveOrThrow, getExerciseOfSet, removeSet
-        SessionExercise item = getActiveOrThrow(userId).getExerciseOfSet(setId);
+        TrainingSession session = getActiveOrThrow(userId);
+        SessionExercise item = session.getExerciseOfSet(setId);
         item.removeSet(setId);
-        return toResponse(userId, item);
+        return toResponse(userId, session, item);
     }
 
     @Transactional
@@ -133,18 +137,13 @@ public class LiveSessionService {
                 .orElseThrow(() -> new NotFoundException("No active session found"));
     }
 
-    private SetSuggestion suggestNextSet(SessionExercise item, Long userId) {
-        // Vorschlag aus findLastCompletedSets für den nächsten Satz, null wenn keiner (#FA-5.5)
-        int nextSetNumber = item.getSets().size() + 1;
-        ExerciseSet source = exerciseSetRepository.findLastCompletedSets(userId, item.getExerciseId()).stream()
-                .filter(set -> set.getSetNumber() == nextSetNumber)
-                .findFirst()
-                // sonst den vorherigen Satz der aktuellen Einheit wiederholen
-                .orElse(item.getSets().isEmpty() ? null : item.getSets().getLast());
-        if (source == null) {
-            return null;
-        }
-        return new SetSuggestion(source.getWeightKg(), source.getRepetitions(), source.getRestSeconds());
+    private List<SetSuggestion> suggestOpenSets(Long userId, TrainingSession session, SessionExercise item) {
+        // Sätze der letzten Einheit derselben Routine, die heute noch fehlen; danach bleibt alles leer (#FA-5.5)
+        int recordedSets = item.getSets().size();
+        return exerciseSetRepository.findLastCompletedSets(userId, session.getRoutineId(), item.getExerciseId()).stream()
+                .filter(set -> set.getSetNumber() > recordedSets)
+                .map(set -> new SetSuggestion(set.getSetNumber(), set.getWeightKg(), set.getRepetitions(), set.getRestSeconds()))
+                .toList();
     }
 
     private SessionResponse toResponse(Long userId, TrainingSession session) {
@@ -152,14 +151,15 @@ public class LiveSessionService {
         List<Long> exerciseIds = session.getExercises().stream().map(SessionExercise::getExerciseId).toList();
         Map<Long, ExerciseResponse> names = sessionAccess.getExercises(userId, exerciseIds);
         List<SessionExerciseResponse> exercises = session.getExercises().stream()
-                .map(item -> TrainingMapper.toExercise(item, names.get(item.getExerciseId()).name(), suggestNextSet(item, userId)))
+                .map(item -> TrainingMapper.toExercise(item, names.get(item.getExerciseId()).name(),
+                        suggestOpenSets(userId, session, item)))
                 .toList();
         return TrainingMapper.toSession(session, routine, exercises);
     }
 
-    private SessionExerciseResponse toResponse(Long userId, SessionExercise item) {
+    private SessionExerciseResponse toResponse(Long userId, TrainingSession session, SessionExercise item) {
         String name = sessionAccess.getExercises(userId, List.of(item.getExerciseId())).get(item.getExerciseId()).name();
-        return TrainingMapper.toExercise(item, name, suggestNextSet(item, userId));
+        return TrainingMapper.toExercise(item, name, suggestOpenSets(userId, session, item));
     }
 
 }
