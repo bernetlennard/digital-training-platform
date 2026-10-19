@@ -32,15 +32,17 @@ import { useApiData } from '../api/useApiData'
 import { AsyncContent } from '../components/AsyncContent'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { EmptyState } from '../components/EmptyState'
-import { emptyToNull, textFieldProps } from '../components/formFields'
+import {
+  emptyToNull,
+  longTextRules,
+  textFieldProps,
+} from '../components/formFields'
 import { SessionExerciseCard } from '../components/SessionExerciseCard'
 import { formatDuration, formatStart } from '../format'
 import { useNotify } from '../notifications/useNotify'
 
-/**
- * Beschreibungen aus dem Übungskatalog nach Übungs-ID. Die Einheit selbst liefert nur die Namen.
- * Eine inzwischen gelöschte Übung fehlt im Katalog und erscheint dann ohne Beschreibung.
- */
+// Die Einheit liefert nur die Namen, die Beschreibungen kommen aus dem Katalog.
+// Gelöschte Übungen fehlen dort und erscheinen ohne Beschreibung.
 async function loadDescriptions() {
   const exercises = await getExercises()
   return new Map(
@@ -48,13 +50,9 @@ async function loadDescriptions() {
   )
 }
 
-/**
- * Live-Training (SAF8): Vollbild ohne Hauptnavigation. Lädt immer die aktive Einheit vom Server,
- * damit sie sich nach Neuladen, Gerätewechsel oder neuer Anmeldung fortsetzen lässt (#FA-5.9).
- */
 export function LiveTrainingPage() {
   const session = useApiData(getActiveSession)
-  // Getrennt geladen: Klappt das nicht, läuft das Training trotzdem, nur ohne Beschreibungen
+  // Getrennt geladen, damit das Training auch ohne Beschreibungen läuft
   const descriptions = useApiData(loadDescriptions)
 
   const replaceExercise = (updated: SessionExerciseResponse) => {
@@ -120,7 +118,6 @@ export function LiveTrainingPage() {
   )
 }
 
-/** Startzeit und bisherige Dauer, jede halbe Minute aktualisiert */
 function StartedInfo({ startedAt }: { startedAt: IsoInstant }) {
   const [now, setNow] = useState(() => new Date().toISOString())
   useEffect(() => {
@@ -177,14 +174,12 @@ function LiveTraining({
       )?.id,
   )
 
-  // reset macht den gespeicherten Text zum neuen Ausgangswert, danach ist das Feld nicht mehr «dirty»
+  // reset macht den gespeicherten Text zum Ausgangswert, danach ist das Feld nicht mehr «dirty»
   const saveNote = async (note: string) => {
     await updateNote({ note: emptyToNull(note) })
     reset({ note })
   }
 
-  // Die Notiz speichert sich beim Verlassen des Felds. So geht sie auch nicht verloren, wenn man
-  // zwischendurch zum Start wechselt oder das Handy sperrt.
   const onSaveNote = async ({ note }: NoteFormValues) => {
     if (!getFieldState('note').isDirty) return
     setNoteError(undefined)
@@ -199,7 +194,6 @@ function LiveTraining({
   }
 
   const handleFinish = async () => {
-    // Eine noch nicht gespeicherte Notiz geht mit
     if (getFieldState('note').isDirty) {
       await saveNote(getValues('note'))
     }
@@ -233,7 +227,7 @@ function LiveTraining({
         <TextField
           {...textFieldProps(
             register('note', {
-              maxLength: { value: 1000, message: 'Höchstens 1000 Zeichen.' },
+              ...longTextRules,
               onBlur: handleSubmit(onSaveNote),
             }),
           )}

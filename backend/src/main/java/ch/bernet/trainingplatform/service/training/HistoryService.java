@@ -53,14 +53,13 @@ public class HistoryService {
 
     @Transactional(readOnly = true)
     public SessionResponse getSessionDetail(Long userId, Long sessionId) {
-        // abgeschlossene Einheit laden (sonst NotFoundException), Übungsnamen auflösen, mappen
+        // abgeschlossene Einheit laden (sonst NotFoundException), Übungsnamen auflösen, ohne Satzvorschläge mappen
         TrainingSession session = trainingSessionRepository.findByIdAndUserId(sessionId, userId)
                 .filter(s -> s.getStatus() == SessionStatus.COMPLETED && !s.isDeleted())
                 .orElseThrow(() -> new NotFoundException(ErrorMessages.SESSION_NOT_FOUND));
         RoutineSummary routine = sessionAccess.getRoutineSummaries(userId).get(session.getRoutineId());
         List<Long> exerciseIds = session.getExercises().stream().map(SessionExercise::getExerciseId).toList();
         Map<Long, ExerciseResponse> names = sessionAccess.getExercises(userId, exerciseIds);
-        // Im Verlauf gibt es keine Vorschläge
         List<SessionExerciseResponse> exercises = session.getExercises().stream()
                 .map(item -> TrainingMapper.toExercise(item, names.get(item.getExerciseId()).name(), List.of()))
                 .toList();
@@ -69,7 +68,7 @@ public class HistoryService {
 
     @Transactional
     public void deleteSession(Long userId, Long sessionId) {
-        // Einheit laden (sonst NotFoundException), markDeleted (#FA-6.5)
+        // Einheit laden (sonst NotFoundException), markDeleted
         trainingSessionRepository.findByIdAndUserId(sessionId, userId)
                 .orElseThrow(() -> new NotFoundException(ErrorMessages.SESSION_NOT_FOUND))
                 .markDeleted();

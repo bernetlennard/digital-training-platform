@@ -24,7 +24,7 @@ class RoutineExerciseUsageCheckerTest {
     @Test
     @DisplayName("UT-07 Übung in einer nicht gelöschten Routine gilt als verwendet")
     void isUsedInActiveRoutine_usesActiveRoutinesOnly() {
-        // Arrange: gelöschte Routinen filtert die Abfrage heraus (#FA-2.6)
+        // Arrange: gelöschte Routinen filtert die Abfrage heraus
         when(routineRepository.existsActiveWithExercise(USER_A, BENCH_PRESS)).thenReturn(true);
         when(routineRepository.existsActiveWithExercise(USER_A, SQUAT)).thenReturn(false);
 

@@ -58,7 +58,7 @@ public class AuthController {
         UserResponse userResponse = userService.authenticate(request);
         ResponseCookie cookie = jwtCookieService.createAuthCookie(userResponse.id());
 
-        return ResponseEntity.status(HttpStatus.OK)
+        return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
                 .body(userResponse);
     }
@@ -69,9 +69,9 @@ public class AuthController {
     public ResponseEntity<Void> logout() {
         ResponseCookie cookie = jwtCookieService.createLogoutCookie();
 
-        return ResponseEntity.status(HttpStatus.NO_CONTENT)
+        return ResponseEntity.noContent()
                 .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .body(null);
+                .build();
     }
 
 }

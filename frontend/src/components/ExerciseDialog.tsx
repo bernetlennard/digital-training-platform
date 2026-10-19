@@ -11,11 +11,15 @@ import type { ExerciseResponse, MuscleGroupResponse } from '../api/types'
 import { useNotify } from '../notifications/useNotify'
 import { ConfirmDialog } from './ConfirmDialog'
 import { FormDialog } from './FormDialog'
-import { emptyToNull, nameRules, textFieldProps } from './formFields'
+import {
+  emptyToNull,
+  longTextRules,
+  nameRules,
+  textFieldProps,
+} from './formFields'
 
 interface ExerciseFormValues {
   name: string
-  /** Leer, solange keine Muskelgruppe gewählt ist */
   muscleGroupId: number | ''
   description: string
 }
@@ -25,11 +29,9 @@ interface ExerciseDialogProps {
   /** Fehlt beim Erfassen einer neuen Übung */
   exercise?: ExerciseResponse
   onClose: () => void
-  /** Nach dem Speichern oder Löschen */
   onChanged: () => void
 }
 
-/** Übung erfassen, bearbeiten oder löschen (SAF5) */
 export function ExerciseDialog({
   muscleGroups,
   exercise,
@@ -136,11 +138,7 @@ export function ExerciseDialog({
           )}
         />
         <TextField
-          {...textFieldProps(
-            register('description', {
-              maxLength: { value: 1000, message: 'Höchstens 1000 Zeichen.' },
-            }),
-          )}
+          {...textFieldProps(register('description', longTextRules))}
           label="Beschreibung"
           multiline
           minRows={3}

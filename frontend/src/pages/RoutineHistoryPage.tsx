@@ -29,7 +29,6 @@ async function loadRoutineHistory(routineIdParam: string | undefined) {
   }
 }
 
-/** Abgeschlossene Einheiten einer Routine mit Startdatum, die neueste zuerst (SAF9, #FA-6.1) */
 export function RoutineHistoryPage() {
   const { routineId } = useParams()
   const load = useCallback(() => loadRoutineHistory(routineId), [routineId])

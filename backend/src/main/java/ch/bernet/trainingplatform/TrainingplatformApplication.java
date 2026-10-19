@@ -10,13 +10,13 @@ import java.time.ZoneId;
 @SpringBootApplication
 public class TrainingplatformApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(TrainingplatformApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(TrainingplatformApplication.class, args);
+    }
 
-	@Bean
-	public Clock clock() {
-		return Clock.system(ZoneId.of( "Europe/Zurich"));
-	}
+    @Bean
+    public Clock clock() {
+        return Clock.system(ZoneId.of("Europe/Zurich"));
+    }
 
 }

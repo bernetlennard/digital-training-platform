@@ -3,7 +3,7 @@
 Diplomarbeit von Lennard Bernet (TEKO, Abgabe 2026-10-28). Sportler verwalten Übungen und Routinen, planen Trainings, protokollieren sie live (Sätze) und sehen den Verlauf.
 Mobile-First-SPA (React/MUI) + REST-Backend (Spring Boot) + PostgreSQL, produktiv hinter Caddy auf einem VPS.
 
-**Spezifikation = Diplomarbeit-docx** (OneDrive «Semester 6/Diplomarbeit/Diplomarbeit Lennard Bernet.docx»): Anforderungen `#FA-x.y`/`#NFA-x.y`, Business-Regeln, REST-Vertrag, GUI-Konzept, Testfälle UT-01..UT-15. Code-Kommentare verweisen auf diese IDs.
+**Spezifikation = Diplomarbeit-docx** (OneDrive «Semester 6/Diplomarbeit/Diplomarbeit Lennard Bernet.docx»): Anforderungen `#FA-x.y`/`#NFA-x.y`, Business-Regeln, REST-Vertrag, GUI-Konzept, Testfälle UT-01..UT-15. Im Code stehen **keine** Anforderungs-IDs (siehe «Konventionen»).
 Die früheren Markdown-Auszüge wurden in Commit `2cb86fe` gelöscht, sind aber abrufbar: `git show 2cb86fe^:docs/diplomarbeit/<business-regeln|rest-schnittstelle|gui-konzept|entwicklung-testanleitung>.md`.
 **Achtung #FA-5.5 (Satzvorschläge)** wurde am 2026-10-19 geändert. Der Code ist massgebend, die docx hat noch den alten Text (siehe «Live-Training»).
 
@@ -30,7 +30,7 @@ Branches: Arbeit auf `develop`, PR auf `main` deployt. Lennard committet in der 
 ## Lokal bauen, starten, testen
 
 - **Backend-Tests:** `cd backend && ./mvnw -q test`. `java`/`mvn` sind nicht im PATH; falls JAVA_HOME fehlt, `JAVA_HOME="$HOME/.jdks/temurin-25.0.4.1"` voranstellen. Rund 200 Tests, alle grün.
-- **Frontend:** `cd frontend && npm run lint && npm run typecheck && npm run build`. `npm test` (Vitest) hat noch keine Tests (`--passWithNoTests`).
+- **Frontend:** `cd frontend && npm run lint && npm run typecheck && npm test && npm run build`. Vitest-Unit-Tests UTF-01..06 nur für reine Funktionen (`setForm`, `api/client`, `format`), sonst manuelle Systemtests STF-01..52. Zeitzone in `vite.config.ts` fix Europe/Zurich, Uhr per `vi.setSystemTime`. Übersicht: `frontend/Frontend-Unit-Tests.docx`.
 - **App starten:** im Desktop-App-Browser per `preview_start` mit «backend» bzw. «frontend». Vite proxied `/api` auf 8080, damit das SameSite=Strict-Cookie ohne CORS funktioniert.
 - **Backend-Konfiguration:** `backend/.env` (gitignored) mit `DB_PASSWORD`, `JWT_SECRET` (≥ 32 Zeichen, sonst Startabbruch); optional `DB_URL`, `DB_USERNAME`. Lokale DB: PostgreSQL 18 auf 5432, DB `digital_training_platform`.
 - **Swagger** nur lokal: http://localhost:8080/swagger-ui.html (zuerst `POST /api/v1/auth/login`, der Authorize-Button nützt nichts). Im Container ist es aus.
@@ -170,12 +170,12 @@ Messages sind englische Konstanten in `ErrorMessages` (keine String-Literale in 
 - **`components/`**:
   - `AsyncContent` (Spinner, Fehler mit «Erneut versuchen»), `FormDialog`, `ConfirmDialog` (Fehler bleiben im Dialog), `PageHeader`, `EmptyState`.
   - `ExerciseDialog`, `SessionDialogs` (Planen/Ändern, spontan starten), `AccountDialogs`, `SessionExerciseCard` (Live-Übung), `SetFields` + `setForm.ts`.
-  - `formFields.ts`: `textFieldProps(register(...))` verbindet RHF mit MUI (`inputRef`). Dazu Validierungsregeln, die nur der Führung dienen; verbindlich prüft das Backend.
+  - `formFields.ts`: `textFieldProps(register(...))` verbindet RHF mit MUI (`inputRef`). Dazu Validierungsregeln (`emailRules`, `newPasswordRules`, `currentPasswordRules`, `nameRules`, `personNameRules`, `longTextRules` ≤ 1000), die nur der Führung dienen; verbindlich prüft das Backend.
 - **Muster:**
   - Formulare mit React Hook Form. Satzwerte sind Strings, Komma oder Punkt erlaubt.
   - Nach dem Speichern die Serverantwort übernehmen und `notify('…')` aufrufen (Snackbar).
   - Bei Fehlern bleiben die Eingaben stehen (#NFA-5.2).
-  - Texte sind Deutsch (Schweiz, «ss»). Formate in `format.ts` (de-CH, `formatSet`, `formatWeekdayDate` «Di., 20.10.2026», `formatStart` «um 18:30» bzw. «am …», `countLabel`, `byName`).
+  - Texte sind Deutsch (Schweiz, «ss»). Formate in `format.ts` (de-CH, `formatSet`, `formatWeekdayDate` «Di., 20.10.2026», `formatStart` «um 18:30» bzw. «am …», `formatExerciseList` «2 Übungen: A, B», `countLabel`, `byName`).
   - Buttons ohne Grossbuchstaben (`theme.ts`), eine hervorgehobene Hauptaktion pro Ansicht (#NFA-7.3).
   - Snackbar: `AppLayout` setzt auf dem Handy die CSS-Variable `--bottom-nav-height`, die Snackbar steht darüber. Ohne Navigation (Live-Training) liegt sie am unteren Rand.
   - Lint-Regel `react-hooks/refs`: keine `ref.current` im Render. Für «geändert?» `getFieldState(name).isDirty` von RHF nutzen.
@@ -204,11 +204,18 @@ Messages sind englische Konstanten in `ErrorMessages` (keine String-Literale in 
 - **Images:** alle Basis-Images mit Tag und Digest fixiert (#NFA-7.13). npm `save-exact`, `engine-strict` (Node 24.21.0). Swagger im Backend-Image aus.
 
 ## Konventionen
-- Code-Bezeichner Englisch, Kommentare und UI-Texte Deutsch, mit Anforderungs-IDs (`#FA-…`, `#NFA-…`, `SAFx` = Screen). Kommentardichte und Stil der Umgebung übernehmen.
+- Code-Bezeichner Englisch, Kommentare und UI-Texte Deutsch.
+- **Kommentare sparsam** (Wunsch Lennard, 2026-10-19): nur wo etwas nicht offensichtlich ist (Fallen, Begründungen, magische Werte). Nichts, was der Code oder Name schon sagt.
+  - Keine Verweise auf Anforderungen oder Kapitel (`#FA-…`, `#NFA-…`, `SAFx`, `L1…`). Erlaubt sind nur die Testnummern `UT-xx`/`UTF-xx` in Testnamen.
+  - Backend: Die Einzeiler am Anfang jeder Methode bleiben (Lennard will sie behalten), JPQL-Hinweise über Repository-Methoden ebenso. Neue Methoden bekommen denselben kurzen Einzeiler.
+  - Frontend: keine JSDoc-Zeilen, die nur den Namen wiederholen.
+  - Dockerfiles, Compose, Caddyfile, nginx, Workflows, Properties: praktisch ohne Kommentare.
+  - `V1__init.sql` nicht anfassen, auch keine Kommentare: Flyway prüft die Checksumme der ganzen Datei, sonst startet das Backend auf der bestehenden DB nicht.
 - Prettier: singleQuote, no semi. ESLint mit react-hooks.
 - Alle Versionen fix, keine CDNs, keine CORS (gleiche Domain).
 
 ## Offene Punkte (Stand 2026-10-19)
 - Diplomarbeit-Text für #FA-5.5 (FA-Tabelle, Business-Regel, DTO-Tabelle `suggestedSets`/`SetSuggestion.setNumber`, UT-13, GUI «Satz-Eingabe») passt Lennard selbst an.
 - Datenschutzseite: Kontaktadresse fehlt noch.
-- Frontend-Tests (Vitest + RTL) noch keine.
+- #NFA-7.7/#NFA-7.23 nennen einen Health-Endpunkt, der nach dem Deployment über HTTPS geprüft wird. Den gibt es nicht (kein Actuator, kein Schritt in `deploy.yml`).
+- #NFA-7.12 (Logs höchstens 14 Tage): im Repo ist keine Log-Rotation konfiguriert (Compose ohne `logging`), höchstens auf dem VPS.

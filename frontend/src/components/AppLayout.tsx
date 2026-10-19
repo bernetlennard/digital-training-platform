@@ -32,28 +32,23 @@ const SECTIONS = [
   { label: 'Verlauf', path: '/verlauf', icon: <History /> },
 ]
 
-/** Bereich zum Pfad, z. B. /routinen/3 gehört zu /routinen. Das Konto gehört zu keinem. */
+// /routinen/3 gehört zu /routinen, /konto zu keinem Bereich
 function getSection(pathname: string) {
   const firstSegment = `/${pathname.split('/')[1] ?? ''}`
   return SECTIONS.find((section) => section.path === firstSegment)?.path ?? null
 }
 
-/**
- * Rahmen der angemeldeten Ansichten: App-Leiste mit Absprung zum Konto und Hauptnavigation.
- * Auf dem Smartphone eine Leiste am unteren Rand, ab Tablet-Breite eine Seitenleiste.
- */
 export function AppLayout() {
   const { pathname } = useLocation()
   const section = getSection(pathname)
 
-  // Eine neue Ansicht beginnt oben, auch wenn die vorherige nach unten gescrollt war
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [pathname])
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100dvh' }}>
-      {/* Höhe der unteren Navigation, damit Meldungen sie nicht überdecken */}
+      {/* Damit die Snackbar über der unteren Navigation steht */}
       <GlobalStyles
         styles={(theme) => ({
           [theme.breakpoints.down('md')]: {

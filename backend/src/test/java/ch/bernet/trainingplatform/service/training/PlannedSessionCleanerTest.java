@@ -27,7 +27,7 @@ class PlannedSessionCleanerTest {
         // Act
         plannedSessionCleaner.onRoutineDeleted(USER_A, ROUTINE_ID);
 
-        // Assert: aktive und abgeschlossene Einheiten bleiben, das filtert die Abfrage (#FA-3.7)
+        // Assert: aktive und abgeschlossene Einheiten bleiben, das filtert die Abfrage
         verify(trainingSessionRepository).deletePlannedByRoutineId(USER_A, ROUTINE_ID);
         verifyNoMoreInteractions(trainingSessionRepository);
     }

@@ -1,14 +1,8 @@
-// DTOs gemäss REST-Schnittstelle (Kapitel «REST-Schnittstelle»)
-
 export interface ErrorResponse {
   status: number
   message: string
   details: string[]
 }
-
-// ---------------------------------------------------------------------------
-// Benutzerkonto
-// ---------------------------------------------------------------------------
 
 export interface UserResponse {
   id: number
@@ -17,7 +11,6 @@ export interface UserResponse {
   lastName: string | null
 }
 
-// Registrieren und Anmelden verwenden denselben Aufbau
 export interface CredentialsRequest {
   email: string
   password: string
@@ -42,10 +35,6 @@ export interface DeleteAccountRequest {
   password: string
 }
 
-// ---------------------------------------------------------------------------
-// Übungen
-// ---------------------------------------------------------------------------
-
 export interface MuscleGroupResponse {
   id: number
   name: string
@@ -65,13 +54,9 @@ export interface ExerciseResponse {
   description: string | null
 }
 
-// ---------------------------------------------------------------------------
-// Routinen
-// ---------------------------------------------------------------------------
-
 export interface RoutineRequest {
   name: string
-  /** Reihenfolge der Liste = Position in der Routine */
+  /** Reihenfolge = Position in der Routine */
   exerciseIds: number[]
 }
 
@@ -87,10 +72,6 @@ export interface RoutineResponse {
   name: string
   exercises: RoutineExerciseResponse[]
 }
-
-// ---------------------------------------------------------------------------
-// Trainingsplanung und Live-Training
-// ---------------------------------------------------------------------------
 
 /** Datum ohne Zeit im Format JJJJ-MM-TT (LocalDate) */
 export type IsoDate = string
@@ -135,7 +116,7 @@ export interface SetResponse {
   restSeconds: number | null
 }
 
-/** Noch offener Satz aus der letzten Einheit derselben Routine, nicht gespeichert (#FA-5.5) */
+/** Offener Satz aus der letzten Einheit derselben Routine, nicht gespeichert */
 export interface SetSuggestion {
   setNumber: number
   weightKg: number
@@ -149,7 +130,6 @@ export interface SessionExerciseResponse {
   exerciseName: string
   position: number
   sets: SetResponse[]
-  /** Leer, wenn alle Sätze der letzten Einheit erfasst sind oder es keine gibt */
   suggestedSets: SetSuggestion[]
 }
 
@@ -166,10 +146,6 @@ export interface SessionResponse {
   note: string | null
   exercises: SessionExerciseResponse[]
 }
-
-// ---------------------------------------------------------------------------
-// Verlauf
-// ---------------------------------------------------------------------------
 
 export interface HistoryRoutineResponse {
   routineId: number

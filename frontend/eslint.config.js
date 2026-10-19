@@ -20,6 +20,5 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
-  // Zuletzt, damit Formatierungsregeln Prettier überlassen werden
   eslintConfigPrettier,
 ])

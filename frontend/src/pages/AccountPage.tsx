@@ -30,7 +30,6 @@ import { useNotify } from '../notifications/useNotify'
 
 type DialogType = 'email' | 'password' | 'delete'
 
-/** Konto: Profil, E-Mail und Passwort ändern, abmelden, Konto löschen (SAF3, SAF4) */
 export function AccountPage() {
   const { user, logout } = useAuth()
   const [dialog, setDialog] = useState<DialogType>()
@@ -41,7 +40,6 @@ export function AccountPage() {
     setLogoutError(undefined)
     setIsLoggingOut(true)
     try {
-      // Danach leitet RequireAuth zur Anmeldung weiter
       await logout()
     } catch (error) {
       setLogoutError(getErrorMessage(error))
@@ -139,7 +137,6 @@ interface ProfileFormValues {
   lastName: string
 }
 
-/** Vor- und Nachname ändern (#FA-1.7) */
 function ProfileForm({ user }: { user: UserResponse }) {
   const { setUser } = useAuth()
   const notify = useNotify()

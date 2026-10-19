@@ -9,6 +9,7 @@ import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
 import java.time.Clock;
+import java.time.Duration;
 import java.time.Instant;
 
 @Service
@@ -27,22 +28,20 @@ public class JwtCookieService {
     }
 
     public ResponseCookie createAuthCookie(Long userId) {
-        return ResponseCookie.from(COOKIE_NAME, createToken(userId))
-                .httpOnly(true)
-                .secure(true)
-                .sameSite("Strict")
-                .path("/")
-                .maxAge(jwtProperties.validity())
-                .build();
+        return buildCookie(createToken(userId), jwtProperties.validity());
     }
 
     public ResponseCookie createLogoutCookie() {
-        return ResponseCookie.from(COOKIE_NAME, "")
+        return buildCookie("", Duration.ZERO);
+    }
+
+    private ResponseCookie buildCookie(String value, Duration maxAge) {
+        return ResponseCookie.from(COOKIE_NAME, value)
                 .httpOnly(true)
                 .secure(true)
                 .sameSite("Strict")
                 .path("/")
-                .maxAge(0)
+                .maxAge(maxAge)
                 .build();
     }
 

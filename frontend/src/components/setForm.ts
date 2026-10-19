@@ -1,21 +1,19 @@
 import type { RegisterOptions } from 'react-hook-form'
 import type { SetRequest, SetSuggestion } from '../api/types'
 
-/** Eingabe eines Satzes. Textfelder, damit auch «82,5» mit Komma geht. */
+// Strings statt Zahlen, damit auch «82,5» mit Komma geht
 export interface SetFormValues {
   weightKg: string
   repetitions: string
   restSeconds: string
 }
 
-/** Komma oder Punkt als Dezimaltrennzeichen */
 function parseDecimal(value: string) {
   return Number(value.trim().replace(',', '.'))
 }
 
 const WHOLE_NUMBER = /^\d+$/
 
-// Plausible Satzwerte (#FA-5.3), verbindlich prüft das Backend
 export const weightRules = {
   required: 'Gewicht fehlt.',
   validate: (value: string) => {
@@ -39,7 +37,6 @@ export const repetitionsRules = {
   },
 } satisfies RegisterOptions<SetFormValues, 'repetitions'>
 
-/** Die Pause ist freiwillig */
 export const restSecondsRules = {
   validate: (value: string) =>
     value.trim() === '' ||
@@ -47,7 +44,6 @@ export const restSecondsRules = {
     '0 bis 3600 s.',
 } satisfies RegisterOptions<SetFormValues, 'restSeconds'>
 
-/** Vorbelegung aus einem Vorschlag oder einem bestehenden Satz, sonst leer (#FA-5.5) */
 export function toSetFormValues(set: SetSuggestion | undefined): SetFormValues {
   return {
     weightKg: set ? String(set.weightKg) : '',

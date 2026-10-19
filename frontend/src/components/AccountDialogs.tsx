@@ -26,7 +26,6 @@ interface ChangeEmailFormValues {
   password: string
 }
 
-/** Neue E-Mail-Adresse, bestätigt mit dem Passwort (#FA-1.8) */
 export function ChangeEmailDialog({ onClose }: DialogProps) {
   const { user, setUser } = useAuth()
   const notify = useNotify()
@@ -96,7 +95,6 @@ interface ChangePasswordFormValues {
   newPassword: string
 }
 
-/** Neues Passwort, bestätigt mit dem aktuellen (#FA-1.9) */
 export function ChangePasswordDialog({ onClose }: DialogProps) {
   const notify = useNotify()
   const [submitError, setSubmitError] = useState<string>()
@@ -153,7 +151,6 @@ interface DeleteAccountFormValues {
   password: string
 }
 
-/** Konto mit allen Daten endgültig löschen, bestätigt mit dem Passwort (SAF4, #FA-1.10) */
 export function DeleteAccountDialog({ onClose }: DialogProps) {
   const { setUser } = useAuth()
   const notify = useNotify()
@@ -169,7 +166,6 @@ export function DeleteAccountDialog({ onClose }: DialogProps) {
     try {
       await deleteAccount(values)
       notify('Dein Konto wurde gelöscht')
-      // Danach leitet RequireAuth zur Anmeldung weiter
       setUser(null)
     } catch (error) {
       setSubmitError(getErrorMessage(error, { 401: WRONG_PASSWORD }))

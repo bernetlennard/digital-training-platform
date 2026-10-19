@@ -134,7 +134,7 @@ class RoutineServiceTest {
     @Test
     @DisplayName("UT-08 Gleicher Name ohne Gross-/Kleinschreibung ergibt 409")
     void createRoutine_duplicateName_throwsConflict() {
-        // Arrange: das Repository vergleicht ohne Gross-/Kleinschreibung und nur aktive Routinen (#FA-3.4)
+        // Arrange: das Repository vergleicht ohne Gross-/Kleinschreibung und nur aktive Routinen
         when(routineRepository.findActiveByUserIdAndName(eq(USER_A), argThat("Push"::equalsIgnoreCase)))
                 .thenReturn(Optional.of(routine(ROUTINE_ID, "Push", BENCH_PRESS)));
 
@@ -173,7 +173,7 @@ class RoutineServiceTest {
         RoutineResponse response = routineService.updateRoutine(USER_A, ROUTINE_ID,
                 new RoutineRequest("Push schwer", List.of(PULL_UP, BENCH_PRESS)));
 
-        // Assert (#FA-3.3, #FA-3.6)
+        // Assert
         assertThat(routine.getName()).isEqualTo("Push schwer");
         assertThat(routine.getExercises())
                 .extracting(RoutineExercise::getExerciseId, RoutineExercise::getPosition)
@@ -244,7 +244,7 @@ class RoutineServiceTest {
         // Act
         routineService.deleteRoutine(USER_A, ROUTINE_ID);
 
-        // Assert: die Routine bleibt für die Historie erhalten (#FA-3.7)
+        // Assert: die Routine bleibt für die Historie erhalten
         assertThat(routine.isDeleted()).isTrue();
         assertThat(routine.getExercises()).isNotEmpty();
         verify(routineDeletionListener).onRoutineDeleted(USER_A, ROUTINE_ID);
@@ -276,7 +276,7 @@ class RoutineServiceTest {
         // Act
         List<RoutineSummary> response = routineService.findAllSummaries(USER_A);
 
-        // Assert (#FA-6.3)
+        // Assert
         assertThat(response).containsExactlyInAnyOrder(
                 new RoutineSummary(ROUTINE_ID, "Push", false),
                 new RoutineSummary(21L, "Beine", true));

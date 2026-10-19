@@ -68,7 +68,7 @@ class ExerciseServiceTest {
         // Act
         List<MuscleGroupResponse> response = exerciseService.getMuscleGroups();
 
-        // Assert (#FA-2.2)
+        // Assert
         assertThat(response).containsExactly(
                 new MuscleGroupResponse(1, "Brust"),
                 new MuscleGroupResponse(2, "Rücken"),
@@ -108,7 +108,7 @@ class ExerciseServiceTest {
     @Test
     @DisplayName("UT-06 Gleicher Name ohne Gross-/Kleinschreibung ergibt 409")
     void createExercise_duplicateNameIgnoringCase_throwsConflict() {
-        // Arrange: das Repository vergleicht ohne Gross-/Kleinschreibung und nur aktive Übungen (#FA-2.5)
+        // Arrange: das Repository vergleicht ohne Gross-/Kleinschreibung und nur aktive Übungen
         when(exerciseRepository.findActiveByUserIdAndName(eq(USER_A), argThat("Bankdrücken"::equalsIgnoreCase)))
                 .thenReturn(Optional.of(exercise(BENCH_PRESS, "Bankdrücken", MuscleGroup.CHEST)));
 
@@ -134,7 +134,7 @@ class ExerciseServiceTest {
         ExerciseResponse response = exerciseService.updateExercise(USER_A, BENCH_PRESS,
                 new ExerciseRequest("BANKDRÜCKEN", 3, "Schrägbank"));
 
-        // Assert (#FA-2.4)
+        // Assert
         assertThat(benchPress.getName()).isEqualTo("BANKDRÜCKEN");
         assertThat(benchPress.getMuscleGroup()).isEqualTo(MuscleGroup.SHOULDERS);
         assertThat(benchPress.getDescription()).isEqualTo("Schrägbank");
@@ -261,7 +261,7 @@ class ExerciseServiceTest {
         // Act
         Map<Long, ExerciseResponse> response = exerciseService.findByIds(USER_A, List.of(BENCH_PRESS, SQUAT));
 
-        // Assert (#FA-2.6: die Historie bleibt vollständig)
+        // Assert: die Historie bleibt vollständig
         assertThat(response).containsOnly(
                 Map.entry(BENCH_PRESS, new ExerciseResponse(BENCH_PRESS, "Bankdrücken", 1, "Brust", null)),
                 Map.entry(SQUAT, new ExerciseResponse(SQUAT, "Kniebeuge", 7, "Beine", null)));

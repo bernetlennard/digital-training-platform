@@ -33,7 +33,7 @@ class RoutineTest {
         Routine routine = new Routine(USER_A, "Ganzkörper");
         routine.replaceExercises(List.of(SQUAT, BENCH_PRESS, PULL_UP));
 
-        // Act: Reihenfolge geändert und eine Übung entfernt (#FA-3.3, #FA-3.6)
+        // Act: Reihenfolge geändert und eine Übung entfernt
         routine.replaceExercises(List.of(PULL_UP, SQUAT));
 
         // Assert

@@ -3,7 +3,6 @@ package ch.bernet.trainingplatform.persistence.exercise;
 import lombok.Getter;
 
 import java.util.Arrays;
-import java.util.HashMap;
 
 @Getter
 public enum MuscleGroup {

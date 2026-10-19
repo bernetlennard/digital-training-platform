@@ -32,7 +32,7 @@ public class SecurityErrorHandler implements AuthenticationEntryPoint, AccessDen
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
                          AuthenticationException ex) throws IOException {
-        // Zugriff ohne Token-Inhalt loggen (#NFA-1.7), dann writeError mit 401
+        // Zugriff ohne Token-Inhalt loggen, dann writeError mit 401
         log.warn("Unauthorized access attempt: {} {}", request.getMethod(), request.getRequestURI());
         writeError(response, HttpStatus.UNAUTHORIZED, ErrorMessages.UNAUTHORIZED);
     }
@@ -40,13 +40,13 @@ public class SecurityErrorHandler implements AuthenticationEntryPoint, AccessDen
     @Override
     public void handle(HttpServletRequest request, HttpServletResponse response,
                        AccessDeniedException ex) throws IOException {
-        // Zugriff ohne Token-Inhalt loggen (#NFA-1.7), dann writeError mit 403
+        // Zugriff ohne Token-Inhalt loggen, dann writeError mit 403
         log.warn("Access denied: {} {}", request.getMethod(), request.getRequestURI());
         writeError(response, HttpStatus.FORBIDDEN, ErrorMessages.ACCESS_DENIED);
     }
 
     private void writeError(HttpServletResponse response, HttpStatus status, String message) throws IOException {
-        // ErrorResponse als JSON in die Response schreiben (L10)
+        // ErrorResponse als JSON in die Response schreiben
         ErrorResponse body = new ErrorResponse(status.value(), message, List.of());
         response.setStatus(status.value());
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);

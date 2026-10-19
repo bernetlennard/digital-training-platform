@@ -12,7 +12,11 @@ import ch.bernet.trainingplatform.service.exercise.dto.MuscleGroupResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -30,8 +34,9 @@ public class ExerciseService {
     @Transactional(readOnly = true)
     public List<ExerciseResponse> getExercises(Long userId) {
         // aktive Übungen des Benutzers laden und mappen
-        List<Exercise> exerciseList = exerciseRepository.findActiveByUserId(userId);
-        return exerciseList.stream().map(ExerciseMapper::toResponse).toList();
+        return exerciseRepository.findActiveByUserId(userId).stream()
+                .map(ExerciseMapper::toResponse)
+                .toList();
     }
 
     public List<MuscleGroupResponse> getMuscleGroups() {
@@ -66,7 +71,7 @@ public class ExerciseService {
 
     @Transactional
     public void deleteExercise(Long userId, Long exerciseId) {
-        // in aktiver Routine verwendet -> ConflictException (#FA-2.6), sonst Soft Delete
+        // in aktiver Routine verwendet -> ConflictException, sonst Soft Delete
         Exercise exercise = findActiveExercise(userId, exerciseId);
         if (exerciseUsageChecker.isUsedInActiveRoutine(userId, exerciseId)) {
             throw new ConflictException(ErrorMessages.EXERCISE_IN_USE);
@@ -98,21 +103,17 @@ public class ExerciseService {
 
     private Exercise findActiveExercise(Long userId, Long exerciseId) {
         // aktive Übung laden, sonst NotFoundException
-        Optional<Exercise> optionalExercise = exerciseRepository.findActiveByIdAndUserId(exerciseId, userId);
-        if (optionalExercise.isEmpty()) {
-            throw new NotFoundException(ErrorMessages.EXERCISE_NOT_FOUND);
-        }
-        return optionalExercise.get();
+        return exerciseRepository.findActiveByIdAndUserId(exerciseId, userId)
+                .orElseThrow(() -> new NotFoundException(ErrorMessages.EXERCISE_NOT_FOUND));
     }
 
     private void assertNameUnique(Long userId, String name, Long exerciseId) {
         // gleicher Name bei anderer aktiver Übung -> ConflictException (exerciseId darf null sein)
-        exerciseRepository.findActiveByUserIdAndName(userId, name).ifPresent(e -> {
-            if (e.getId().equals(exerciseId)) {
-                return;
-            }
-            throw new ConflictException(ErrorMessages.NAME_ALREADY_IN_USE);
-        });
+        exerciseRepository.findActiveByUserIdAndName(userId, name)
+                .filter(existing -> !existing.getId().equals(exerciseId))
+                .ifPresent(existing -> {
+                    throw new ConflictException(ErrorMessages.NAME_ALREADY_IN_USE);
+                });
     }
 
 }

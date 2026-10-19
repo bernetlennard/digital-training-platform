@@ -10,11 +10,6 @@ import type {
   StartSessionRequest,
 } from './types'
 
-// ---------------------------------------------------------------------------
-// Trainingsplanung
-// ---------------------------------------------------------------------------
-
-/** Geplante Trainings, das früheste zuerst (#FA-4.3) */
 export function getPlannedSessions() {
   return request<PlannedSessionResponse[]>('/sessions/planned')
 }
@@ -40,11 +35,6 @@ export function deletePlannedSession(sessionId: number) {
   return request<void>(`/sessions/planned/${sessionId}`, { method: 'DELETE' })
 }
 
-// ---------------------------------------------------------------------------
-// Live-Training
-// ---------------------------------------------------------------------------
-
-/** Meldungen, wenn ein Training nicht starten kann (#FA-5.1) */
 export const START_ERROR_MESSAGES = {
   404: 'Die Routine oder das Training wurde nicht gefunden.',
   409: 'Es läuft bereits ein Training. Setze es fort oder brich es ab.',
@@ -56,12 +46,11 @@ export function startPlannedSession(sessionId: number) {
   })
 }
 
-/** Startet eine Routine ohne vorherige Planung */
 export function startSpontaneousSession(start: StartSessionRequest) {
   return request<SessionResponse>('/sessions', { method: 'POST', body: start })
 }
 
-/** Aktive Einheit oder null, wenn keine läuft (204) */
+// 204 ohne Inhalt heisst: kein Training aktiv
 export async function getActiveSession() {
   const session = await request<SessionResponse | undefined>('/sessions/active')
   return session ?? null
@@ -71,7 +60,6 @@ export function updateNote(note: NoteRequest) {
   return request<void>('/sessions/active/note', { method: 'PUT', body: note })
 }
 
-/** Antwortet mit der ganzen Übung: alle Sätze und die noch offenen Vorschläge */
 export function addSet(sessionExerciseId: number, set: SetRequest) {
   return request<SessionExerciseResponse>(
     `/sessions/active/exercises/${sessionExerciseId}/sets`,
@@ -99,12 +87,10 @@ export function deleteSet(setId: number) {
   })
 }
 
-/** 409 ohne erfassten Satz (#FA-5.7) */
 export function finishSession() {
   return request<void>('/sessions/active/finish', { method: 'POST' })
 }
 
-/** Verwirft alle Sätze, ein geplantes Training bleibt eingeplant (#FA-5.8) */
 export function cancelSession() {
   return request<void>('/sessions/active/cancel', { method: 'POST' })
 }

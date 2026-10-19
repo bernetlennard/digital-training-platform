@@ -3,7 +3,6 @@ package ch.bernet.trainingplatform.persistence.training;
 import lombok.Getter;
 
 import java.util.Arrays;
-import java.util.HashMap;
 
 @Getter
 public enum SessionStatus {

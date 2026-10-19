@@ -5,12 +5,10 @@ import type { ApiData } from '../api/useApiData'
 
 interface AsyncContentProps<T> {
   state: ApiData<T>
-  /** Eigene Meldungen je Statuscode, z. B. für 404 */
   errorMessages?: Record<number, string>
   children: (data: T) => ReactNode
 }
 
-/** Zeigt beim Laden einen Spinner, bei einem Fehler eine Meldung mit «Erneut versuchen» */
 export function AsyncContent<T>({
   state,
   errorMessages,

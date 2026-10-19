@@ -1,12 +1,10 @@
 name: Deploy
 
-# Läuft nur, wenn ein Pull Request auf main gemerged wird, nicht beim blossen Schliessen
 on:
   pull_request:
     types: [closed]
     branches: [main]
 
-# Nie zwei Deployments gleichzeitig, ein laufendes wird nicht abgebrochen
 concurrency:
   group: deploy-production
   cancel-in-progress: false
@@ -15,7 +13,6 @@ permissions:
   contents: read
 
 env:
-  # Commit, der durch den Merge auf main entstanden ist, auch bei Squash und Rebase
   IMAGE_TAG: ${{ github.event.pull_request.merge_commit_sha }}
 
 jobs:
@@ -37,7 +34,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # SHA-Tag für das Deployment, latest als Rückfallwert für docker-compose.yml
       - uses: docker/build-push-action@v7
         with:
           context: ${{ matrix.app }}
@@ -46,14 +42,13 @@ jobs:
             bernetlennard/dtp-${{ matrix.app }}:${{ env.IMAGE_TAG }}
             bernetlennard/dtp-${{ matrix.app }}:latest
           cache-from: type=gha,scope=${{ matrix.app }}
-          # Backend und Frontend teilen Alpine-Schichten; reserviert der andere Job sie gerade, scheitert nur der Cache, nicht der Build
+          # Beide Jobs teilen Alpine-Schichten, ein Konflikt beim Cache soll den Build nicht abbrechen
           cache-to: type=gha,mode=max,scope=${{ matrix.app }},ignore-error=true
 
   deploy:
     needs: images
     runs-on: ubuntu-latest
     steps:
-      # Host-Key fest hinterlegt statt beim ersten Verbinden blind zu vertrauen
       - name: SSH einrichten
         run: |
           mkdir -p ~/.ssh

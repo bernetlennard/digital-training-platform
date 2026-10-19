@@ -25,10 +25,9 @@ async function loadCatalog() {
   return { exercises: exercises.toSorted(byName), muscleGroups }
 }
 
-/** Offener Dialog: neue Übung (null) oder die gewählte Übung */
+/** exercise null = neue Übung */
 type DialogState = { exercise: ExerciseResponse | null } | undefined
 
-/** Übungskatalog, alphabetisch mit Muskelgruppe (SAF5, #FA-2.3) */
 export function ExercisesPage() {
   const catalog = useApiData(loadCatalog)
   const [dialog, setDialog] = useState<DialogState>()
@@ -69,7 +68,6 @@ export function ExercisesPage() {
                         secondary={
                           <>
                             {exercise.muscleGroupName}
-                            {/* Gekürzt auf zwei Zeilen, ganz im Dialog nach dem Antippen */}
                             {exercise.description && (
                               <Box
                                 component="span"

@@ -43,7 +43,6 @@ export function RegisterPage() {
   const onSubmit = async (values: RegisterFormValues) => {
     setSubmitError(undefined)
     try {
-      // Nach der Registrierung ist der Sportler direkt angemeldet (Cookie vom Server)
       await registerAccount(
         { email: values.email, password: values.password },
         {
@@ -82,7 +81,6 @@ export function RegisterPage() {
             error={!!errors.password}
             helperText={errors.password?.message ?? PASSWORD_HINT}
           />
-          {/* Freiwillig, für die Registrierung reichen E-Mail und Passwort (Datenminimierung) */}
           <TextField
             {...textFieldProps(register('firstName', personNameRules))}
             label="Vorname"

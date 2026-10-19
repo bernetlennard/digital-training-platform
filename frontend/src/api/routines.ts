@@ -1,7 +1,6 @@
 import { request } from './client'
 import type { RoutineRequest, RoutineResponse } from './types'
 
-/** Eigene Routinen ohne die gelöschten, je mit ihren Übungen */
 export function getRoutines() {
   return request<RoutineResponse[]>('/routines')
 }
@@ -24,7 +23,6 @@ export function updateRoutine(routineId: number, routine: RoutineRequest) {
   })
 }
 
-/** Löscht auch die geplanten Trainings der Routine, der Verlauf bleibt (#FA-3.7) */
 export function deleteRoutine(routineId: number) {
   return request<void>(`/routines/${routineId}`, { method: 'DELETE' })
 }

@@ -2,12 +2,10 @@
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
-    // Frontend und API laufen lokal unter derselben Adresse wie später hinter Caddy,
-    // damit das SameSite=Strict-Cookie ohne CORS mitgeschickt wird (#NFA-7.18)
+    // Gleiche Adresse für Frontend und API, sonst schickt der Browser das SameSite=Strict-Cookie nicht mit
     proxy: {
       '/api': 'http://localhost:8080',
     },
@@ -15,5 +13,7 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: './src/setupTests.ts',
+    // Feste Zeitzone, damit die Formate auch in der Pipeline (UTC) gleich sind
+    env: { TZ: 'Europe/Zurich' },
   },
 })

@@ -5,13 +5,10 @@ import { Link as RouterLink } from 'react-router'
 
 interface PageHeaderProps {
   title: ReactNode
-  /** Zeigt einen Zurück-Knopf zu diesem Pfad */
   backTo?: string
-  /** Hauptaktion rechts, z. B. «Neue Übung» */
   action?: ReactNode
 }
 
-/** Titel einer Ansicht mit optionalem Zurück-Knopf und Hauptaktion */
 export function PageHeader({ title, backTo, action }: PageHeaderProps) {
   return (
     <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 2 }}>

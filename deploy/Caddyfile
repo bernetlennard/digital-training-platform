@@ -1,7 +1,5 @@
-# Caddy holt das Zertifikat für {$DOMAIN} bei Let's Encrypt, beendet TLS und leitet
-# HTTP automatisch auf HTTPS um (#NFA-7.8).
 {
-	# Die Firewall lässt nur TCP durch, darum kein HTTP/3 über UDP
+	# Die Firewall lässt kein UDP durch, darum ohne HTTP/3
 	servers {
 		protocols h1 h2
 	}
@@ -12,8 +10,6 @@
 
 	header Strict-Transport-Security "max-age=31536000"
 
-	# Frontend und API unter derselben Domain, darum ohne CORS (#NFA-7.18).
-	# Swagger UI liegt nicht unter /api und ist damit von aussen nicht erreichbar (#NFA-7.16).
 	handle /api/* {
 		reverse_proxy backend:8080
 	}

@@ -12,14 +12,13 @@ import { useApiData } from '../api/useApiData'
 import { AsyncContent } from '../components/AsyncContent'
 import { EmptyState } from '../components/EmptyState'
 import { PageHeader } from '../components/PageHeader'
-import { byName, countLabel } from '../format'
+import { byName, formatExerciseList } from '../format'
 import { NEW_ROUTINE_ID } from '../routes'
 
 async function loadRoutines() {
   return (await getRoutines()).toSorted(byName)
 }
 
-/** Routinen mit ihren Übungen (SAF6, #FA-3.2) */
 export function RoutinesPage() {
   const routines = useApiData(loadRoutines)
 
@@ -57,9 +56,7 @@ export function RoutinesPage() {
                   >
                     <ListItemText
                       primary={routine.name}
-                      secondary={`${countLabel(routine.exercises.length, 'Übung', 'Übungen')}: ${routine.exercises
-                        .map((exercise) => exercise.name)
-                        .join(', ')}`}
+                      secondary={formatExerciseList(routine.exercises)}
                     />
                   </ListItemButton>
                 ))}

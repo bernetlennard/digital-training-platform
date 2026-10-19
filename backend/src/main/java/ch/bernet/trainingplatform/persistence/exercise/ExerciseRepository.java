@@ -11,16 +11,16 @@ public interface ExerciseRepository extends JpaRepository<Exercise, Long> {
 
     // @Query, nur deleted = false (sonst ignoriert Spring Data das "Active" im Namen)
     @Query("SELECT e FROM Exercise e WHERE e.deleted = false AND e.userId = ?1")
-    public List<Exercise> findActiveByUserId(Long userId);
+    List<Exercise> findActiveByUserId(Long userId);
 
     // @Query, nur deleted = false
     @Query("SELECT e FROM Exercise e WHERE e.deleted = false AND e.id = ?1 AND e.userId = ?2")
-    public Optional<Exercise> findActiveByIdAndUserId(Long id, Long userId);
+    Optional<Exercise> findActiveByIdAndUserId(Long id, Long userId);
 
     // @Query, nur deleted = false und Name ohne Gross-/Kleinschreibung vergleichen
     @Query("SELECT e FROM Exercise e WHERE e.deleted = false AND e.userId = ?1 AND LOWER(e.name) = LOWER(?2)")
-    public Optional<Exercise> findActiveByUserIdAndName(Long userId, String name);
+    Optional<Exercise> findActiveByUserIdAndName(Long userId, String name);
 
-    public List<Exercise> findAllByIdInAndUserId(Collection<Long> ids, Long userId);
+    List<Exercise> findAllByIdInAndUserId(Collection<Long> ids, Long userId);
 
 }

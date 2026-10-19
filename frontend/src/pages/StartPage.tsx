@@ -59,10 +59,6 @@ type DialogState =
   | { type: 'start' }
   | { type: 'delete'; planned: PlannedSessionResponse }
 
-/**
- * Start nach der Anmeldung (SAF7, SAF8): laufendes Training fortsetzen, geplante Trainings
- * mit einem Tipp starten (#NFA-4.1), einplanen oder spontan starten.
- */
 export function StartPage() {
   const navigate = useNavigate()
   const notify = useNotify()
@@ -96,7 +92,7 @@ export function StartPage() {
       <AsyncContent state={start}>
         {({ active, planned, routines }) => {
           const hasRoutines = routines.length > 0
-          // Das Backend sortiert nach Datum, vergangene stehen also zuoberst
+          // Nach Datum sortiert, vergangene stehen zuoberst
           const nextId = planned.find((item) => item.plannedDate >= today)?.id
 
           return (
@@ -104,7 +100,7 @@ export function StartPage() {
               {active && <ActiveSessionCard session={active} />}
 
               {hasRoutines ? (
-                // Breite nach Inhalt, damit «Spontan starten» auch auf 360 Pixel einzeilig bleibt
+                // Breite nach Inhalt, damit «Spontan starten» auf schmalen Bildschirmen einzeilig bleibt
                 <Stack direction="row" spacing={1}>
                   <Button
                     variant="outlined"
@@ -196,7 +192,7 @@ export function StartPage() {
                           </Typography>
                         </CardContent>
                         <CardActions>
-                          {/* Nur das nächste Training ist hervorgehoben, eine Hauptaktion pro Ansicht (#NFA-7.3) */}
+                          {/* Nur das nächste Training ist hervorgehoben, eine Hauptaktion pro Ansicht */}
                           <Button
                             variant={
                               isNext && !active ? 'contained' : 'outlined'
@@ -209,7 +205,7 @@ export function StartPage() {
                             Starten
                           </Button>
                           <Box sx={{ flexGrow: 1 }} />
-                          {/* Vergangene Trainings lassen sich nur noch löschen (SAF7) */}
+                          {/* Vergangene Trainings lassen sich nur noch starten oder löschen */}
                           {!isPast && (
                             <IconButton
                               aria-label={`Training vom ${formatDate(item.plannedDate)} ändern`}
@@ -273,7 +269,6 @@ export function StartPage() {
   )
 }
 
-/** Laufendes Training zuoberst, damit es sich nach Neuladen oder Gerätewechsel fortsetzen lässt (#FA-5.9) */
 function ActiveSessionCard({ session }: { session: SessionResponse }) {
   return (
     <Card

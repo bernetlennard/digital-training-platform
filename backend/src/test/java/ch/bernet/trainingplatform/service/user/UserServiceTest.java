@@ -78,7 +78,7 @@ class UserServiceTest {
     @Test
     @DisplayName("UT-03 Vorhandene E-Mail ergibt 409")
     void register_existingEmail_throwsConflict() {
-        // Arrange: Gross-/Kleinschreibung wird nicht unterschieden (#FA-1.3)
+        // Arrange: Gross-/Kleinschreibung wird nicht unterschieden
         when(appUserRepository.existsByEmail(EMAIL)).thenReturn(true);
 
         // Act & Assert
@@ -136,7 +136,7 @@ class UserServiceTest {
         assertThat(unknownEmail).isInstanceOf(AuthenticationFailedException.class)
                 .hasMessage(wrongPassword.getMessage());
 
-        // Der Fehlversuch zählt auch für E-Mails ohne Konto (#NFA-1.3)
+        // Der Fehlversuch zählt auch für E-Mails ohne Konto
         verify(loginLockService).registerFailure("unbekannt@test.ch");
     }
 
@@ -253,7 +253,7 @@ class UserServiceTest {
         verify(appUserRepository).delete(user);
         verify(loginLockService).clear(EMAIL);
 
-        // Beide Löschungen laufen in einer Transaktion (#NFA-1.6)
+        // Beide Löschungen laufen in einer Transaktion
         assertThat(UserService.class.getMethod("deleteAccount", Long.class, DeleteAccountRequest.class)
                 .isAnnotationPresent(Transactional.class)).isTrue();
     }

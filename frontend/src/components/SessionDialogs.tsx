@@ -30,12 +30,11 @@ import {
   updatePlannedSession,
 } from '../api/sessions'
 import type { PlannedSessionResponse, RoutineResponse } from '../api/types'
-import { countLabel, todayIsoDate } from '../format'
+import { formatExerciseList, todayIsoDate } from '../format'
 import { useNotify } from '../notifications/useNotify'
 import { FormDialog } from './FormDialog'
 import { textFieldProps } from './formFields'
 
-/** Leer, solange keine Routine gewählt ist */
 type RoutineChoice = number | ''
 
 function RoutineSelect<T extends FieldValues>({
@@ -87,7 +86,6 @@ interface PlanSessionDialogProps {
   onSaved: () => void
 }
 
-/** Training einplanen oder ändern: Routine und Datum ab heute (SAF7) */
 export function PlanSessionDialog({
   routines,
   planned,
@@ -147,7 +145,7 @@ export function PlanSessionDialog({
         {...textFieldProps(
           register('plannedDate', {
             required: 'Bitte Datum wählen.',
-            // JJJJ-MM-TT lässt sich als Text vergleichen (#FA-4.2)
+            // JJJJ-MM-TT lässt sich als Text vergleichen
             validate: (value) =>
               value >= today ||
               'Das Datum darf nicht in der Vergangenheit liegen.',
@@ -165,7 +163,6 @@ export function PlanSessionDialog({
   )
 }
 
-/** Routine ohne Planung direkt starten (#FA-5.1). Ein Tipp auf die Routine startet sie. */
 export function StartSessionDialog({
   routines,
   onClose,
@@ -215,9 +212,7 @@ export function StartSessionDialog({
             >
               <ListItemText
                 primary={routine.name}
-                secondary={`${countLabel(routine.exercises.length, 'Übung', 'Übungen')}: ${routine.exercises
-                  .map((exercise) => exercise.name)
-                  .join(', ')}`}
+                secondary={formatExerciseList(routine.exercises)}
                 slotProps={{ secondary: { noWrap: true } }}
                 sx={{ minWidth: 0, mr: 1 }}
               />

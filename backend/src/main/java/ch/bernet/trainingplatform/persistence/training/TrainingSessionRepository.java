@@ -12,23 +12,23 @@ public interface TrainingSessionRepository extends JpaRepository<TrainingSession
 
     // @Query, nur id und userId
     @Query("SELECT s FROM TrainingSession s WHERE s.id = ?1 AND s.userId = ?2")
-    public Optional<TrainingSession> findByIdAndUserId(Long id, Long userId);
+    Optional<TrainingSession> findByIdAndUserId(Long id, Long userId);
 
     // @Query, nur userId und Status
     @Query("SELECT s FROM TrainingSession s WHERE s.userId = ?1 AND s.status = ?2")
-    public List<TrainingSession> findByUserIdAndStatus(Long userId, SessionStatus status);
+    List<TrainingSession> findByUserIdAndStatus(Long userId, SessionStatus status);
 
     // @Query, nur Status COMPLETED und deleted = false
     @Query("SELECT s FROM TrainingSession s WHERE s.userId = ?1 AND s.routineId = ?2 AND s.deleted = false AND s.status = ch.bernet.trainingplatform.persistence.training.SessionStatus.COMPLETED")
-    public List<TrainingSession> findCompletedByUserIdAndRoutineId(Long userId, Long routineId);
+    List<TrainingSession> findCompletedByUserIdAndRoutineId(Long userId, Long routineId);
 
     // @Query, routineIds aller abgeschlossenen, nicht gelöschten Einheiten
     @Query("SELECT DISTINCT s.routineId FROM TrainingSession s WHERE s.userId = ?1 AND s.deleted = false AND s.status = ch.bernet.trainingplatform.persistence.training.SessionStatus.COMPLETED")
-    public List<Long> findCompletedRoutineIds(Long userId);
+    List<Long> findCompletedRoutineIds(Long userId);
 
     // @Modifying + @Query, nur Einheiten im Status PLANNED löschen
     @Modifying
     @Query("DELETE FROM TrainingSession s WHERE s.userId = ?1 AND s.routineId = ?2 AND s.status = ch.bernet.trainingplatform.persistence.training.SessionStatus.PLANNED")
-    public void deletePlannedByRoutineId(Long userId, Long routineId);
+    void deletePlannedByRoutineId(Long userId, Long routineId);
 
 }

@@ -17,14 +17,12 @@ import { StartPage } from './pages/StartPage'
 function App() {
   return (
     <Routes>
-      {/* Öffentlich */}
       <Route element={<RedirectIfAuthenticated />}>
         <Route path="/anmelden" element={<LoginPage />} />
         <Route path="/registrieren" element={<RegisterPage />} />
       </Route>
       <Route path="/datenschutz" element={<PrivacyPage />} />
 
-      {/* Nur mit Anmeldung (#NFA-7.7) */}
       <Route element={<RequireAuth />}>
         <Route element={<AppLayout />}>
           <Route path="/" element={<StartPage />} />
@@ -39,7 +37,6 @@ function App() {
           />
           <Route path="/konto" element={<AccountPage />} />
         </Route>
-        {/* Vollbild ohne Hauptnavigation */}
         <Route path="/training" element={<LiveTrainingPage />} />
       </Route>
 

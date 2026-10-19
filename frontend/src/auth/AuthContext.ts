@@ -6,9 +6,8 @@ import type {
 } from '../api/types'
 
 export interface AuthContextValue {
-  /** Angemeldeter Sportler oder null, wenn niemand angemeldet ist */
   user: UserResponse | null
-  /** true, solange beim Laden der App noch geprüft wird, ob eine Sitzung besteht */
+  /** true, solange beim Start der App noch geprüft wird, ob eine Sitzung besteht */
   isLoading: boolean
   login: (credentials: CredentialsRequest) => Promise<void>
   register: (
@@ -16,7 +15,6 @@ export interface AuthContextValue {
     profile: UpdateProfileRequest,
   ) => Promise<void>
   logout: () => Promise<void>
-  /** Übernimmt geänderte Kontodaten oder null, nachdem das Konto gelöscht wurde */
   setUser: (user: UserResponse | null) => void
 }
 

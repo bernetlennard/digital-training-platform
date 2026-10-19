@@ -5,14 +5,10 @@ import type { UserResponse } from '../api/types'
 import * as usersApi from '../api/users'
 import { AuthContext, type AuthContextValue } from './AuthContext'
 
-/**
- * Hält fest, wer angemeldet ist. Das Token selbst bleibt im HttpOnly-Cookie und ist hier nie sichtbar.
- */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserResponse | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Beim Laden fragen, ob das Cookie noch eine gültige Sitzung enthält
   useEffect(() => {
     let ignore = false
     authApi
@@ -21,7 +17,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!ignore) setUser(currentUser)
       })
       .catch(() => {
-        // 401 oder Server nicht erreichbar: als nicht angemeldet behandeln
         if (!ignore) setUser(null)
       })
       .finally(() => {
@@ -32,7 +27,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  // Läuft das Token während der Benutzung ab, führt der nächste 401 zurück zur Anmeldung
   useEffect(() => {
     setUnauthorizedHandler(() => setUser(null))
     return () => setUnauthorizedHandler(undefined)
@@ -47,8 +41,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       },
       register: async (credentials, profile) => {
         let registered = await authApi.register(credentials)
-        // Die Registrierung kennt nur E-Mail und Passwort. Vor- und Nachname gehen gleich danach
-        // ans Profil, das Auth-Cookie ist zu diesem Zeitpunkt schon gesetzt.
+        // Die Registrierung kennt nur E-Mail und Passwort, die Namen gehen danach ans Profil
         if (profile.firstName || profile.lastName) {
           try {
             registered = await usersApi.updateProfile(profile)

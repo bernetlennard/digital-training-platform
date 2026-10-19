@@ -2,7 +2,6 @@ import FitnessCenter from '@mui/icons-material/FitnessCenter'
 import { Box, Container, Paper, Stack, Typography } from '@mui/material'
 import type { ReactNode } from 'react'
 
-/** Zentrierter Rahmen für Anmelden und Registrieren, Mobile-First */
 export function AuthLayout({
   title,
   children,

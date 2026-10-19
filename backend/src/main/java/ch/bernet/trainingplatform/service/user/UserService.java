@@ -56,7 +56,7 @@ public class UserService {
 
     @Transactional
     public UserResponse authenticate(LoginRequest request) {
-        // Sperre prüfen -> AccountLockedException (#NFA-1.3), Passwort prüfen -> AuthenticationFailedException (#NFA-1.4)
+        // Sperre prüfen -> AccountLockedException, Passwort prüfen -> AuthenticationFailedException
         // bei Fehler loginLockService.registerFailure, bei Erfolg loginLockService.clear
         String email = normalizeEmail(request.email());
 
@@ -71,25 +71,21 @@ public class UserService {
         }
 
         AppUser appUser = optionalAppUser.get();
-        String password = request.password();
-        verifyPassword(appUser, password);
-
+        verifyPassword(appUser, request.password());
         loginLockService.clear(email);
-
         return UserMapper.toResponse(appUser);
     }
 
     @Transactional(readOnly = true)
     public UserResponse getProfile(Long id) {
         // appUserRepository.findById verwenden, sonst NotFoundException
-        AppUser appUser = returnAppUserIfExists(id);
-        return UserMapper.toResponse(appUser);
+        return UserMapper.toResponse(findUser(id));
     }
 
     @Transactional
     public UserResponse updateProfile(Long userId, UpdateProfileRequest request) {
         // Vor- und Nachname setzen
-        AppUser appUser = returnAppUserIfExists(userId);
+        AppUser appUser = findUser(userId);
         appUser.setFirstName(request.firstName());
         appUser.setLastName(request.lastName());
 
@@ -100,7 +96,7 @@ public class UserService {
     @Transactional
     public UserResponse changeEmail(Long userId, ChangeEmailRequest request) {
         // Passwort bestätigen, neue E-Mail normalisieren, Duplikat -> ConflictException
-        AppUser appUser = returnAppUserIfExists(userId);
+        AppUser appUser = findUser(userId);
         verifyPassword(appUser, request.password());
 
         String normalizedMail = normalizeEmail(request.newEmail());
@@ -117,7 +113,7 @@ public class UserService {
     @Transactional
     public void changePassword(Long userId, ChangePasswordRequest request) {
         // aktuelles Passwort bestätigen, neues Passwort hashen und speichern
-        AppUser appUser = returnAppUserIfExists(userId);
+        AppUser appUser = findUser(userId);
         verifyPassword(appUser, request.currentPassword());
         String newPasswordHash = passwordEncoder.encode(request.newPassword());
         appUser.setPasswordHash(newPasswordHash);
@@ -127,7 +123,7 @@ public class UserService {
     @Transactional
     public void deleteAccount(Long userId, DeleteAccountRequest request) {
         // Passwort bestätigen, Benutzer löschen (Daten werden per ON DELETE CASCADE entfernt)
-        AppUser appUser = returnAppUserIfExists(userId);
+        AppUser appUser = findUser(userId);
         verifyPassword(appUser, request.password());
         appUserRepository.delete(appUser);
         loginLockService.clear(appUser.getEmail());
@@ -139,13 +135,10 @@ public class UserService {
         return appUserRepository.existsById(userId);
     }
 
-    private AppUser returnAppUserIfExists(Long userId) {
+    private AppUser findUser(Long userId) {
         // Benutzer laden, sonst NotFoundException
-        Optional<AppUser> optionalAppUser = appUserRepository.findById(userId);
-        if (optionalAppUser.isEmpty()) {
-            throw new NotFoundException(ErrorMessages.USER_NOT_FOUND);
-        }
-        return optionalAppUser.get();
+        return appUserRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(ErrorMessages.USER_NOT_FOUND));
     }
 
     private void verifyPassword(AppUser user, String rawPassword) {

@@ -195,7 +195,7 @@ class AuthControllerTest {
                 """.formatted(email, password);
     }
 
-    // Cookie gemäss #NFA-1.2: HttpOnly, Secure, SameSite=Strict, 8 Stunden gültig
+    // Cookie: HttpOnly, Secure, SameSite=Strict, 8 Stunden gültig
     private static ResultMatcher[] authCookie() {
         return new ResultMatcher[]{
                 cookie().value(COOKIE_NAME, not(emptyOrNullString())),

@@ -13,7 +13,11 @@ import { getErrorMessage } from '../api/client'
 import type { CredentialsRequest } from '../api/types'
 import { useAuth } from '../auth/useAuth'
 import { AuthLayout } from '../components/AuthLayout'
-import { emailRules, textFieldProps } from '../components/formFields'
+import {
+  currentPasswordRules,
+  emailRules,
+  textFieldProps,
+} from '../components/formFields'
 import { PasswordField } from '../components/PasswordField'
 
 export function LoginPage() {
@@ -30,12 +34,11 @@ export function LoginPage() {
   const onSubmit = async (credentials: CredentialsRequest) => {
     setSubmitError(undefined)
     try {
-      // Die Weiterleitung übernimmt RedirectIfAuthenticated, sobald der Sportler gesetzt ist
       await login(credentials)
     } catch (error) {
       setSubmitError(
         getErrorMessage(error, {
-          // Bewusst allgemein: verrät nicht, ob die E-Mail-Adresse registriert ist (#NFA-1.4)
+          // Verrät nicht, ob die E-Mail-Adresse registriert ist
           401: 'E-Mail-Adresse oder Passwort ist falsch.',
           429: 'Zu viele Fehlversuche. Die Anmeldung ist für 15 Minuten gesperrt.',
         }),
@@ -59,9 +62,7 @@ export function LoginPage() {
             helperText={errors.email?.message}
           />
           <PasswordField
-            {...textFieldProps(
-              register('password', { required: 'Bitte Passwort eingeben.' }),
-            )}
+            {...textFieldProps(register('password', currentPasswordRules))}
             label="Passwort"
             autoComplete="current-password"
             error={!!errors.password}

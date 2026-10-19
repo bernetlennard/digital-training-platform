@@ -5,12 +5,10 @@ import type {
   MuscleGroupResponse,
 } from './types'
 
-/** Eigene Übungen ohne die gelöschten */
 export function getExercises() {
   return request<ExerciseResponse[]>('/exercises')
 }
 
-/** Feste Liste der Muskelgruppen (#FA-2.2) */
 export function getMuscleGroups() {
   return request<MuscleGroupResponse[]>('/exercises/muscle-groups')
 }
@@ -29,7 +27,6 @@ export function updateExercise(exerciseId: number, exercise: ExerciseRequest) {
   })
 }
 
-/** 409, solange die Übung in einer Routine vorkommt (#FA-2.6) */
 export function deleteExercise(exerciseId: number) {
   return request<void>(`/exercises/${exerciseId}`, { method: 'DELETE' })
 }

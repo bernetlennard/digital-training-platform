@@ -6,7 +6,6 @@ interface RedirectState {
   from?: Location
 }
 
-/** Schützt die angemeldeten Bereiche (#NFA-7.7) und merkt sich die gewünschte Ansicht. */
 export function RequireAuth() {
   const { user, isLoading } = useAuth()
   const location = useLocation()
@@ -26,10 +25,7 @@ export function RequireAuth() {
   return <Outlet />
 }
 
-/**
- * Für Anmelden und Registrieren: Wer angemeldet ist, kommt zur ursprünglichen Ansicht zurück.
- * Damit leitet auch ein erfolgreicher Login oder eine Registrierung automatisch weiter.
- */
+// Leitet auch nach erfolgreichem Login oder Registrieren zur ursprünglichen Ansicht weiter
 export function RedirectIfAuthenticated() {
   const { user, isLoading } = useAuth()
   const location = useLocation()

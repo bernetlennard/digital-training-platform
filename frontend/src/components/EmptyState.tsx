@@ -3,12 +3,10 @@ import type { ReactNode } from 'react'
 
 interface EmptyStateProps {
   title: string
-  /** Hinweis auf den nächsten Schritt */
   text?: string
   action?: ReactNode
 }
 
-/** Leerer Zustand einer Liste mit Hinweis, wie es weitergeht */
 export function EmptyState({ title, text, action }: EmptyStateProps) {
   return (
     <Paper variant="outlined" sx={{ p: 3 }}>

@@ -103,7 +103,7 @@ class LiveSessionServiceTest {
         // Act
         SessionResponse response = liveSessionService.startPlannedSession(USER_A, SESSION_ID);
 
-        // Assert: Übungen in der Reihenfolge der Routine (#FA-5.1, #FA-3.5)
+        // Assert: Übungen in der Reihenfolge der Routine
         assertThat(planned.getStatus()).isEqualTo(SessionStatus.ACTIVE);
         assertThat(planned.getStartedAt()).isEqualTo(NOW);
         assertThat(planned.getExercises())
@@ -144,7 +144,7 @@ class LiveSessionServiceTest {
         lenient().when(trainingSessionRepository.findByIdAndUserId(31L, USER_A)).thenReturn(Optional.of(planned));
         lenient().when(sessionAccess.getActiveRoutine(USER_A, ROUTINE_ID)).thenReturn(PUSH);
 
-        // Act & Assert (#FA-5.1)
+        // Act & Assert
         assertThatThrownBy(() -> liveSessionService.startPlannedSession(USER_A, 31L))
                 .isInstanceOf(ConflictException.class);
         assertThatThrownBy(() -> liveSessionService.startSpontaneousSession(USER_A, new StartSessionRequest(ROUTINE_ID)))
@@ -212,7 +212,7 @@ class LiveSessionServiceTest {
         // Act
         SessionResponse response = liveSessionService.getActiveSession(USER_A);
 
-        // Assert (#FA-5.9)
+        // Assert
         assertThat(response.id()).isEqualTo(SESSION_ID);
         assertThat(response.status()).isEqualTo("aktiv");
         assertThat(response.routineName()).isEqualTo("Push");
@@ -245,7 +245,7 @@ class LiveSessionServiceTest {
         // Act
         SessionResponse response = liveSessionService.getActiveSession(USER_A);
 
-        // Assert: alle Sätze der letzten Einheit, die heute noch fehlen (#FA-5.5)
+        // Assert: alle Sätze der letzten Einheit, die heute noch fehlen
         assertThat(response.exercises())
                 .extracting(SessionExerciseResponse::exerciseId, SessionExerciseResponse::suggestedSets)
                 .containsExactly(
@@ -343,7 +343,7 @@ class LiveSessionServiceTest {
                         tuple(502L, 2, new BigDecimal("90.00")),
                         tuple(503L, 3, new BigDecimal("80.00")));
 
-        // Act & Assert: verschieben nummeriert neu (#FA-5.4)
+        // Act & Assert: verschieben nummeriert neu
         SessionExerciseResponse moved = liveSessionService.moveSet(USER_A, 503L, new MoveSetRequest(1));
         assertThat(moved.sets()).extracting(SetResponse::id, SetResponse::setNumber)
                 .containsExactly(tuple(503L, 1), tuple(501L, 2), tuple(502L, 3));
@@ -365,7 +365,7 @@ class LiveSessionServiceTest {
         // Act
         liveSessionService.finishSession(USER_A);
 
-        // Assert (#FA-5.7)
+        // Assert
         assertThat(session.getStatus()).isEqualTo(SessionStatus.COMPLETED);
         assertThat(session.getStartedAt()).isEqualTo(STARTED_AT);
         assertThat(session.getFinishedAt()).isEqualTo(NOW);
@@ -383,7 +383,7 @@ class LiveSessionServiceTest {
         // Act
         liveSessionService.cancelSession(USER_A);
 
-        // Assert (#FA-5.8)
+        // Assert
         assertThat(session.getStatus()).isEqualTo(SessionStatus.PLANNED);
         assertThat(session.getStartedAt()).isNull();
         assertThat(session.getExercises()).isEmpty();
@@ -402,7 +402,7 @@ class LiveSessionServiceTest {
         // Act
         liveSessionService.cancelSession(USER_A);
 
-        // Assert (#FA-5.8)
+        // Assert
         verify(trainingSessionRepository).delete(session);
     }
 
@@ -459,7 +459,7 @@ class LiveSessionServiceTest {
     @Test
     @DisplayName("UT-15 Sätze einer abgeschlossenen Einheit können nicht mehr bearbeitet werden")
     void setOperations_setOfCompletedSession_throwNotFound() {
-        // Arrange: Übung 999 und Satz 777 gehören zu einer abgeschlossenen Einheit (#FA-6.5)
+        // Arrange: Übung 999 und Satz 777 gehören zu einer abgeschlossenen Einheit
         TrainingSession session = activeSession(TODAY, BENCH_PRESS);
         addSet(session.getExercises().getFirst(), 501L, "80.00", 8, 120);
         SetRequest request = new SetRequest(new BigDecimal("90.00"), 5, 180);

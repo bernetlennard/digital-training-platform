@@ -8,7 +8,7 @@ import java.util.List;
 public interface ExerciseSetRepository extends JpaRepository<ExerciseSet, Long> {
 
     // @Query, Sätze der letzten abgeschlossenen, nicht gelöschten Einheit derselben Routine, in der die Übung
-    // vorkam (#FA-5.5). Übungen ohne Satz entfernt TrainingSession.finish, ausgelassene zählen also nicht.
+    // vorkam. Übungen ohne Satz entfernt TrainingSession.finish, ausgelassene zählen also nicht.
     @Query("""
         SELECT st FROM TrainingSession s
         JOIN s.exercises e
@@ -24,6 +24,6 @@ public interface ExerciseSetRepository extends JpaRepository<ExerciseSet, Long> 
                 AND s2.deleted = false)
         ORDER BY st.setNumber
         """)
-    public List<ExerciseSet> findLastCompletedSets(Long userId, Long routineId, Long exerciseId);
+    List<ExerciseSet> findLastCompletedSets(Long userId, Long routineId, Long exerciseId);
 
 }

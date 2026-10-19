@@ -4,7 +4,12 @@ import ch.bernet.trainingplatform.persistence.training.ExerciseSet;
 import ch.bernet.trainingplatform.persistence.training.SessionExercise;
 import ch.bernet.trainingplatform.persistence.training.TrainingSession;
 import ch.bernet.trainingplatform.service.routine.dto.RoutineSummary;
-import ch.bernet.trainingplatform.service.training.dto.*;
+import ch.bernet.trainingplatform.service.training.dto.PlannedSessionResponse;
+import ch.bernet.trainingplatform.service.training.dto.SessionExerciseResponse;
+import ch.bernet.trainingplatform.service.training.dto.SessionResponse;
+import ch.bernet.trainingplatform.service.training.dto.SessionSummaryResponse;
+import ch.bernet.trainingplatform.service.training.dto.SetResponse;
+import ch.bernet.trainingplatform.service.training.dto.SetSuggestion;
 
 import java.util.List;
 

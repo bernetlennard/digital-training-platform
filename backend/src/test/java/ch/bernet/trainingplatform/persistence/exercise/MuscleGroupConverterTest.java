@@ -13,7 +13,7 @@ class MuscleGroupConverterTest {
     @Test
     @DisplayName("UT-06 Muskelgruppen werden über ihre feste ID aufgelöst")
     void fromId_knownId_returnsMuscleGroup() {
-        // Die IDs entsprechen den Stammdaten in der Tabelle muscle_group (#FA-2.2)
+        // Die IDs entsprechen den Stammdaten in der Tabelle muscle_group
         assertThat(MuscleGroup.fromId(1)).isEqualTo(MuscleGroup.CHEST);
         assertThat(MuscleGroup.fromId(7)).isEqualTo(MuscleGroup.LEGS);
         assertThat(MuscleGroup.fromId(8)).isEqualTo(MuscleGroup.GLUTES);

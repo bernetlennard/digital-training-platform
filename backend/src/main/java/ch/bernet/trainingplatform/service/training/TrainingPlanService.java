@@ -36,7 +36,10 @@ public class TrainingPlanService {
     public List<PlannedSessionResponse> getPlannedSessions(Long userId) {
         // Einheiten im Status PLANNED laden, Routinenname auflösen, nach Datum sortieren
         Map<Long, RoutineSummary> routines = sessionAccess.getRoutineSummaries(userId);
-        return trainingSessionRepository.findByUserIdAndStatus(userId, SessionStatus.PLANNED).stream().sorted(Comparator.comparing(TrainingSession::getPlannedDate)).map(session -> TrainingMapper.toPlanned(session, routines.get(session.getRoutineId()).name())).toList();
+        return trainingSessionRepository.findByUserIdAndStatus(userId, SessionStatus.PLANNED).stream()
+                .sorted(Comparator.comparing(TrainingSession::getPlannedDate))
+                .map(session -> TrainingMapper.toPlanned(session, routines.get(session.getRoutineId()).name()))
+                .toList();
     }
 
     @Transactional
@@ -65,7 +68,8 @@ public class TrainingPlanService {
     @Transactional
     public void deletePlannedSession(Long userId, Long sessionId) {
         // geplante Einheit laden (sonst NotFoundException) und hart löschen
-        TrainingSession session = trainingSessionRepository.findByIdAndUserId(sessionId, userId).orElseThrow(() -> new NotFoundException(ErrorMessages.SESSION_NOT_FOUND));
+        TrainingSession session = trainingSessionRepository.findByIdAndUserId(sessionId, userId)
+                .orElseThrow(() -> new NotFoundException(ErrorMessages.SESSION_NOT_FOUND));
         if (session.getStatus() != SessionStatus.PLANNED) {
             throw new NotFoundException(ErrorMessages.SESSION_NOT_PLANNED);
         }
@@ -73,7 +77,7 @@ public class TrainingPlanService {
     }
 
     private void assertNotInPast(LocalDate date) {
-        // Datum vor heute (clock) -> BusinessRuleException (#FA-4.2)
+        // Datum vor heute (clock) -> BusinessRuleException
         if (date.isBefore(LocalDate.now(clock))) {
             throw new BusinessRuleException(ErrorMessages.PLANNED_DATE_IN_PAST);
         }

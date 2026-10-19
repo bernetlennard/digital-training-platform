@@ -61,7 +61,6 @@ async function loadEditor(routineId: string | undefined) {
   return { catalog: catalog.toSorted(byName), routine }
 }
 
-/** Routine zusammenstellen oder bearbeiten (SAF6). /routinen/neu legt eine neue an. */
 export function RoutineEditPage() {
   const { routineId } = useParams()
   const load = useCallback(() => loadEditor(routineId), [routineId])
@@ -117,14 +116,13 @@ function RoutineForm({
   const { fields, append, remove, swap } = useFieldArray({
     control,
     name: 'exercises',
-    // Mindestens eine Übung (#FA-3.1)
     rules: {
       validate: (exercises) =>
         exercises.length > 0 || 'Bitte mindestens eine Übung hinzufügen.',
     },
   })
 
-  // Jede Übung höchstens einmal (#FA-3.1), darum nur die noch nicht gewählten anbieten
+  // Jede Übung höchstens einmal, darum nur die noch nicht gewählten anbieten
   const available = catalog.filter(
     (exercise) => !fields.some((field) => field.exerciseId === exercise.id),
   )
@@ -133,7 +131,6 @@ function RoutineForm({
     setSubmitError(undefined)
     const request = {
       name: values.name.trim(),
-      // Die Reihenfolge der Liste ist die Position in der Routine
       exerciseIds: values.exercises.map((exercise) => exercise.exerciseId),
     }
     try {
@@ -306,13 +303,9 @@ function RoutineForm({
   )
 }
 
-/** Ab dieser Anzahl Übungen hilft ein Suchfeld, sonst ist die Liste auf einen Blick erfassbar */
 const SEARCH_THRESHOLD = 8
 
-/**
- * Auswahl aus dem Katalog. Mehrere Übungen lassen sich auf einmal ankreuzen, sie kommen in der
- * Reihenfolge des Antippens in die Routine.
- */
+// Die angekreuzten Übungen kommen in der Reihenfolge des Antippens in die Routine
 function ExercisePicker({
   exercises,
   onPick,
