@@ -69,3 +69,6 @@ jobs:
           docker compose up -d --wait
           docker image prune -f
           EOF
+
+      - name: Health-Check über HTTPS
+        run: curl --fail --silent --show-error --max-time 10 --retry 20 --retry-delay 5 --retry-all-errors https://training.lennardbernet.ch/api/actuator/health

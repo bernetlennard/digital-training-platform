@@ -11,6 +11,14 @@ import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.actuate.autoconfigure.endpoint.EndpointAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.endpoint.jackson.JacksonEndpointAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointAutoConfiguration;
+import org.springframework.boot.actuate.autoconfigure.web.server.ManagementContextAutoConfiguration;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.health.autoconfigure.actuate.endpoint.HealthEndpointAutoConfiguration;
+import org.springframework.boot.health.autoconfigure.contributor.HealthContributorAutoConfiguration;
+import org.springframework.boot.health.autoconfigure.registry.HealthContributorRegistryAutoConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpHeaders;
@@ -40,8 +48,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest({AuthController.class, UserController.class})
 @Import({SecurityConfig.class, SecurityErrorHandler.class, CookieBearerTokenResolver.class, JwtCookieService.class})
+// Der WebMvcTest-Slice enthält keine Actuator-Endpunkte
+@ImportAutoConfiguration({EndpointAutoConfiguration.class, WebEndpointAutoConfiguration.class,
+        JacksonEndpointAutoConfiguration.class, ManagementContextAutoConfiguration.class,
+        HealthContributorAutoConfiguration.class, HealthContributorRegistryAutoConfiguration.class,
+        HealthEndpointAutoConfiguration.class})
 class SecurityConfigTest {
 
+    private static final String HEALTH_PATH = "/api/actuator/health";
     private static final String PASSWORD = "ein-langes-passwort";
     private static final String CREDENTIALS = """
             {"email": "a@test.ch", "password": "%s"}
@@ -132,6 +146,36 @@ class SecurityConfigTest {
                 .andExpect(status().is2xxSuccessful());
         mockMvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON).content(CREDENTIALS))
                 .andExpect(status().is2xxSuccessful());
+    }
+
+    @Test
+    @DisplayName("UT-02 Health-Check ist ohne Token erreichbar und zeigt keine Details")
+    void healthCheck_withoutToken_returnsUpWithoutDetails() throws Exception {
+        mockMvc.perform(get(HEALTH_PATH))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("UP"))
+                .andExpect(jsonPath("$.components").doesNotExist());
+    }
+
+    @Test
+    @DisplayName("UT-02 Health-Check ignoriert ein abgelaufenes Token")
+    void healthCheck_expiredToken_returnsUp() throws Exception {
+        // Arrange: Token vor 9 Stunden ausgestellt, also seit 1 Stunde abgelaufen
+        JwtCookieService pastIssuer = new JwtCookieService(jwtEncoder, jwtProperties,
+                Clock.offset(Clock.systemUTC(), Duration.ofHours(-9)));
+
+        // Act & Assert: servletPath wie in Tomcat, wo das DispatcherServlet auf «/» liegt
+        mockMvc.perform(get(HEALTH_PATH).servletPath(HEALTH_PATH).cookie(tokenCookie(pastIssuer)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("UP"));
+    }
+
+    @Test
+    @DisplayName("UT-02 Weitere Actuator-Endpunkte sind ohne Token nicht erreichbar")
+    void otherActuatorEndpoints_withoutToken_return401() throws Exception {
+        mockMvc.perform(get("/api/actuator")).andExpectAll(unauthorizedErrorResponse());
+        mockMvc.perform(get("/api/actuator/env")).andExpectAll(unauthorizedErrorResponse());
+        mockMvc.perform(get("/api/actuator/info")).andExpectAll(unauthorizedErrorResponse());
     }
 
     @Test

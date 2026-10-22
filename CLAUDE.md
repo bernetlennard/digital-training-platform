@@ -5,7 +5,7 @@ Mobile-First-SPA (React/MUI) + REST-Backend (Spring Boot) + PostgreSQL, produkti
 
 **Spezifikation = Diplomarbeit-docx** (OneDrive «Semester 6/Diplomarbeit/Diplomarbeit Lennard Bernet.docx»): Anforderungen `#FA-x.y`/`#NFA-x.y`, Business-Regeln, REST-Vertrag, GUI-Konzept, Testfälle UT-01..UT-15. Im Code stehen **keine** Anforderungs-IDs (siehe «Konventionen»).
 Die früheren Markdown-Auszüge wurden in Commit `2cb86fe` gelöscht, sind aber abrufbar: `git show 2cb86fe^:docs/diplomarbeit/<business-regeln|rest-schnittstelle|gui-konzept|entwicklung-testanleitung>.md`.
-**Achtung #FA-5.5 (Satzvorschläge)** wurde am 2026-10-19 geändert. Der Code ist massgebend, die docx hat noch den alten Text (siehe «Live-Training»).
+**#FA-5.5 (Satzvorschläge)** wurde am 2026-10-19 geändert (siehe «Live-Training»). Die docx ist seit 2026-10-20 nachgeführt (FA-Tabelle, Business-Regel, DTO-Tabelle, UT-13).
 
 ## Repo-Layout
 
@@ -20,7 +20,7 @@ backend/    Spring Boot 4.1.1, Java 25, Maven-Wrapper (mvnw / mvnw.cmd), Dockerf
   src/main/resources/application.properties, db/migration/V1__init.sql (einziges Schema)
   src/test/java/...   gleiche Paketstruktur, TestData.java; src/test/rest/*.http (IntelliJ HTTP-Client)
 frontend/   React 19.3 + TS 6 (strict) + Vite 8 + MUI 9.5 + React Router 8 + React Hook Form; Dockerfile (nginx-unprivileged), nginx.conf (CSP, SPA-Fallback)
-deploy/     docker-compose.yml (caddy, frontend, backend, db), Caddyfile; Secrets in deploy/.env (nicht im Repo)
+deploy/     docker-compose.yml (caddy, frontend, backend, db), Caddyfile, journald-retention.conf; Secrets in deploy/.env (nicht im Repo)
 .github/workflows/  maven-tests.yml (Backend-Tests + Frontend lint/typecheck/test/build bei PR/Push auf main), deploy.yml (bei gemergtem PR auf main)
 .claude/launch.json Preview-Configs «backend» (Port 8080) und «frontend» (Port 5173)
 ```
@@ -67,12 +67,13 @@ Messages sind englische Konstanten in `ErrorMessages` (keine String-Literale in 
 
 ### Security
 - JWT (HS256, `app.jwt.secret`, 8 h) nur im Cookie `access_token` (HttpOnly, Secure, SameSite=Strict, Path=/). Kein Authorization-Header, stateless, CSRF aus.
-- `CookieBearerTokenResolver` ignoriert das Cookie auf `/auth/register|login|logout`, damit ein abgelaufenes Cookie den Login nicht blockiert.
+- `CookieBearerTokenResolver` ignoriert das Cookie auf `/auth/register|login|logout` und `/api/actuator/health`, damit ein abgelaufenes Cookie nicht blockiert. Er prüft `getServletPath()`, das in MockMvc leer ist: Tests dafür brauchen `.servletPath(pfad)`.
 - `JwtUserIdConverter`: Ist der Benutzer gelöscht, gibt es 401.
-- Öffentlich: `POST /api/v1/auth/*`, `/error`, Swagger-Pfade.
+- Öffentlich: `POST /api/v1/auth/*`, `GET /api/actuator/health`, `/error`, Swagger-Pfade.
 - Neues Cookie bei register, login, E-Mail- und Passwortänderung. Gelöscht wird es bei logout und Kontolöschung.
 - Passwörter: Argon2id (`Argon2PasswordEncoder(16,32,1,60000,10)`, Bouncy Castle), 15–64 Zeichen.
 - Login-Sperre (`LoginLockService`, Tabelle `login_lock` pro E-Mail, auch ohne Konto): ab 5 Fehlversuchen 15 min gesperrt (429). Fehlversuche zählen auch bei Passwortbestätigung (E-Mail/Passwort ändern, Konto löschen). Erfolg löscht den Eintrag; `registerFailure` läuft in `REQUIRES_NEW`. **Gewollt:** Nach Ablauf der Sperre zählt der Zähler weiter, der nächste Fehlversuch sperrt sofort wieder. Nicht als Bug melden.
+- Logging von Sicherheitsereignissen: `LoginLockService` loggt Fehlversuche, Sperren und abgewiesene Logins während der Sperre nur mit der `login_lock`-ID, nie mit der E-Mail. `SecurityErrorHandler` loggt 401/403.
 - E-Mails werden getrimmt und kleingeschrieben (DB-Check `email = lower(email)`).
 - API-Versionierung (Spring 7): `@RequestMapping(path="/api/v{version}/…", version="1")`. Unbekannte Version 400, ohne Version 404.
 
@@ -129,6 +130,7 @@ Messages sind englische Konstanten in `ErrorMessages` (keine String-Literale in 
   - `PUT /active/sets/{setId}` 200, `PUT /active/sets/{setId}/position` 200, `DELETE /active/sets/{setId}` 200
   - `POST /active/finish` 204, `POST /active/cancel` 204
 - **history:** `GET /routines` 200, `GET /routines/{id}/sessions` 200, `GET /sessions/{id}` 200, `DELETE /sessions/{id}` 204
+- **Health-Check (Actuator, ohne Version):** `GET /api/actuator/health` 200 `{"status":"UP"}` bzw. 503 (prüft auch die DB), nie Details. Er liegt unter `/api`, weil Caddy nur `/api/*` ans Backend gibt. Alle anderen Actuator-Pfade brauchen ein Token. Im `@WebMvcTest` fehlt Actuator, darum importiert `SecurityConfigTest` die Autokonfigurationen per `@ImportAutoConfiguration`.
 
 ### Tests (strikt TDD)
 - Ablauf: Test-Skelette mit `@DisplayName("UT-xx …")` zuerst rot füllen, dann implementieren. Eine UT-ID verteilt sich auf mehrere Klassen.
@@ -155,10 +157,11 @@ Messages sind englische Konstanten in `ErrorMessages` (keine String-Literale in 
 
 - `main.tsx`: ThemeProvider (deDE-Locale, Touch-Ziele ≥ 44 px) → BrowserRouter → NotificationProvider → AuthProvider → `App.tsx` (Routen). Roboto lokal über @fontsource; keine Drittanbieter im Browser (#NFA-7.10).
 - **Routen:**
-  - Öffentlich: `/anmelden`, `/registrieren` (`RedirectIfAuthenticated`), `/datenschutz` (immer).
+  - Öffentlich: `/anmelden`, `/registrieren` (`RedirectIfAuthenticated`), `/datenschutz` und `/anleitung` (immer, beide im Layout `InfoPage`).
   - Mit Anmeldung (`RequireAuth`) in `AppLayout`: `/` StartPage, `/routinen`, `/routinen/:routineId` (`neu` = neue Routine), `/uebungen`, `/verlauf`, `/verlauf/:routineId`, `/verlauf/einheit/:sessionId`, `/konto`.
   - `/training`: LiveTrainingPage im Vollbild, ohne Navigation.
-  - Navigation: unten auf dem Smartphone, Seitenleiste ab Tablet.
+  - Navigation: unten auf dem Smartphone, Seitenleiste ab Tablet. Kopfzeile rechts: Fragezeichen → `/anleitung`, Person → `/konto`.
+  - Anleitung: Der Text in `SECTIONS` (`GuidePage.tsx`) steht gleich in `frontend/Benutzeranleitung.docx` (Kapitel der Diplomarbeit). Bei Textänderungen beide nachführen.
 - **`api/`**:
   - `client.ts` `request<T>(path, {method, body, checksPassword})` → `fetch('/api/v1'+path)`, wirft `ApiError(status, message, details)`. Status 0 heisst Server nicht erreichbar.
   - Ein 401 ruft den globalen Unauthorized-Handler (Logout), ausser bei `/auth/*` oder `checksPassword` (dort heisst 401 «Passwort falsch»).
@@ -200,8 +203,11 @@ Messages sind englische Konstanten in `ErrorMessages` (keine String-Literale in 
 - `deploy.yml` läuft bei gemergtem PR auf main:
   - baut beide Images und pusht sie nach Docker Hub (`bernetlennard/dtp-{backend,frontend}:<merge-sha>` und `:latest`).
   - startet per SSH auf dem VPS `docker compose pull && up -d --wait` in `/home/ubuntu/trainingplatform`.
+  - ruft danach `https://training.lennardbernet.ch/api/actuator/health` mit curl auf (Retries bis ca. 2 min). Bei einer Antwort ungleich 2xx wird der Job rot.
+- Der Workflow kopiert keine Dateien auf den VPS. Änderungen an `docker-compose.yml`, `Caddyfile` und `journald-retention.conf` kopiert Lennard von Hand nach `/home/ubuntu/trainingplatform` (bzw. `/etc/systemd/journald.conf.d/`).
+- **Logs:** alle Container mit `logging: driver: journald`. Die Aufbewahrung (höchstens 14 Tage, Dateien täglich rotiert) regelt `deploy/journald-retention.conf` auf dem Host. Lesen weiterhin mit `docker compose logs`.
 - **Caddy:** TLS über Let's Encrypt, HSTS. `/api/*` geht ans Backend, alles andere ans Frontend (nginx :8080). Nur h1/h2. Netz `db` ist intern.
-- **Images:** alle Basis-Images mit Tag und Digest fixiert (#NFA-7.13). npm `save-exact`, `engine-strict` (Node 24.21.0). Swagger im Backend-Image aus.
+- **Images:** alle Basis-Images mit Tag und Digest fixiert (#NFA-7.13). npm `save-exact`, `engine-strict` (Node 24.21.0). Swagger im Backend-Image aus. Die jlink-Module im Backend-Dockerfile kommen aus `jdeps --print-module-deps`. `jdk.management` braucht Micrometer (Actuator), sonst warnt `JvmGcMetrics` bei jedem Start.
 
 ## Konventionen
 - Code-Bezeichner Englisch, Kommentare und UI-Texte Deutsch.
@@ -214,8 +220,8 @@ Messages sind englische Konstanten in `ErrorMessages` (keine String-Literale in 
 - Prettier: singleQuote, no semi. ESLint mit react-hooks.
 - Alle Versionen fix, keine CDNs, keine CORS (gleiche Domain).
 
-## Offene Punkte (Stand 2026-10-19)
-- Diplomarbeit-Text für #FA-5.5 (FA-Tabelle, Business-Regel, DTO-Tabelle `suggestedSets`/`SetSuggestion.setNumber`, UT-13, GUI «Satz-Eingabe») passt Lennard selbst an.
+## Offene Punkte (Stand 2026-10-20)
 - Datenschutzseite: Kontaktadresse fehlt noch.
-- #NFA-7.7/#NFA-7.23 nennen einen Health-Endpunkt, der nach dem Deployment über HTTPS geprüft wird. Den gibt es nicht (kein Actuator, kein Schritt in `deploy.yml`).
-- #NFA-7.12 (Logs höchstens 14 Tage): im Repo ist keine Log-Rotation konfiguriert (Compose ohne `logging`), höchstens auf dem VPS.
+- VPS: die neue `docker-compose.yml` und `journald-retention.conf` einmal von Hand einspielen (siehe «Deploy & CI»). Erst danach gilt die 14-Tage-Aufbewahrung.
+- #FA-5.6 verlangt eine Notiz «pro Übung». Umgesetzt ist nur die Notiz pro Einheit (`training_session.note`). Wird in der Diplomarbeit als Abweichung dokumentiert, nicht mehr gebaut.
+- Erledigt am 2026-10-20: Health-Check samt Prüfung im Deploy-Workflow (#NFA-7.7/#NFA-7.23), Log-Aufbewahrung über journald (#NFA-7.12), Logging fehlgeschlagener Anmeldungen (#NFA-1.7). Die Diplomarbeit-Kapitel dazu führt Lennard selbst nach.

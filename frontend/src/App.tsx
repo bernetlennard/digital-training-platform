@@ -3,6 +3,7 @@ import { AppLayout } from './components/AppLayout'
 import { RedirectIfAuthenticated, RequireAuth } from './components/RouteGuards'
 import { AccountPage } from './pages/AccountPage'
 import { ExercisesPage } from './pages/ExercisesPage'
+import { GuidePage } from './pages/GuidePage'
 import { HistoryPage } from './pages/HistoryPage'
 import { LiveTrainingPage } from './pages/LiveTrainingPage'
 import { LoginPage } from './pages/LoginPage'
@@ -22,6 +23,7 @@ function App() {
         <Route path="/registrieren" element={<RegisterPage />} />
       </Route>
       <Route path="/datenschutz" element={<PrivacyPage />} />
+      <Route path="/anleitung" element={<GuidePage />} />
 
       <Route element={<RequireAuth />}>
         <Route element={<AppLayout />}>

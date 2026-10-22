@@ -1,6 +1,7 @@
 import AccountCircle from '@mui/icons-material/AccountCircle'
 import FitnessCenter from '@mui/icons-material/FitnessCenter'
 import FormatListBulleted from '@mui/icons-material/FormatListBulleted'
+import Help from '@mui/icons-material/Help'
 import History from '@mui/icons-material/History'
 import Home from '@mui/icons-material/Home'
 import {
@@ -67,6 +68,14 @@ export function AppLayout() {
           <Typography variant="h6" component="p" sx={{ flexGrow: 1 }} noWrap>
             Trainingsplattform
           </Typography>
+          <IconButton
+            component={RouterLink}
+            to="/anleitung"
+            color="inherit"
+            aria-label="Anleitung"
+          >
+            <Help />
+          </IconButton>
           <IconButton
             component={RouterLink}
             to="/konto"
