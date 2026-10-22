@@ -5,7 +5,7 @@ LABEL authors="Lennard Bernet"
 
 # Module ermittelt mit jdeps --print-module-deps, bei neuen Abhängigkeiten neu prüfen
 RUN jlink \
-      --add-modules java.base,java.compiler,java.desktop,java.instrument,java.logging,java.management,java.naming,java.net.http,java.prefs,java.rmi,java.scripting,java.security.jgss,java.sql,java.sql.rowset,java.xml,jdk.jfr,jdk.unsupported \
+      --add-modules java.base,java.compiler,java.desktop,java.instrument,java.logging,java.management,java.naming,java.net.http,java.prefs,java.rmi,java.scripting,java.security.jgss,java.sql,java.sql.rowset,java.xml,jdk.jfr,jdk.management,jdk.unsupported \
       --strip-debug --no-man-pages --no-header-files --compress=zip-6 \
       --output /opt/jre
 

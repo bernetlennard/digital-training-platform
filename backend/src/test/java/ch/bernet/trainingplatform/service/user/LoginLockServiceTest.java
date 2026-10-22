@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 
 import java.time.Clock;
 import java.time.Duration;
@@ -18,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+@ExtendWith({MockitoExtension.class, OutputCaptureExtension.class})
 class LoginLockServiceTest {
 
     private static final String EMAIL = "a@test.ch";
@@ -88,6 +90,38 @@ class LoginLockServiceTest {
 
         // Assert
         verify(loginLockRepository).deleteByEmail(EMAIL);
+    }
+
+    @Test
+    @DisplayName("UT-04 Fehlversuch und Sperre werden ohne E-Mail-Adresse geloggt")
+    void registerFailure_logsAttemptAndLockWithoutEmail(CapturedOutput output) {
+        // Arrange: 4 Fehlversuche sind bereits gezählt
+        LoginLock lock = lockWithFailedAttempts(4);
+        when(loginLockRepository.findByEmail(EMAIL)).thenReturn(Optional.of(lock));
+
+        // Act: 5. Fehlversuch
+        loginLockService.registerFailure(EMAIL);
+
+        // Assert
+        assertThat(output)
+                .contains("Failed authentication attempt 5", "locked until " + NOW.plus(Duration.ofMinutes(15)))
+                .doesNotContain(EMAIL);
+    }
+
+    @Test
+    @DisplayName("UT-04 Anmeldeversuch während der Sperre wird ohne E-Mail-Adresse geloggt")
+    void isLocked_whileLocked_logsRejectionWithoutEmail(CapturedOutput output) {
+        // Arrange: bis in 15 Minuten gesperrt
+        LoginLock lock = lockWithFailedAttempts(5);
+        lock.setLockedUntil(NOW.plus(Duration.ofMinutes(15)));
+        when(loginLockRepository.findByEmail(EMAIL)).thenReturn(Optional.of(lock));
+
+        // Act
+        boolean locked = loginLockService.isLocked(EMAIL);
+
+        // Assert
+        assertThat(locked).isTrue();
+        assertThat(output).contains("Login rejected while locked").doesNotContain(EMAIL);
     }
 
     private static LoginLock lockWithFailedAttempts(int failedAttempts) {

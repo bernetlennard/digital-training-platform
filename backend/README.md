@@ -21,6 +21,7 @@ Diese API ermöglicht das Erstellen, Löschen und Bearbeiten von Übungen, Routi
    6. [Exception Handling](#6-exception-handling)
    7. [Swagger](#7-swagger)
    8. [API-Versionierung](#8-api-versionierung)
+   9. [Health-Check](#9-health-check)
 
 ## 1. Voraussetzungen
 
@@ -139,6 +140,8 @@ Der CSRF-Schutz ist deaktiviert, da das Cookie mit SameSite=Strict bei Requests 
 
 Passwörter werden nie im Klartext gespeichert, sondern mit Argon2id gehasht.
 
+Fehlgeschlagene Anmeldungen, falsche Passwortbestätigungen und Sperren werden geloggt. Im Log steht nur die ID des Eintrags in der Tabelle `login_lock`, nie die E-Mail-Adresse oder das Passwort.
+
 Folgende Endpunkte sind ohne Token erreichbar:
 
 | Methode | Pfad                                                    |
@@ -146,6 +149,7 @@ Folgende Endpunkte sind ohne Token erreichbar:
 | POST    | `/api/v1/auth/register`                                    |
 | POST    | `/api/v1/auth/login`                                       |
 | POST    | `/api/v1/auth/logout`                                      |
+| GET     | `/api/actuator/health`                                  |
 | *       | `/error`                                                |
 | *       | `/swagger-ui.html`, `/swagger-ui/**`, `/v3/api-docs/**` |
 
@@ -218,7 +222,7 @@ Stattdessen in Swagger zuerst `POST /api/v1/auth/login` ausführen. Danach schic
 Alle Endpunkte haben die Version im Pfad, z.B. `/api/v1/users/me`.
 
 Es wird die eingebaute API-Versionierung von Spring Framework 7 verwendet. Die Klasse `ApiVersionConfig` schaltet sie ein.
-Die Versionierung gilt nur für Pfade unter `/api/`. Swagger und `/error` haben keine Version.
+Die Versionierung gilt nur für Pfade unter `/api/`. Swagger, `/error` und der Health-Check haben keine Version.
 Jeder Controller hat im `@RequestMapping` den Pfad `/api/v{version}/...` und die Version `1`, z.B. `@RequestMapping(path = "/api/v{version}/users/me", version = "1")`.
 
 Somit erkennt man direkt am Pfad, welche Version die Schnittstelle verwendet.
@@ -226,3 +230,9 @@ Wenn man einen Endpunkt ändert, bricht man den Schnittstellenvertrag und das be
 Daher kommt die Änderung in eine neue Version `v2`. Die Version `v1` bleibt daneben bestehen. So kann man schrittweise umsteigen.
 Eine Version, die es nicht gibt (z.B. `/api/v2/...`), wird mit 400 abgelehnt. 
 Ein Pfad ohne Version (z.B. `/api/users/me`) ergibt 404.
+
+### 9. Health-Check
+Mit dem Spring Boot Actuator erhält man die Möglichkeiten, um die Applikation einfach zu überwachen. Alles, was man dafür tun muss, ist die dependency hinzuzufügen.
+
+Hier wird er vorallem Benutzt, um während dem Deployment zu prüfen, ob der Status Healthy ist, also die Springboot Appliaktion sauber hochgefahren wurde. Der GET Endpunkt `/api/actuator/health` ist ohne Token erreichbar. Dies ist so in der `SecurityConfig` festgelegt.
+Die Antwort ist `{"status":"UP"}` mit dem HTTP-Code `200`, wenn alles in Ordnung ist. Ansonsten kriegt man den Status `DOWN` mit 503.

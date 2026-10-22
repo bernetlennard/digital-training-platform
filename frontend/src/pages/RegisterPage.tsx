@@ -113,6 +113,10 @@ export function RegisterPage() {
             </Link>
           </Typography>
           <Typography variant="body2" sx={{ textAlign: 'center' }}>
+            <Link component={RouterLink} to="/anleitung">
+              Anleitung
+            </Link>
+            {' · '}
             <Link component={RouterLink} to="/datenschutz">
               Datenschutzerklärung
             </Link>
