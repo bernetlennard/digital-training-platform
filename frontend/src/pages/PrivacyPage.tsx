@@ -1,4 +1,4 @@
-import { Paper, Typography } from '@mui/material'
+import { Link, Paper, Typography } from '@mui/material'
 import { InfoPage, InfoSection } from '../components/InfoPage'
 
 const DATA_CATEGORIES = [
@@ -36,6 +36,19 @@ export function PrivacyPage() {
           Verantwortlich für die Bearbeitung der Personendaten ist Lennard
           Bernet als Betreiber der Trainingsplattform. Massgebend ist das
           Bundesgesetz über den Datenschutz (DSG).
+        </Typography>
+      </InfoSection>
+
+      <InfoSection title="Kontakt">
+        <Typography>
+          Fragen zum Datenschutz und Anfragen zu deinen Rechten richtest du an:
+        </Typography>
+        <Typography>
+          Lennard Bernet
+          <br />
+          <Link href="mailto:bernet.lennard.privat@gmail.com">
+            bernet.lennard.privat@gmail.com
+          </Link>
         </Typography>
       </InfoSection>
 
