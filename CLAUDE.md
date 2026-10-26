@@ -220,8 +220,7 @@ Messages sind englische Konstanten in `ErrorMessages` (keine String-Literale in 
 - Prettier: singleQuote, no semi. ESLint mit react-hooks.
 - Alle Versionen fix, keine CDNs, keine CORS (gleiche Domain).
 
-## Offene Punkte (Stand 2026-10-20)
-- Datenschutzseite: Kontaktadresse fehlt noch.
+## Offene Punkte (Stand 2026-10-26)
 - VPS: die neue `docker-compose.yml` und `journald-retention.conf` einmal von Hand einspielen (siehe «Deploy & CI»). Erst danach gilt die 14-Tage-Aufbewahrung.
 - #FA-5.6 verlangt eine Notiz «pro Übung». Umgesetzt ist nur die Notiz pro Einheit (`training_session.note`). Wird in der Diplomarbeit als Abweichung dokumentiert, nicht mehr gebaut.
 - Erledigt am 2026-10-20: Health-Check samt Prüfung im Deploy-Workflow (#NFA-7.7/#NFA-7.23), Log-Aufbewahrung über journald (#NFA-7.12), Logging fehlgeschlagener Anmeldungen (#NFA-1.7). Die Diplomarbeit-Kapitel dazu führt Lennard selbst nach.
