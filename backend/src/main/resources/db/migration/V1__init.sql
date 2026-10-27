@@ -1,26 +1,3 @@
--- =====================================================================
--- Digitale Plattform zur Trainingsverwaltung
--- Flyway-Migration V1: Initiales Datenbankschema (PostgreSQL)
---
--- Grundlage: Diplomarbeit, Kapitel «Konzeption > Datenmodell»
---   ERM, Löschverhalten, Eindeutigkeit, Prüfregeln, Indizes,
---   Stammdatenwerte
---
--- Konventionen
---   - Namen Englisch in snake_case
---   - «user» und «set» sind reserviert -> app_user, exercise_set
---   - Constraints/Indizes: Präfix + Tabelle + Spalte
---     (pk_, fk_, uq_, ck_, ix_)
---   - Alle Spalten NOT NULL, ausser explizit NULL
---   - Zeitpunkte als TIMESTAMPTZ (Zeitzone Europe/Zurich in der App),
---     geplantes Datum als DATE
--- =====================================================================
-
-
--- ---------------------------------------------------------------------
--- Stammdaten (feste IDs, keine IDENTITY)
--- ---------------------------------------------------------------------
-
 CREATE TABLE muscle_group (
                               id   INTEGER     NOT NULL,
                               name VARCHAR(50) NOT NULL,
@@ -37,11 +14,6 @@ CREATE TABLE session_status (
                                 CONSTRAINT uq_session_status_name UNIQUE (name)
 );
 
-
--- ---------------------------------------------------------------------
--- Benutzerverwaltung
--- ---------------------------------------------------------------------
-
 CREATE TABLE app_user (
                           id            BIGINT       GENERATED ALWAYS AS IDENTITY,
                           email         VARCHAR(254) NOT NULL,
@@ -54,8 +26,6 @@ CREATE TABLE app_user (
                           CONSTRAINT ck_app_user_email CHECK (email = lower(email))
 );
 
--- Bewusst ohne Beziehung zu app_user: Die Sperre gilt pro E-Mail-Adresse,
--- auch wenn kein Konto existiert (#NFA-1.3).
 CREATE TABLE login_lock (
                             id              BIGINT       GENERATED ALWAYS AS IDENTITY,
                             email           VARCHAR(254) NOT NULL,
@@ -67,11 +37,6 @@ CREATE TABLE login_lock (
                             CONSTRAINT ck_login_lock_email           CHECK (email = lower(email)),
                             CONSTRAINT ck_login_lock_failed_attempts CHECK (failed_attempts >= 0)
 );
-
-
--- ---------------------------------------------------------------------
--- Übungskatalog
--- ---------------------------------------------------------------------
 
 CREATE TABLE exercise (
                           id              BIGINT        GENERATED ALWAYS AS IDENTITY,
@@ -92,16 +57,9 @@ CREATE TABLE exercise (
                                   ON DELETE RESTRICT
 );
 
--- Übungsname je Sportler eindeutig, ohne Gross-/Kleinschreibung,
--- nur nicht gelöschte Zeilen (Name nach Soft Delete wieder verwendbar).
 CREATE UNIQUE INDEX uq_exercise_user_id_name
     ON exercise (user_id, lower(name))
     WHERE deleted = FALSE;
-
-
--- ---------------------------------------------------------------------
--- Trainingsroutinen
--- ---------------------------------------------------------------------
 
 CREATE TABLE routine (
                          id      BIGINT       GENERATED ALWAYS AS IDENTITY,
@@ -111,7 +69,6 @@ CREATE TABLE routine (
 
                          CONSTRAINT pk_routine_id PRIMARY KEY (id),
 
-    -- Ziel des zusammengesetzten Fremdschlüssels aus training_session (FK1)
                          CONSTRAINT uq_routine_id_user_id UNIQUE (id, user_id),
 
                          CONSTRAINT fk_routine_user_id
@@ -119,8 +76,6 @@ CREATE TABLE routine (
                                  ON DELETE CASCADE
 );
 
--- Routinenname je Sportler eindeutig, ohne Gross-/Kleinschreibung,
--- nur nicht gelöschte Zeilen.
 CREATE UNIQUE INDEX uq_routine_user_id_name
     ON routine (user_id, lower(name))
     WHERE deleted = FALSE;
@@ -147,23 +102,12 @@ CREATE TABLE routine_exercise (
                                       FOREIGN KEY (routine_id) REFERENCES routine (id)
                                           ON DELETE CASCADE,
 
-    -- Prüfung erst beim COMMIT, damit die Kontolöschung über beide
-    -- Kaskaden (exercise und routine) durchläuft.
                                   CONSTRAINT fk_routine_exercise_exercise_id
                                       FOREIGN KEY (exercise_id) REFERENCES exercise (id)
                                           ON DELETE NO ACTION
                                           DEFERRABLE INITIALLY DEFERRED
 );
 
-
--- ---------------------------------------------------------------------
--- Trainingsplanung und Protokollierung
--- ---------------------------------------------------------------------
-
--- user_id ist bewusst redundant zur Routine: Eine Routine wechselt nie
--- den Besitzer, der Besitz der Einheit wird direkt über user_id geprüft.
--- Der zusammengesetzte Fremdschlüssel stellt sicher, dass user_id immer
--- zum Besitzer der Routine passt.
 CREATE TABLE training_session (
                                   id           BIGINT        GENERATED ALWAYS AS IDENTITY,
                                   routine_id   BIGINT        NOT NULL,
@@ -185,12 +129,10 @@ CREATE TABLE training_session (
                                       FOREIGN KEY (status_id) REFERENCES session_status (id)
                                           ON DELETE RESTRICT,
 
-    -- Soft Delete nur bei Status «abgeschlossen» (3)
                                   CONSTRAINT ck_training_session_deleted
                                       CHECK (deleted = FALSE OR status_id = 3)
 );
 
--- Pro Sportler höchstens eine Einheit im Status «aktiv» (2) (#FA-5.1)
 CREATE UNIQUE INDEX uq_training_session_user_id
     ON training_session (user_id)
     WHERE status_id = 2;
@@ -248,24 +190,11 @@ CREATE TABLE exercise_set (
                                       ON DELETE CASCADE
 );
 
-
--- ---------------------------------------------------------------------
--- Indizes auf Fremdschlüssel
--- (PK und UNIQUE haben automatisch einen Index. Nicht indexiert werden
---  FK, die bereits vorne in einem UNIQUE stehen, sowie Verweise auf
---  Stammdaten.)
--- ---------------------------------------------------------------------
-
 CREATE INDEX ix_exercise_user_id             ON exercise (user_id);
 CREATE INDEX ix_routine_user_id              ON routine (user_id);
 CREATE INDEX ix_routine_exercise_exercise_id ON routine_exercise (exercise_id);
 CREATE INDEX ix_training_session_routine_id  ON training_session (routine_id);
 CREATE INDEX ix_session_exercise_exercise_id ON session_exercise (exercise_id);
-
-
--- ---------------------------------------------------------------------
--- Stammdatenwerte (feste IDs, werden im Code verwendet)
--- ---------------------------------------------------------------------
 
 INSERT INTO muscle_group (id, name) VALUES
                                         (1, 'Brust'),
