@@ -10,6 +10,8 @@ import ch.bernet.trainingplatform.service.routine.dto.RoutineResponse;
 import ch.bernet.trainingplatform.service.routine.dto.RoutineSummary;
 import ch.bernet.trainingplatform.service.training.dto.PlanSessionRequest;
 import ch.bernet.trainingplatform.service.training.dto.PlannedSessionResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +23,8 @@ import java.util.Map;
 
 @Service
 public class TrainingPlanService {
+
+    private static final Logger log = LoggerFactory.getLogger(TrainingPlanService.class);
 
     private final TrainingSessionRepository trainingSessionRepository;
     private final SessionAccess sessionAccess;
@@ -49,6 +53,7 @@ public class TrainingPlanService {
         RoutineResponse routineResponse = sessionAccess.getActiveRoutine(userId, request.routineId());
         TrainingSession session = new TrainingSession(userId, request.routineId(), request.plannedDate());
         trainingSessionRepository.save(session);
+        log.info("Planned session {} created, routine {}, user {}", session.getId(), request.routineId(), userId);
         return TrainingMapper.toPlanned(session, routineResponse.name());
     }
 
@@ -62,6 +67,7 @@ public class TrainingPlanService {
         assertNotInPast(request.plannedDate());
         RoutineResponse routineResponse = sessionAccess.getActiveRoutine(userId, request.routineId());
         session.reschedule(request.routineId(), request.plannedDate());
+        log.info("Planned session {} updated, routine {}, user {}", sessionId, request.routineId(), userId);
         return TrainingMapper.toPlanned(session, routineResponse.name());
     }
 
@@ -74,6 +80,7 @@ public class TrainingPlanService {
             throw new NotFoundException(ErrorMessages.SESSION_NOT_PLANNED);
         }
         trainingSessionRepository.delete(session);
+        log.info("Planned session {} deleted, user {}", sessionId, userId);
     }
 
     private void assertNotInPast(LocalDate date) {

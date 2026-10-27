@@ -26,9 +26,9 @@ public interface TrainingSessionRepository extends JpaRepository<TrainingSession
     @Query("SELECT DISTINCT s.routineId FROM TrainingSession s WHERE s.userId = ?1 AND s.deleted = false AND s.status = ch.bernet.trainingplatform.persistence.training.SessionStatus.COMPLETED")
     List<Long> findCompletedRoutineIds(Long userId);
 
-    // @Modifying + @Query, nur Einheiten im Status PLANNED löschen
+    // @Modifying + @Query, nur Einheiten im Status PLANNED löschen, liefert die Anzahl
     @Modifying
     @Query("DELETE FROM TrainingSession s WHERE s.userId = ?1 AND s.routineId = ?2 AND s.status = ch.bernet.trainingplatform.persistence.training.SessionStatus.PLANNED")
-    void deletePlannedByRoutineId(Long userId, Long routineId);
+    int deletePlannedByRoutineId(Long userId, Long routineId);
 
 }

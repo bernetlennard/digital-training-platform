@@ -216,11 +216,6 @@ Messages sind englische Konstanten in `ErrorMessages` (keine String-Literale in 
   - Backend: Die Einzeiler am Anfang jeder Methode bleiben (Lennard will sie behalten), JPQL-Hinweise über Repository-Methoden ebenso. Neue Methoden bekommen denselben kurzen Einzeiler.
   - Frontend: keine JSDoc-Zeilen, die nur den Namen wiederholen.
   - Dockerfiles, Compose, Caddyfile, nginx, Workflows, Properties: praktisch ohne Kommentare.
-  - `V1__init.sql` nicht anfassen, auch keine Kommentare: Flyway prüft die Checksumme der ganzen Datei, sonst startet das Backend auf der bestehenden DB nicht.
+  - `V1__init.sql` ist seit 2026-10-27 ohne Kommentare. Nicht mehr anfassen: Flyway bildet die Checksumme (CRC32) über alle Zeilen inkl. Kommentare (Zeilenenden und Leerzeilen zählen nicht). Jede Änderung ergibt einen «checksum mismatch», und das Backend startet auf einer bestehenden DB nicht mehr, bis `flyway_schema_history.checksum` angepasst ist.
 - Prettier: singleQuote, no semi. ESLint mit react-hooks.
 - Alle Versionen fix, keine CDNs, keine CORS (gleiche Domain).
-
-## Offene Punkte (Stand 2026-10-26)
-- VPS: die neue `docker-compose.yml` und `journald-retention.conf` einmal von Hand einspielen (siehe «Deploy & CI»). Erst danach gilt die 14-Tage-Aufbewahrung.
-- #FA-5.6 verlangt eine Notiz «pro Übung». Umgesetzt ist nur die Notiz pro Einheit (`training_session.note`). Wird in der Diplomarbeit als Abweichung dokumentiert, nicht mehr gebaut.
-- Erledigt am 2026-10-20: Health-Check samt Prüfung im Deploy-Workflow (#NFA-7.7/#NFA-7.23), Log-Aufbewahrung über journald (#NFA-7.12), Logging fehlgeschlagener Anmeldungen (#NFA-1.7). Die Diplomarbeit-Kapitel dazu führt Lennard selbst nach.

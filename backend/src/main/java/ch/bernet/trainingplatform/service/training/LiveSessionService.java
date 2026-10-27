@@ -3,6 +3,7 @@ package ch.bernet.trainingplatform.service.training;
 import ch.bernet.trainingplatform.common.exception.ConflictException;
 import ch.bernet.trainingplatform.common.exception.ErrorMessages;
 import ch.bernet.trainingplatform.common.exception.NotFoundException;
+import ch.bernet.trainingplatform.persistence.training.ExerciseSet;
 import ch.bernet.trainingplatform.persistence.training.ExerciseSetRepository;
 import ch.bernet.trainingplatform.persistence.training.SessionExercise;
 import ch.bernet.trainingplatform.persistence.training.SessionStatus;
@@ -18,6 +19,8 @@ import ch.bernet.trainingplatform.service.training.dto.SessionResponse;
 import ch.bernet.trainingplatform.service.training.dto.SetRequest;
 import ch.bernet.trainingplatform.service.training.dto.SetSuggestion;
 import ch.bernet.trainingplatform.service.training.dto.StartSessionRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +31,8 @@ import java.util.Optional;
 
 @Service
 public class LiveSessionService {
+
+    private static final Logger log = LoggerFactory.getLogger(LiveSessionService.class);
 
     private final TrainingSessionRepository trainingSessionRepository;
     private final ExerciseSetRepository exerciseSetRepository;
@@ -53,6 +58,7 @@ public class LiveSessionService {
         List<Long> exerciseIds = getRoutineExerciseIds(userId, session.getRoutineId());
         session.start(clock.instant(), exerciseIds);
         trainingSessionRepository.flush();
+        log.info("Planned session {} started, routine {}, user {}", sessionId, session.getRoutineId(), userId);
         return toResponse(userId, session);
     }
 
@@ -64,6 +70,7 @@ public class LiveSessionService {
         List<Long> exerciseIds = getRoutineExerciseIds(userId, request.routineId());
         session.start(clock.instant(), exerciseIds);
         trainingSessionRepository.saveAndFlush(session);
+        log.info("Spontaneous session {} started, routine {}, user {}", session.getId(), request.routineId(), userId);
         return toResponse(userId, session);
     }
 
@@ -76,7 +83,9 @@ public class LiveSessionService {
     @Transactional
     public void updateNote(Long userId, NoteRequest request) {
         // Notiz der aktiven Einheit setzen
-        getActiveOrThrow(userId).setNote(request.note());
+        TrainingSession session = getActiveOrThrow(userId);
+        session.setNote(request.note());
+        log.info("Note of session {} updated, user {}", session.getId(), userId);
     }
 
     @Transactional
@@ -84,8 +93,9 @@ public class LiveSessionService {
         // getActiveOrThrow, getExercise, addSet; flush, damit der neue Satz eine ID hat
         TrainingSession session = getActiveOrThrow(userId);
         SessionExercise item = session.getExercise(sessionExerciseId);
-        item.addSet(request.weightKg(), request.repetitions(), request.restSeconds());
+        ExerciseSet set = item.addSet(request.weightKg(), request.repetitions(), request.restSeconds());
         trainingSessionRepository.flush();
+        log.info("Set {} added, session {}, user {}", set.getId(), session.getId(), userId);
         return toResponse(userId, session, item);
     }
 
@@ -95,6 +105,7 @@ public class LiveSessionService {
         TrainingSession session = getActiveOrThrow(userId);
         SessionExercise item = session.getExerciseOfSet(setId);
         item.updateSet(setId, request.weightKg(), request.repetitions(), request.restSeconds());
+        log.info("Set {} updated, session {}, user {}", setId, session.getId(), userId);
         return toResponse(userId, session, item);
     }
 
@@ -104,6 +115,7 @@ public class LiveSessionService {
         TrainingSession session = getActiveOrThrow(userId);
         SessionExercise item = session.getExerciseOfSet(setId);
         item.moveSet(setId, request.newSetNumber());
+        log.info("Set {} moved, session {}, user {}", setId, session.getId(), userId);
         return toResponse(userId, session, item);
     }
 
@@ -113,13 +125,16 @@ public class LiveSessionService {
         TrainingSession session = getActiveOrThrow(userId);
         SessionExercise item = session.getExerciseOfSet(setId);
         item.removeSet(setId);
+        log.info("Set {} deleted, session {}, user {}", setId, session.getId(), userId);
         return toResponse(userId, session, item);
     }
 
     @Transactional
     public void finishSession(Long userId) {
         // getActiveOrThrow, finish mit clock.instant()
-        getActiveOrThrow(userId).finish(clock.instant());
+        TrainingSession session = getActiveOrThrow(userId);
+        session.finish(clock.instant());
+        log.info("Session {} finished, user {}", session.getId(), userId);
     }
 
     @Transactional
@@ -130,8 +145,10 @@ public class LiveSessionService {
         TrainingSession session = getActiveOrThrow(userId);
         if (session.isSpontaneous() || isRoutineDeleted(userId, session.getRoutineId())) {
             trainingSessionRepository.delete(session);
+            log.info("Session {} cancelled and deleted, user {}", session.getId(), userId);
         } else {
             session.revertToPlanned();
+            log.info("Session {} cancelled and reverted to planned, user {}", session.getId(), userId);
         }
     }
 

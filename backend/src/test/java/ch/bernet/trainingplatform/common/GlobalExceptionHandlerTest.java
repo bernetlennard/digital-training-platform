@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 import java.util.List;
 
@@ -13,6 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class GlobalExceptionHandlerTest {
 
     private final GlobalExceptionHandler globalExceptionHandler = new GlobalExceptionHandler();
+    private final MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/v1/routines/1");
 
     @Test
     @DisplayName("UT-01 Fachliche Fehler ergeben den passenden Statuscode im Fehlerformat")
@@ -31,7 +33,7 @@ class GlobalExceptionHandlerTest {
         IllegalStateException exception = new IllegalStateException("ERROR: relation app_user violates ck_app_user_email");
 
         // Act
-        ResponseEntity<ErrorResponse> response = globalExceptionHandler.handleUnexpected(exception);
+        ResponseEntity<ErrorResponse> response = globalExceptionHandler.handleUnexpected(exception, request);
 
         // Assert
         assertThat(response).isNotNull();
@@ -46,7 +48,7 @@ class GlobalExceptionHandlerTest {
     }
 
     private void assertErrorResponse(DomainException exception, HttpStatus expectedStatus) {
-        ResponseEntity<ErrorResponse> response = globalExceptionHandler.handleDomain(exception);
+        ResponseEntity<ErrorResponse> response = globalExceptionHandler.handleDomain(exception, request);
 
         assertThat(response).isNotNull();
         assertThat(response.getStatusCode()).isEqualTo(expectedStatus);

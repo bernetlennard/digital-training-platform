@@ -1,5 +1,6 @@
 package ch.bernet.trainingplatform.common.exception;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,8 +22,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(DomainException.class)
-    public ResponseEntity<ErrorResponse> handleDomain(DomainException ex) {
+    public ResponseEntity<ErrorResponse> handleDomain(DomainException ex, HttpServletRequest request) {
         HttpStatus status = ex.getStatus();
+        // getRemoteUser liefert die Benutzer-ID aus dem JWT, ohne Anmeldung null
+        log.info("{} {} rejected with {} ({}), user {}", request.getMethod(), request.getRequestURI(),
+                status.value(), ex.getMessage(), request.getRemoteUser());
         return ResponseEntity.status(status)
                 .body(new ErrorResponse(status.value(), ex.getMessage(), List.of()));
     }
@@ -54,9 +58,10 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponse> handleUnexpected(Exception ex) {
+    public ResponseEntity<ErrorResponse> handleUnexpected(Exception ex, HttpServletRequest request) {
         // Fehler loggen, 500 ohne Stacktrace/interne Details zurückgeben
-        log.error(ErrorMessages.UNEXPECTED_ERROR, ex);
+        log.error("{}: {} {}, user {}", ErrorMessages.UNEXPECTED_ERROR, request.getMethod(), request.getRequestURI(),
+                request.getRemoteUser(), ex);
         HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
         return ResponseEntity.status(status)
                 .body(new ErrorResponse(status.value(), ErrorMessages.UNEXPECTED_ERROR, List.of()));

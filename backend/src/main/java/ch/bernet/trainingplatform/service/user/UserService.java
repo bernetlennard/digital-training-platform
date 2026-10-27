@@ -14,6 +14,8 @@ import ch.bernet.trainingplatform.service.user.dto.LoginRequest;
 import ch.bernet.trainingplatform.service.user.dto.RegisterRequest;
 import ch.bernet.trainingplatform.service.user.dto.UpdateProfileRequest;
 import ch.bernet.trainingplatform.service.user.dto.UserResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +25,8 @@ import java.util.Optional;
 
 @Service
 public class UserService {
+
+    private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
     private final AppUserRepository appUserRepository;
     private final LoginLockService loginLockService;
@@ -51,6 +55,7 @@ public class UserService {
                 .build();
 
         appUserRepository.save(appUser);
+        log.info("User {} registered", appUser.getId());
         return UserMapper.toResponse(appUser);
     }
 
@@ -73,6 +78,7 @@ public class UserService {
         AppUser appUser = optionalAppUser.get();
         verifyPassword(appUser, request.password());
         loginLockService.clear(email);
+        log.info("User {} logged in", appUser.getId());
         return UserMapper.toResponse(appUser);
     }
 
@@ -90,6 +96,7 @@ public class UserService {
         appUser.setLastName(request.lastName());
 
         appUserRepository.save(appUser);
+        log.info("Profile of user {} updated", userId);
         return UserMapper.toResponse(appUser);
     }
 
@@ -107,6 +114,7 @@ public class UserService {
 
         appUser.setEmail(normalizedMail);
         AppUser savedUser = appUserRepository.save(appUser);
+        log.info("Email of user {} changed", userId);
         return UserMapper.toResponse(savedUser);
     }
 
@@ -118,6 +126,7 @@ public class UserService {
         String newPasswordHash = passwordEncoder.encode(request.newPassword());
         appUser.setPasswordHash(newPasswordHash);
         appUserRepository.save(appUser);
+        log.info("Password of user {} changed", userId);
     }
 
     @Transactional
@@ -127,6 +136,7 @@ public class UserService {
         verifyPassword(appUser, request.password());
         appUserRepository.delete(appUser);
         loginLockService.clear(appUser.getEmail());
+        log.info("User {} deleted", userId);
     }
 
     @Transactional(readOnly = true)

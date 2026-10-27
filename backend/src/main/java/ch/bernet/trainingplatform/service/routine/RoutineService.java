@@ -12,6 +12,8 @@ import ch.bernet.trainingplatform.service.exercise.dto.ExerciseResponse;
 import ch.bernet.trainingplatform.service.routine.dto.RoutineRequest;
 import ch.bernet.trainingplatform.service.routine.dto.RoutineResponse;
 import ch.bernet.trainingplatform.service.routine.dto.RoutineSummary;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +24,8 @@ import java.util.Set;
 
 @Service
 public class RoutineService {
+
+    private static final Logger log = LoggerFactory.getLogger(RoutineService.class);
 
     private final RoutineRepository routineRepository;
     private final ExerciseService exerciseService;
@@ -58,6 +62,7 @@ public class RoutineService {
         Routine routine = new Routine(userId, request.name());
         routine.replaceExercises(request.exerciseIds());
         routineRepository.save(routine);
+        log.info("Routine {} created, user {}", routine.getId(), userId);
         return toResponse(userId, routine);
     }
 
@@ -70,6 +75,7 @@ public class RoutineService {
         routine.setName(request.name());
         routine.replaceExercises(request.exerciseIds());
         routineRepository.save(routine);
+        log.info("Routine {} updated, user {}", routineId, userId);
         return toResponse(userId, routine);
     }
 
@@ -80,6 +86,7 @@ public class RoutineService {
         routine.setDeleted(true);
         routineRepository.save(routine);
         routineDeletionListener.onRoutineDeleted(userId, routineId);
+        log.info("Routine {} deleted, user {}", routineId, userId);
     }
 
     @Transactional(readOnly = true)
