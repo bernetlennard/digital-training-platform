@@ -2,6 +2,8 @@ package ch.bernet.trainingplatform.security;
 
 import ch.bernet.trainingplatform.common.exception.ErrorMessages;
 import ch.bernet.trainingplatform.service.user.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -14,6 +16,8 @@ import java.util.List;
 @Component
 public class JwtUserIdConverter implements Converter<Jwt, AbstractAuthenticationToken> {
 
+    private static final Logger log = LoggerFactory.getLogger(JwtUserIdConverter.class);
+
     private final UserService userService;
 
     public JwtUserIdConverter(UserService userService) {
@@ -25,6 +29,7 @@ public class JwtUserIdConverter implements Converter<Jwt, AbstractAuthentication
         // Benutzer-ID aus dem subject lesen, mit userService.exists prüfen, als Principal setzen
         Long id = Long.valueOf(jwt.getSubject());
         if (!userService.exists(id)) {
+            log.warn("Token of deleted user {} rejected", id);
             throw new BadCredentialsException(ErrorMessages.USER_NOT_FOUND);
         }
         return new UsernamePasswordAuthenticationToken(id, jwt, List.of());

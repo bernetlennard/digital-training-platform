@@ -12,6 +12,8 @@ import ch.bernet.trainingplatform.service.training.dto.HistoryRoutineResponse;
 import ch.bernet.trainingplatform.service.training.dto.SessionExerciseResponse;
 import ch.bernet.trainingplatform.service.training.dto.SessionResponse;
 import ch.bernet.trainingplatform.service.training.dto.SessionSummaryResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +24,8 @@ import java.util.Objects;
 
 @Service
 public class HistoryService {
+
+    private static final Logger log = LoggerFactory.getLogger(HistoryService.class);
 
     private final TrainingSessionRepository trainingSessionRepository;
     private final SessionAccess sessionAccess;
@@ -72,6 +76,7 @@ public class HistoryService {
         trainingSessionRepository.findByIdAndUserId(sessionId, userId)
                 .orElseThrow(() -> new NotFoundException(ErrorMessages.SESSION_NOT_FOUND))
                 .markDeleted();
+        log.info("Completed session {} deleted, user {}", sessionId, userId);
     }
 
 }

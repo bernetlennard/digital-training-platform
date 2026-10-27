@@ -42,10 +42,11 @@ public class SessionExercise {
         this.position = position;
     }
 
-    public void addSet(BigDecimal weightKg, int repetitions, Integer restSeconds) {
-        // neuen Satz mit Satznummer n + 1 anhängen
+    public ExerciseSet addSet(BigDecimal weightKg, int repetitions, Integer restSeconds) {
+        // neuen Satz mit Satznummer n + 1 anhängen und zurückgeben
         ExerciseSet set = new ExerciseSet(sets.size() + 1, weightKg, repetitions, restSeconds);
         sets.add(set);
+        return set;
     }
 
     public void updateSet(Long setId, BigDecimal weightKg, int repetitions, Integer restSeconds) {

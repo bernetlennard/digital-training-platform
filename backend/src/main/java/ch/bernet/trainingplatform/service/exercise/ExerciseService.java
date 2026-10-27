@@ -9,6 +9,8 @@ import ch.bernet.trainingplatform.persistence.exercise.MuscleGroup;
 import ch.bernet.trainingplatform.service.exercise.dto.ExerciseRequest;
 import ch.bernet.trainingplatform.service.exercise.dto.ExerciseResponse;
 import ch.bernet.trainingplatform.service.exercise.dto.MuscleGroupResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +24,8 @@ import java.util.stream.Stream;
 
 @Service
 public class ExerciseService {
+
+    private static final Logger log = LoggerFactory.getLogger(ExerciseService.class);
 
     private final ExerciseRepository exerciseRepository;
     private final ExerciseUsageChecker exerciseUsageChecker;
@@ -53,6 +57,7 @@ public class ExerciseService {
         Exercise exercise = new Exercise(userId, request.name(), muscleGroup, request.description());
 
         exerciseRepository.save(exercise);
+        log.info("Exercise {} created, user {}", exercise.getId(), userId);
         return ExerciseMapper.toResponse(exercise);
     }
 
@@ -66,6 +71,7 @@ public class ExerciseService {
         exercise.setDescription(request.description());
 
         exerciseRepository.save(exercise);
+        log.info("Exercise {} updated, user {}", exerciseId, userId);
         return ExerciseMapper.toResponse(exercise);
     }
 
@@ -78,6 +84,7 @@ public class ExerciseService {
         }
         exercise.setDeleted(true);
         exerciseRepository.save(exercise);
+        log.info("Exercise {} deleted, user {}", exerciseId, userId);
     }
 
     @Transactional(readOnly = true)
