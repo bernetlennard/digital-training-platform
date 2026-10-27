@@ -1,7 +1,6 @@
 import { Typography } from '@mui/material'
 import { InfoPage, InfoSection } from '../components/InfoPage'
 
-// Derselbe Text steht in frontend/Benutzeranleitung.docx für die Diplomarbeit
 const SECTIONS = [
   {
     title: 'Überblick',
